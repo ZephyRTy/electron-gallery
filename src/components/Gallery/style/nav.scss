@@ -1,0 +1,22 @@
+.page {
+	&-nav {
+		list-style: none;
+	}
+	&-span {
+		display: inline-block;
+		margin: 0 5px;
+	}
+	&-link {
+		&.active {
+			color: rgba(34, 143, 245, 0.938);
+			text-decoration: underline;
+		}
+	}
+}
+a {
+	text-decoration: none;
+	color: black;
+	&:hover {
+		font-weight: bolder;
+	}
+}

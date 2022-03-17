@@ -1,0 +1,42 @@
+.img {
+	width: 170px;
+	height: auto;
+	font-size: smaller;
+	border: 1px solid black;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	margin: {
+		bottom: 10px;
+	}
+	padding: {
+		top: 10px;
+	}
+	&-pack {
+		margin: 10px;
+	}
+
+	&-detail {
+		width: 100%;
+		margin: 10px;
+		&-container {
+			width: 40%;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-direction: column;
+		}
+	}
+}
+
+.pack-title {
+	display: block;
+	width: 90%;
+	margin: 5px 0;
+}
+img {
+	display: block;
+	width: 90%;
+	height: auto;
+}
