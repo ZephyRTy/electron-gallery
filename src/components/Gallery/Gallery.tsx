@@ -1,10 +1,11 @@
 /* eslint-disable no-extend-native */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as HomePage } from '../../icon/homepage.svg';
 import { ReactComponent as Refresh } from '../../icon/refresh.svg';
+import { useMysql } from '../../utils/useMysql';
 import { ImgContainer } from './Img';
 import { PageNav } from './PageNav';
 import { Search } from './Search';
@@ -54,21 +55,8 @@ export const Gallery = () => {
 			: p ?? '1',
 		10
 	);
-	let packs: string[] = useMemo(() => {
-		if (!isShow) {
-			setIsShow(true);
-			return [];
-		}
-		let files = readDir(path);
-		if (search) {
-			return files.filter((v: string) => {
-				return v
-					.toLocaleLowerCase()
-					.includes((search as string).toLocaleLowerCase());
-			});
-		}
-		return files;
-	}, [searchParam.get('search'), isShow, path]);
+	const [packs, setPacks] = useState([] as string[]);
+	let mysqlOp = useMysql(page, setPacks, search);
 
 	useEffect(() => {
 		ipcRenderer.on('action', (event: any, arg: string) => {
@@ -112,7 +100,7 @@ export const Gallery = () => {
 				packs={packs.slice(20 * (page - 1), 20 * page)}
 				path={path}
 			/>
-			<PageNav total={Math.ceil(packs.length / 20)} current={page} />
+			<PageNav total={Math.ceil(mysqlOp.count / 20)} current={page} />
 		</div>
 	);
 };
