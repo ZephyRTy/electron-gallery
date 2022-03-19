@@ -72,6 +72,7 @@ export const ImgContainer = (props: { packs: string[]; path: string }) => {
 				return;
 			}
 			img.src = imgPath + '\\' + p;
+
 			img.onload = () => {
 				setImages((prev) => [...prev, { img, title: v }]);
 			};

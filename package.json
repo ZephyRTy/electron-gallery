@@ -105,9 +105,13 @@
 		"@electron/remote": "^2.0.7",
 		"@types/mysql": "^2.15.21",
 		"babel-loader": "^8.2.3",
+		"cheerio": "^1.0.0-rc.10",
 		"electron": "^17.1.2",
 		"electron-builder": "^22.14.13",
 		"node-sass": "^7.0.1",
+		"p18": "^1.3.0",
+		"request": "^2.88.2",
+		"rollup": "^2.70.1",
 		"sass-loader": "^12.6.0",
 		"typescript-plugin-css-modules": "^3.4.0"
 	},
