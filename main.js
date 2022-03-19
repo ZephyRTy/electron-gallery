@@ -17,20 +17,22 @@ function createWindow() {
 			webSecurity: false
 		}
 	});
-	mainWindow.loadURL(
-		url.format({
-			pathname: path.join(__dirname, 'public', 'index.html'),
-			protocol: 'file:',
-			slashes: true
-		})
-	);
-
-	// 加载应用----适用于 react 项目
-	mainWindow.loadURL('http://localhost:3000/');
+	if (!app.isPackaged) {
+		mainWindow.webContents.openDevTools({ mode: 'detach' });
+		mainWindow.loadURL('http://localhost:3000/');
+	} else {
+		mainWindow.loadURL(
+			url.format({
+				pathname: path.join(__dirname, 'build', 'index.html'),
+				protocol: 'file:',
+				slashes: true
+			})
+		);
+	}
 	require('@electron/remote/main').initialize();
 	require('@electron/remote/main').enable(mainWindow.webContents);
 	// 打开开发者工具，默认不打开
-	mainWindow.webContents.openDevTools({ mode: 'detach' });
+
 	// 关闭window时触发下列事件.
 	mainWindow.on('closed', function () {
 		mainWindow = null;

@@ -16,17 +16,11 @@
 	&-pack {
 		margin: 10px;
 	}
-
-	&-detail {
-		width: 100%;
-		margin: 10px;
-		&-container {
-			width: 40%;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			flex-direction: column;
-		}
+	&-main-content {
+		width: 800px;
+		height: fit-content;
+		display: flex;
+		justify-content: center;
 	}
 }
 
@@ -39,4 +33,12 @@ img {
 	display: block;
 	width: 90%;
 	height: auto;
+}
+a.pack-title {
+	text-decoration: none;
+	color: black;
+	&:hover {
+		color: inherit;
+		font-weight: bolder;
+	}
 }

@@ -14,13 +14,17 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"isolatedModules": false,
-		"jsx": "react-jsx"
+		"jsx": "react-jsx",
+		"plugins": [{ "name": "typescript-plugin-css-modules" }],
+		"typeRoots": ["node_modules/@types", "src/types"]
 	},
 	"include": [
 		"src/*.ts",
-		"src/**/*.ts",
+		"src/components/**/**/*",
+		"src/components/**/*",
 		"ipcMain.ts",
 		"src/ipc/ipcRender.js",
-		"src/ipc/ipcMain.js"
+		"src/ipc/ipcMain.js",
+		"src/types/global.d.ts"
 	]
 }

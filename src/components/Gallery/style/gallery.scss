@@ -1,3 +1,5 @@
+$height: 60%;
+
 .gallery {
 	display: flex;
 	justify-content: center;
@@ -6,10 +8,72 @@
 	margin: 0 auto;
 	max-width: 1200px;
 	padding: 0;
-	&-content {
-		width: 800px;
-		height: fit-content;
-		display: flex;
-		justify-content: center;
+}
+
+.search {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: fixed;
+	z-index: 100;
+	top: 10px;
+	left: 0px;
+	width: 260px;
+	background-color: white;
+	height: 50px;
+	border: 1px solid rgb(42, 163, 233);
+	&.hidden {
+		border: 1px solid transparent;
+		background-color: transparent;
 	}
+	button {
+		display: block;
+		background-color: transparent;
+		width: 16%;
+		height: $height;
+		border: none;
+		&:hover {
+			cursor: pointer;
+		}
+	}
+	&-input {
+		&.hidden {
+			visibility: hidden;
+		}
+		display: block;
+		width: 75%;
+		height: $height;
+		margin-right: 20px;
+	}
+}
+
+.homepage-btn {
+	position: fixed;
+	width: 41px;
+	top: 60px;
+	left: 1px;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+.refresh-btn {
+	position: fixed;
+	width: 44px;
+	left: 0px;
+	top: 100px;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+svg {
+	width: 100%;
+	height: 100%;
+	fill: black;
+}
+
+.current-search {
+	display: block;
+	height: 30px;
+	font-size: 20px;
+	margin-bottom: 10px;
 }

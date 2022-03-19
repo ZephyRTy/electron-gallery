@@ -58,7 +58,7 @@ export function Reader() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 	useEffect(() => {
-		span.current.scrollIntoView(true);
+		(span.current as any).scrollIntoView(true);
 	}, [fileName]);
 	// useEffect(() => {
 	// 	console.log('change');
@@ -75,8 +75,8 @@ export function Reader() {
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {
 						e.preventDefault();
-						console.log(window.getSelection().anchorNode);
-						console.log(window.getSelection().getRangeAt(0));
+						console.log(window.getSelection()?.anchorNode);
+						console.log(window.getSelection()?.getRangeAt(0));
 					}
 				}}
 				onCompositionStart={(e) => {

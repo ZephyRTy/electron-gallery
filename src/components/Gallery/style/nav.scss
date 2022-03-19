@@ -1,22 +1,75 @@
 .page {
 	&-nav {
+		font-size: 20px;
 		list-style: none;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin: {
+			top: 10px;
+			bottom: 20px;
+		}
 	}
 	&-span {
 		display: inline-block;
-		margin: 0 5px;
+		margin: 0 10px;
+		&.jump {
+			font-size: 18px;
+		}
 	}
 	&-link {
 		&.active {
-			color: rgba(34, 143, 245, 0.938);
+			color: rgba(15, 133, 243, 0.938);
 			text-decoration: underline;
 		}
 	}
 }
+.prev,
+.next,
+.first,
+.last {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	.page-link {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+	}
+}
 a {
-	text-decoration: none;
-	color: black;
-	&:hover {
-		font-weight: bolder;
+	&.page-link {
+		text-decoration: none;
+		color: black;
+		&:hover {
+			color: rgba(120, 190, 255, 0.938);
+			transition: none;
+		}
+		svg {
+			width: 20px;
+			height: 20px;
+			fill: black;
+			&:hover {
+				fill: rgba(120, 190, 255, 0.938);
+			}
+		}
+		&.disable {
+			svg {
+				fill: gray;
+			}
+		}
+	}
+}
+
+.jump-input {
+	width: 40px;
+	height: 30px;
+	border: none;
+	border-bottom: 1px solid black;
+	margin: 0 10px;
+	text-align: center;
+	font-size: 15px;
+	&:focus {
+		outline: none;
 	}
 }
