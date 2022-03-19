@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
-import { ReactComponent as HomePage } from '../../icon/homepage.svg';
-import { ReactComponent as Refresh } from '../../icon/refresh.svg';
+import HomePage from '../../icon/homepage.svg';
+import Refresh from '../../icon/refresh.svg';
 import { useMysql } from '../../utils/useMysql';
 import { ImgContainer } from './Img';
 import { PageNav } from './PageNav';
