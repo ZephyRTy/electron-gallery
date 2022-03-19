@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import SearchIcon from '../../icon/search.svg';
+import { ReactComponent as SearchIcon } from '../../icon/search.svg';
 export const Search = () => {
 	const [hidden, setHidden] = useState(true);
 	const [, setSearch] = useSearchParams();

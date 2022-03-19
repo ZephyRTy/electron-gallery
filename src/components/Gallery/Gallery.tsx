@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
-import HomePage from '../../icon/homepage.svg';
-import Refresh from '../../icon/refresh.svg';
+import { ReactComponent as HomePage } from '../../icon/homepage.svg';
+import { ReactComponent as Refresh } from '../../icon/refresh.svg';
 import { useMysql } from '../../utils/useMysql';
 import { ImgContainer } from './Img';
 import { PageNav } from './PageNav';
@@ -46,6 +46,7 @@ const [readDir, reset] = cacheFunction();
 export const Gallery = () => {
 	const [path, setPath] = useState(root);
 	const [searchParam] = useSearchParams();
+	const [total, setTotal] = useState(0);
 	const [isShow, setIsShow] = useState(true);
 	let search = searchParam.get('search');
 	const p = useParams().page;
@@ -56,7 +57,7 @@ export const Gallery = () => {
 		10
 	);
 	const [packs, setPacks] = useState([] as string[]);
-	let mysqlOp = useMysql(page, setPacks, search);
+	useMysql(page, setPacks, setTotal, search);
 
 	useEffect(() => {
 		ipcRenderer.on('action', (event: any, arg: string) => {
@@ -96,11 +97,8 @@ export const Gallery = () => {
 			{search || !isShow ? (
 				<span className="current-search">{`当前搜索：${search}`}</span>
 			) : null}
-			<ImgContainer
-				packs={packs.slice(20 * (page - 1), 20 * page)}
-				path={path}
-			/>
-			<PageNav total={Math.ceil(mysqlOp.count / 20)} current={page} />
+			<ImgContainer packs={packs} path={path} />
+			<PageNav total={Math.ceil(total / 20)} current={page} />
 		</div>
 	);
 };

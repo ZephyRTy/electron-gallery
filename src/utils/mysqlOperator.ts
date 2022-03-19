@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-const mysql = require('mysql');
+const mysql = window.require('mysql');
 
 export class MysqlOperator {
 	private static _instance: MysqlOperator;
@@ -17,9 +17,6 @@ export class MysqlOperator {
 			connectionLimit: 10
 		};
 		this._pool = mysql.createPool(this._config);
-		this.getCount().then((result: any) => {
-			this.count = result[0].count;
-		});
 	}
 
 	static getInstance(): MysqlOperator {
@@ -38,7 +35,7 @@ export class MysqlOperator {
 					if (err) {
 						reject(err);
 					} else {
-						resolve(result);
+						resolve(result.map((v: any) => v.pack_title));
 					}
 					connection.release();
 				});
@@ -48,12 +45,15 @@ export class MysqlOperator {
 	getCount() {
 		let sql = 'select count(*) as count from pack_list';
 		return new Promise((resolve, reject) => {
+			if (this.count !== 0) {
+				resolve(this.count);
+			}
 			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, (err: any, result: any) => {
+				connection?.query(sql, (err: any, result: any) => {
 					if (err) {
 						reject(err);
 					} else {
-						resolve(result);
+						resolve(result[0].count);
 					}
 					connection.release();
 				});
@@ -76,8 +76,10 @@ export class MysqlOperator {
 							reject(err);
 						} else {
 							this._searchRes.param = sqlParam;
-							this._searchRes.result = result;
-							resolve(result);
+							this._searchRes.result = result.map(
+								(v: any) => v.pack_title
+							);
+							resolve(this._searchRes.result);
 						}
 						connection.release();
 					});
@@ -86,8 +88,3 @@ export class MysqlOperator {
 		});
 	}
 }
-
-const mysqlOperator = MysqlOperator.getInstance();
-mysqlOperator.select([1, 2]).then((result: any) => {
-	console.log(result);
-});

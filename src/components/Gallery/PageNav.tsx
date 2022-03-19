@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import LeftArrow from '../../icon/leftArrow.svg';
-import LeftDoubleArrow from '../../icon/leftDoubleArrow.svg';
-import RightArrow from '../../icon/rightArrow.svg';
-import RightDoubleArrow from '../../icon/rightDoubleArrow.svg';
+import { ReactComponent as LeftArrow } from '../../icon/leftArrow.svg';
+import { ReactComponent as LeftDoubleArrow } from '../../icon/leftDoubleArrow.svg';
+import { ReactComponent as RightArrow } from '../../icon/rightArrow.svg';
+import { ReactComponent as RightDoubleArrow } from '../../icon/rightDoubleArrow.svg';
 import './style/nav.scss';
 export const range = (start: number, end: number) => {
 	if (start === end) {
