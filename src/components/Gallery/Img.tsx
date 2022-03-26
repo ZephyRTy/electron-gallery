@@ -28,7 +28,7 @@ export const Img = (props: { src: string; data: Data; util: FileOperator }) => {
 				href={'#/gallery/pack/' + props.data.title}
 				className={styles['pack-title']}
 			>
-				<span>{props.data.title}</span>
+				<span title={props.data.title}>{props.data.title}</span>
 			</a>
 			<span
 				className={
@@ -44,16 +44,11 @@ export const Img = (props: { src: string; data: Data; util: FileOperator }) => {
 	);
 };
 let index = 0;
-export const ImgContainer = (props: {
-	packs: Data[];
-	path: string;
-	util: FileOperator;
-}) => {
+export const ImgContainer = (props: { packs: Data[]; util: FileOperator }) => {
 	const [images, setImages] = useState(
 		[] as { img: HTMLImageElement; data: Data }[]
 	);
 	const length = useRef({ value: 0 }).current;
-	const [flag, setFlag] = useState(false);
 	const [renderImg, setRenderImg] = useState(
 		[] as { img: HTMLImageElement; data: Data }[][]
 	);
@@ -72,18 +67,17 @@ export const ImgContainer = (props: {
 				Math.ceil(180 * (v.img.naturalHeight / v.img.naturalWidth)) +
 				divList[min].push(v);
 		});
-		window.screenTop = 0;
+		document.body.scrollTop = 0;
 		setRenderImg(divList);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [flag, props.packs]);
+	}, [images, props.packs]);
 	useEffect(() => {
 		length.value = props.packs.length;
 		let cache: { img: HTMLImageElement; data: Data }[] = [];
 		props.packs.forEach((v) => {
 			let img = new Image();
-			let imgPath =
-				String.raw`${props.path}` + '\\' + String.raw`${v.title}`;
-			img.src = imgPath + '\\1.jpg';
+			let imgPath = v.path + v.cover;
+			img.src = imgPath;
 			img.onload = () => {
 				cache.push({ img, data: v });
 				if (cache.length === length.value) {
@@ -108,20 +102,10 @@ export const ImgContainer = (props: {
 			};
 		});
 		return () => {
-			images.forEach((v) => {
-				v.img.onload = null;
-				v.img.onerror = null;
-			});
 			setImages([]);
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [props.packs]);
-
-	useEffect(() => {
-		if (images.length === length.value) {
-			setFlag((v) => !v);
-		}
-	}, [images, props.packs]);
 	return (
 		<div className={styles['img-main-content']}>
 			{renderImg?.map((v) => {

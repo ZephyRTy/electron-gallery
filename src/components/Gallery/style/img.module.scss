@@ -47,6 +47,12 @@ a.pack-title {
 	&:hover {
 		color: rgb(110, 182, 230);
 	}
+	span {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
+	}
 }
 
 .star-span {

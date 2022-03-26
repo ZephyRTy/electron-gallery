@@ -2,7 +2,22 @@
 import _filter from 'lodash/filter';
 import _union from 'lodash/union';
 const fs = window.require('fs');
-export type Data = { title: string; stared: boolean; index: number };
+const sleep = (ms: number) => {
+	let start = new Date().getTime();
+	for (let i = 0; i < 1e7; i++) {
+		if (new Date().getTime() - start > ms) {
+			break;
+		}
+	}
+};
+
+export type Data = {
+	title: string;
+	stared: boolean;
+	index: number;
+	cover: string;
+	path: string;
+};
 enum Mode {
 	Normal,
 	Search,
@@ -14,6 +29,7 @@ const positive = (n: number) => {
 export class FileOperator {
 	private constructor() {}
 	private static instance: FileOperator;
+	private snapshot = '';
 	static getInstance(): FileOperator {
 		if (!FileOperator.instance) {
 			FileOperator.instance = new FileOperator();
@@ -21,11 +37,13 @@ export class FileOperator {
 		return FileOperator.instance;
 	}
 	private pages = [] as number[];
+	private dirty = false;
 	private packs = [] as Data[][];
 	private stared = [] as Data[];
 	private mode: Mode = Mode.Normal;
 	private staredShouldBeUpdated = [] as { index: number; stared: boolean }[];
 	private countOfSinglePage = 20;
+	currentPack: Data | null = null;
 	private missing = new Set<string>();
 	total = 0;
 	private searchParams = {
@@ -35,15 +53,20 @@ export class FileOperator {
 	};
 	get(index: number) {
 		this.switchMode(Mode.Normal);
-		if (this.pages.includes(index)) {
+		if (this.pages.includes(index) && !this.dirty) {
 			return this.packs[this.pages.indexOf(index)];
 		}
-		let files: Data[] = JSON.parse(
-			fs.readFileSync(
-				'D:\\webDemo\\desktop-reader\\catalog.json',
-				'utf-8'
-			)
-		);
+		let files: Data[] = [];
+		try {
+			files = JSON.parse(
+				fs.readFileSync(
+					'D:\\webDemo\\desktop-reader\\catalog.json',
+					'utf-8'
+				)
+			);
+		} catch (err) {
+			sleep(1000);
+		}
 		if (this.stared.length === 0) {
 			this.stared = _filter(files, (item) => item.stared).reverse();
 		}
@@ -159,7 +182,26 @@ export class FileOperator {
 			}
 		);
 	}
-
+	addNewPack(data: { path: string; cover: string; title: string }) {
+		if (!data.path || !data.cover || !data.title) {
+			return;
+		}
+		this.dirty = true;
+		let root = String.raw`D:\webDemo\desktop-reader\catalog.json`;
+		//let newPacks = JSON.parse(fs.readFileSync('./new.json', 'utf8'));
+		let catalog = JSON.parse(fs.readFileSync(root, 'utf8'));
+		let index = catalog.length;
+		catalog.push({
+			path: data.path,
+			cover: '\\' + data.cover,
+			title: data.title,
+			stared: false,
+			index
+		});
+		fs.writeFileSync(root, JSON.stringify(catalog));
+		this.dirty = true;
+		this.refresh();
+	}
 	getStared(page: number) {
 		this.switchMode(Mode.Stared);
 		return this.stared.slice(
@@ -200,12 +242,32 @@ export class FileOperator {
 			}
 		);
 	}
-
+	refresh() {
+		this.pages = this.packs = [];
+		this.total = 0;
+	}
 	get searchTotal() {
 		return this.searchParams.total;
 	}
 
 	get staredTotal() {
 		return this.stared.length;
+	}
+	saveSnapshot(url: string) {
+		this.snapshot = url;
+	}
+
+	loadSnapshot() {
+		let url = this.snapshot;
+		return url;
+	}
+
+	current(pack: string) {
+		if (this.mode === Mode.Normal) {
+			return this.packs.flat().find((v) => v.title === pack)?.path;
+		} else if (this.mode === Mode.Stared) {
+			return this.stared.find((v) => v.title === pack)?.path;
+		}
+		return this.searchParams.res.find((v) => v.title === pack)?.path;
 	}
 }
