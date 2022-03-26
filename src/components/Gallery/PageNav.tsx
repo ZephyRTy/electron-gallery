@@ -17,6 +17,7 @@ export const range = (start: number, end: number) => {
 };
 const PageSpan = (props: {
 	search: string | null;
+	stared: string | null;
 	page: number;
 	current: number;
 	special?: string;
@@ -35,8 +36,10 @@ const PageSpan = (props: {
 				}}
 				href={`#/${
 					props.search
-						? `?search=${props.search}&page=${props.page}`
-						: 'gallery/' + props.page
+						? `gallery?search=${props.search}&page=${props.page}`
+						: props.stared
+						? 'gallery?stared=true&page=' + props.page
+						: 'gallery?page=' + props.page
 				}`}
 				className={
 					(props.current === props.page ? 'active' : '') +
@@ -61,6 +64,7 @@ export const PageNav = (props: { total: number; current: number }) => {
 	);
 	const [searchParam, setSearch] = useSearchParams();
 	let search = searchParam.get('search');
+	let stared = searchParam.get('stared');
 	return (
 		<nav>
 			<ul className="page-nav">
@@ -70,6 +74,7 @@ export const PageNav = (props: { total: number; current: number }) => {
 					page={1}
 					current={props.current}
 					special="first"
+					stared={stared}
 				/>
 
 				<PageSpan
@@ -79,6 +84,7 @@ export const PageNav = (props: { total: number; current: number }) => {
 					current={props.current}
 					special="prev"
 					disable={props.current === 1}
+					stared={stared}
 				/>
 				{pages.map((v, i) => {
 					return (
@@ -87,6 +93,7 @@ export const PageNav = (props: { total: number; current: number }) => {
 							page={v}
 							key={i}
 							search={search}
+							stared={stared}
 						/>
 					);
 				})}
@@ -96,6 +103,7 @@ export const PageNav = (props: { total: number; current: number }) => {
 					page={props.total}
 					current={props.current}
 					special="total"
+					stared={stared}
 				/>
 				<PageSpan
 					icon={<RightArrow />}
@@ -104,6 +112,7 @@ export const PageNav = (props: { total: number; current: number }) => {
 					current={props.current}
 					special="next"
 					disable={props.current === props.total}
+					stared={stared}
 				/>
 				<PageSpan
 					icon={<RightDoubleArrow />}
@@ -111,6 +120,7 @@ export const PageNav = (props: { total: number; current: number }) => {
 					page={props.total}
 					current={props.current}
 					special="last"
+					stared={stared}
 				/>
 				<li className="page-span jump">
 					<span>跳转至第</span>
@@ -135,8 +145,18 @@ export const PageNav = (props: { total: number; current: number }) => {
 										page: value
 									});
 									return;
+								} else if (stared) {
+									(e.target as HTMLInputElement).value = '';
+									(
+										document.activeElement as HTMLElement
+									).blur();
+									setSearch({
+										stared: 'true',
+										page: value
+									});
+									return;
 								}
-								window.location.href = `#/gallery/${value}`;
+								window.location.href = `#/gallery?page=${value}`;
 								(e.target as HTMLInputElement).value = '';
 								(document.activeElement as HTMLElement).blur();
 							}

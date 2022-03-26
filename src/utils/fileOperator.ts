@@ -1,0 +1,211 @@
+/* eslint-disable no-unused-vars */
+import _filter from 'lodash/filter';
+import _union from 'lodash/union';
+const fs = window.require('fs');
+export type Data = { title: string; stared: boolean; index: number };
+enum Mode {
+	Normal,
+	Search,
+	Stared
+}
+const positive = (n: number) => {
+	return n >= 0 ? n : 0;
+};
+export class FileOperator {
+	private constructor() {}
+	private static instance: FileOperator;
+	static getInstance(): FileOperator {
+		if (!FileOperator.instance) {
+			FileOperator.instance = new FileOperator();
+		}
+		return FileOperator.instance;
+	}
+	private pages = [] as number[];
+	private packs = [] as Data[][];
+	private stared = [] as Data[];
+	private mode: Mode = Mode.Normal;
+	private staredShouldBeUpdated = [] as { index: number; stared: boolean }[];
+	private countOfSinglePage = 20;
+	private missing = new Set<string>();
+	total = 0;
+	private searchParams = {
+		key: '',
+		res: [] as Data[],
+		total: 0
+	};
+	get(index: number) {
+		this.switchMode(Mode.Normal);
+		if (this.pages.includes(index)) {
+			return this.packs[this.pages.indexOf(index)];
+		}
+		let files: Data[] = JSON.parse(
+			fs.readFileSync(
+				'D:\\webDemo\\desktop-reader\\catalog.json',
+				'utf-8'
+			)
+		);
+		if (this.stared.length === 0) {
+			this.stared = _filter(files, (item) => item.stared).reverse();
+		}
+
+		if (this.total === 0) {
+			this.total = files.length;
+		}
+		this.pages = [];
+		this.packs = [];
+		for (let page = index; page < index + 8; page++) {
+			this.packs.push(
+				files
+					.slice(
+						positive(this.total - page * this.countOfSinglePage),
+						positive(
+							this.total - (page - 1) * this.countOfSinglePage
+						)
+					)
+					.reverse()
+			);
+			this.pages.push(page);
+		}
+		files = [];
+		return this.packs[0];
+	}
+	search(key: string, page: number) {
+		this.switchMode(Mode.Search);
+		if (this.searchParams.key === key) {
+			return this.searchParams.res.slice(
+				(page - 1) * this.countOfSinglePage,
+				page * this.countOfSinglePage
+			);
+		}
+		this.searchParams.key = key;
+		this.searchParams.res = [];
+		let files: Data[] = JSON.parse(
+			fs.readFileSync(
+				'D:\\webDemo\\desktop-reader\\catalog.json',
+				'utf-8'
+			)
+		);
+		let result = _filter(files, (item) =>
+			item.title.includes(key)
+		).reverse();
+		this.searchParams.res = result;
+		this.searchParams.total = result.length;
+		files = [];
+		return result.slice(
+			(page - 1) * this.countOfSinglePage,
+			page * this.countOfSinglePage
+		);
+	}
+	staredWillUpdated(index: number, stared: boolean) {
+		this.staredShouldBeUpdated.push({ index, stared });
+	}
+
+	private staredUpdated() {
+		if (this.staredShouldBeUpdated.length === 0) {
+			return;
+		}
+		let files = JSON.parse(
+			fs.readFileSync(
+				'D:\\webDemo\\desktop-reader\\catalog.json',
+				'utf-8'
+			)
+		);
+		this.staredShouldBeUpdated.forEach((item) => {
+			files[item.index].stared = item.stared;
+			if (item.stared) {
+				this.stared.unshift(
+					this.packs.flat().find((v) => {
+						if (item.index === v.index) {
+							v.stared = true;
+							return true;
+						}
+						return false;
+					}) ??
+						(this.searchParams.res.find((v) => {
+							if (item.index === v.index) {
+								v.stared = true;
+								return true;
+							}
+							return false;
+						}) as any)
+				);
+			} else {
+				this.stared = this.stared.filter((v) => v.index !== item.index);
+				this.packs.flat().find((v) => {
+					if (item.index === v.index) {
+						v.stared = false;
+						return true;
+					}
+					return false;
+				});
+				this.searchParams.res.find((v) => {
+					if (item.index === v.index) {
+						v.stared = false;
+						return true;
+					}
+					return false;
+				});
+			}
+		});
+		this.staredShouldBeUpdated = [];
+		fs.writeFile(
+			'D:\\webDemo\\desktop-reader\\catalog.json',
+			JSON.stringify(files),
+			'utf-8',
+			(err: any) => {
+				if (err) {
+					console.log(err);
+				}
+			}
+		);
+	}
+
+	getStared(page: number) {
+		this.switchMode(Mode.Stared);
+		return this.stared.slice(
+			(page - 1) * this.countOfSinglePage,
+			page * this.countOfSinglePage
+		);
+	}
+	private switchMode(mode: Mode) {
+		this.staredUpdated();
+		if (mode === this.mode) {
+			return;
+		}
+		this.mode = mode;
+	}
+
+	collectMissing(title: string, index: number) {
+		if (this.missing.has(title)) {
+			return;
+		}
+		this.missing.add(title);
+	}
+	missingUpdated() {
+		if (this.missing.size === 0) {
+			return;
+		}
+		let missing = JSON.parse(
+			fs.readFileSync('D:\\webDemo\\desktop-reader\\missing.json')
+		) as string[];
+		fs.writeFile(
+			'D:\\webDemo\\desktop-reader\\missing.json',
+			JSON.stringify(_union(missing, Array.from(this.missing))),
+			'utf-8',
+			(err: Error) => {
+				this.missing.clear();
+				if (err) {
+					console.log(err);
+				}
+			}
+		);
+	}
+
+	get searchTotal() {
+		return this.searchParams.total;
+	}
+
+	get staredTotal() {
+		return this.stared.length;
+	}
+}

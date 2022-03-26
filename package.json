@@ -38,6 +38,7 @@
 		"jest": "^27.4.3",
 		"jest-resolve": "^27.4.2",
 		"jest-watch-typeahead": "^1.0.0",
+		"lodash": "^4.17.21",
 		"mini-css-extract-plugin": "^2.4.5",
 		"mysql": "^2.18.1",
 		"postcss": "^8.4.4",
@@ -73,7 +74,7 @@
 		"electron-start": "electron .",
 		"build": "node scripts/build.js",
 		"test": "node scripts/test.js",
-		"package": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=./public/favicon.ico --out=~/ --asar --app-version=0.0.1 --overwrite"
+		"package": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=./public/gallery.ico --out=~/ --asar --app-version=0.0.1 --overwrite"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -103,6 +104,7 @@
 		"@babel/preset-env": "^7.16.11",
 		"@babel/runtime": "^7.17.8",
 		"@electron/remote": "^2.0.7",
+		"@types/lodash": "^4.14.180",
 		"@types/mysql": "^2.15.21",
 		"babel-loader": "^8.2.3",
 		"cheerio": "^1.0.0-rc.10",
@@ -165,5 +167,43 @@
 			"jest-watch-typeahead/testname"
 		],
 		"resetMocks": true
+	},
+	"build": {
+		"productName": "ele",
+		"appId": "com.ele.eletest",
+		"copyright": "cd©20211209",
+		"directories": {
+			"buildResources": "./",
+			"output": "pack"
+		},
+		"files": [
+			"build/*",
+			"build/**/*",
+			"node_modules/**/*",
+			"main.js"
+		],
+		"nsis": {
+			"oneClick": false,
+			"allowElevation": true,
+			"allowToChangeInstallationDirectory": true,
+			"installerIcon": "./public/gallery.ico",
+			"uninstallerIcon": "./public/gallery.ico",
+			"installerHeaderIcon": "./public/gallery.ico",
+			"createDesktopShortcut": true,
+			"createStartMenuShortcut": true,
+			"perMachine": true,
+			"shortcutName": "elename"
+		},
+		"win": {
+			"icon": "./public/gallery.ico",
+			"target": [
+				{
+					"target": "nsis",
+					"arch": [
+						"ia32"
+					]
+				}
+			]
+		}
 	}
 }

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { RollbackOutlined } from '@ant-design/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { ReactComponent as Back } from '../../icon/back.svg';
 import './style/PackDetail.scss';
 const fs = window.require('fs');
 
@@ -20,12 +20,20 @@ export const PackDetail = () => {
 		});
 	}, [flag]);
 	useEffect(() => {
+		return () => {
+			images.forEach((v) => {
+				v.onload = null;
+			});
+		};
+	}, []);
+	useEffect(() => {
 		if (!pack) {
 			return;
 		}
 		let imgList: string[] = fs.readdirSync(
 			String.raw`D:\img\show_img\图片` + '\\' + pack
 		);
+		imgList.sort((a, b) => parseInt(a) - parseInt(b));
 		setLength(imgList.length);
 		imgList.forEach((v) => {
 			if (
@@ -40,6 +48,7 @@ export const PackDetail = () => {
 			img.src = String.raw`D:\img\show_img\图片` + '\\' + pack + '\\' + v;
 			img.onload = () => {
 				setImages((prev: any) => [...prev, img]);
+				img.onload = null;
 			};
 		});
 	}, [pack]);
@@ -57,7 +66,7 @@ export const PackDetail = () => {
 					navigate(-1);
 				}}
 			>
-				<RollbackOutlined />
+				<Back />
 			</button>
 			{renderImg}
 		</div>

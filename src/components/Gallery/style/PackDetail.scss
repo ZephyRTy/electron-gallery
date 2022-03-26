@@ -1,12 +1,17 @@
 .back {
 	position: fixed;
-	left: 10px;
+	left: 5px;
+	top: 18px;
 	background-color: transparent;
 	font-size: 20px;
 	border: none;
 	&:hover {
 		color: rgba(34, 143, 245, 0.938);
 		cursor: pointer;
+	}
+	svg {
+		width: 26px;
+		height: 26px;
 	}
 }
 

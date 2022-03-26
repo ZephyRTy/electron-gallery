@@ -46,24 +46,19 @@ $height: 60%;
 		margin-right: 20px;
 	}
 }
-
-.homepage-btn {
-	position: fixed;
-	width: 41px;
-	top: 60px;
-	left: 1px;
+.icon {
 	background-color: transparent;
 	border: none;
 	cursor: pointer;
 }
-.refresh-btn {
-	position: fixed;
-	width: 44px;
-	left: 0px;
-	top: 100px;
-	background-color: transparent;
-	border: none;
-	cursor: pointer;
+.homepage-btn {
+	width: 41px;
+}
+.stared-btn {
+	width: 40px;
+}
+.back-btn {
+	width: 38px;
 }
 svg {
 	width: 100%;
@@ -76,4 +71,12 @@ svg {
 	height: 30px;
 	font-size: 20px;
 	margin-bottom: 10px;
+}
+
+.menu {
+	list-style: none;
+	position: fixed;
+	flex-direction: column;
+	left: -38px;
+	top: 56px;
 }

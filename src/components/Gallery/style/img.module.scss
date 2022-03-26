@@ -1,9 +1,11 @@
 .img {
-	width: 170px;
+	width: 180px;
 	height: auto;
-	font-size: smaller;
-	border: 1px solid black;
+	font-size: 12px;
+	border: 1px solid rgba(117, 117, 117, 0.602);
+	background-color: #e0e0e070;
 	display: flex;
+	box-shadow: 0px 2px 1px #c3c3c38c;
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
@@ -36,9 +38,32 @@ img {
 }
 a.pack-title {
 	text-decoration: none;
+	display: flex;
 	color: black;
+	align-items: center;
+	width: 160px;
+	height: 40px;
+	transition: none;
 	&:hover {
-		color: inherit;
-		font-weight: bolder;
+		color: rgb(110, 182, 230);
+	}
+}
+
+.star-span {
+	display: flex;
+	justify-content: center;
+	position: relative;
+	align-items: center;
+	top: -7px;
+	svg {
+		fill: rgb(109, 109, 109);
+		height: 18px;
+		width: 18px;
+	}
+}
+
+.stared {
+	svg {
+		fill: #f9cc4b;
 	}
 }
