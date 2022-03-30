@@ -26,10 +26,13 @@ enum Mode {
 const positive = (n: number) => {
 	return n >= 0 ? n : 0;
 };
+
+//DONE 增加、搜索、星标
+//TODO 删除、去重
 export class FileOperator {
 	private constructor() {}
 	private static instance: FileOperator;
-	private snapshot = '';
+	private prevPage = '';
 	static getInstance(): FileOperator {
 		if (!FileOperator.instance) {
 			FileOperator.instance = new FileOperator();
@@ -217,6 +220,7 @@ export class FileOperator {
 		this.mode = mode;
 	}
 
+	//FIXME 不能正确收集错误的数据
 	collectMissing(title: string, index: number) {
 		if (this.missing.has(title)) {
 			return;
@@ -253,12 +257,12 @@ export class FileOperator {
 	get staredTotal() {
 		return this.stared.length;
 	}
-	saveSnapshot(url: string) {
-		this.snapshot = url;
+	savePrevPage(url: string) {
+		this.prevPage = url;
 	}
 
-	loadSnapshot() {
-		let url = this.snapshot;
+	loadPrevPage() {
+		let url = this.prevPage;
 		return url;
 	}
 

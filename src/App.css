@@ -2,6 +2,9 @@
 .App {
 	text-align: center;
 }
+body {
+	overflow: auto;
+}
 * {
 	user-select: none;
 }

@@ -20,6 +20,7 @@
 		width: 100%;
 		max-width: 600px;
 		margin: 10px;
+		cursor: zoom-in;
 		&-list {
 			width: 65%;
 			display: flex;
@@ -28,11 +29,53 @@
 			flex-direction: column;
 		}
 		&-container {
-			width: fit-content;
+			width: 70%;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			flex-direction: column;
 		}
+	}
+}
+
+#zoom-in {
+	position: fixed;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	z-index: 100;
+	background-color: rgba(0, 0, 0, 0.5);
+	cursor: zoom-out;
+	img {
+		height: 100%;
+		width: 100%;
+		object-fit: scale-down;
+	}
+}
+
+.zoom {
+	&-page {
+		position: absolute;
+		z-index: 300;
+		opacity: 0;
+		background-color: rgba(106, 106, 106, 0.324);
+		height: 100px;
+		width: 40px;
+		transition: all 0.2s;
+		border: none;
+		svg {
+			fill: white;
+		}
+		&:hover {
+			opacity: 1;
+		}
+	}
+	&-prev {
+		left: 2%;
+	}
+	&-next {
+		right: 2%;
 	}
 }

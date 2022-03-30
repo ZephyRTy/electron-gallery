@@ -35,7 +35,7 @@ export const Gallery = () => {
 		(fileInput.current as any).setAttribute('directory', '');
 	}, []);
 	useEffect(() => {
-		fileOperator.saveSnapshot(window.location.href);
+		fileOperator.savePrevPage(window.location.href);
 		let res: Data[] = [];
 		if (search) {
 			res = fileOperator.search(search, page);

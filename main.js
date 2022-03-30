@@ -1,4 +1,5 @@
 // 引入electron并创建一个BrowserWindow
+
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const url = require('url');
@@ -9,7 +10,7 @@ function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
 	mainWindow = new BrowserWindow({
 		width: 1000,
-		height: 800,
+		height: 900,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
@@ -19,7 +20,7 @@ function createWindow() {
 	});
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
-		mainWindow.loadURL('http://localhost:3000/');
+		mainWindow.loadURL('http://localhost:8097/');
 	} else {
 		mainWindow.loadURL(
 			url.format({
@@ -46,3 +47,15 @@ app.on('window-all-closed', function () {
 		app.quit();
 	}
 });
+
+if (!app.isPackaged) {
+	const {
+		default: installExtension,
+		REACT_DEVELOPER_TOOLS
+	} = require('electron-devtools-installer');
+	app.whenReady().then(() => {
+		installExtension(REACT_DEVELOPER_TOOLS)
+			.then((name) => console.log(`Added Extension:  ${name}`))
+			.catch((err) => console.log('An error occurred: ', err));
+	});
+}
