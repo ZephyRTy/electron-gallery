@@ -1,14 +1,14 @@
+$radius: 15px;
 .img {
 	width: 180px;
 	height: auto;
 	font-size: 12px;
-	border: 1px solid rgba(117, 117, 117, 0.602);
-	background-color: #e0e0e070;
+	background-color: #e0e0e000;
 	display: flex;
-	box-shadow: 0px 2px 1px #c3c3c38c;
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
+
 	margin: {
 		bottom: 10px;
 	}
@@ -19,10 +19,34 @@
 		margin: 10px;
 	}
 	&-main-content {
-		width: 800px;
+		transform: translateZ(0);
+		width: 100%;
 		height: fit-content;
 		display: flex;
 		justify-content: center;
+		overflow-y: scroll;
+		&::-webkit-scrollbar {
+			width: 0px;
+		}
+	}
+	&-wrapper {
+		width: 90%;
+		height: fit-content;
+		display: flex;
+		justify-content: center;
+		box-shadow: 2px 3px 6px 1px #64646470, -2px -2px 6px 1px #64646470;
+		transition: all 0.5s ease-out;
+		border-radius: $radius;
+		&:hover {
+			transform: translateY(-12px);
+			animation: border-light 2s infinite linear alternate;
+		}
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+			border-radius: $radius;
+		}
 	}
 }
 
@@ -31,13 +55,10 @@
 	width: 90%;
 	margin: 5px 0;
 }
-img {
-	display: block;
-	width: 90%;
-	height: auto;
-}
+
 a.pack-title {
 	text-decoration: none;
+	text-align: center;
 	display: flex;
 	color: black;
 	align-items: center;
@@ -55,7 +76,8 @@ a.pack-title {
 	}
 }
 
-.star-span {
+.star-span,
+.bookmark-span {
 	display: flex;
 	justify-content: center;
 	position: relative;
@@ -67,9 +89,25 @@ a.pack-title {
 		width: 18px;
 	}
 }
-
+.marked {
+	svg {
+		fill: rgb(26, 99, 138);
+	}
+}
 .stared {
 	svg {
 		fill: #f9cc4b;
+	}
+}
+
+@keyframes border-light {
+	0% {
+		box-shadow: 2px 3px 8px 2px #4d8bffac, -2px -2px 8px 2px #fc5cbcac;
+	}
+	50% {
+		box-shadow: 2px 3px 8px 2px #4dffe7ac, -2px -2px 8px 2px #5c5cfcac;
+	}
+	100% {
+		box-shadow: 2px 3px 8px 2px #4dff7cac, -2px -2px 8px 2px #5cb9fcac;
 	}
 }

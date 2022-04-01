@@ -3087,6 +3087,13 @@
   "resolved" "https://registry.npmmirror.com/binary-extensions/-/binary-extensions-2.2.0.tgz"
   "version" "2.2.0"
 
+"bindings@^1.5.0":
+  "integrity" "sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ=="
+  "resolved" "https://registry.npmmirror.com/bindings/-/bindings-1.5.0.tgz"
+  "version" "1.5.0"
+  dependencies:
+    "file-uri-to-path" "1.0.0"
+
 "bluebird-lst@^1.0.9":
   "integrity" "sha512-7B1Rtx82hjnSD4PGLAjVWeYH3tHAcVUmChh85a3lltKQm6FresXh9ErQo6oAv6CqxttczC3/kEg8SY5NluPuUw=="
   "resolved" "https://registry.npmmirror.com/bluebird-lst/-/bluebird-lst-1.0.9.tgz"
@@ -4611,6 +4618,11 @@
     "domelementtype" "^2.0.1"
     "entities" "^2.0.0"
 
+"dombo@^3.2.0":
+  "integrity" "sha512-ITdn9ASkOmSoviZ19NTBpF2HzZfm6B6eYl6a3oHreLJp0BJ9ihQ9O2WaoocI4dk9ZJG8Ulm9XTox4DnmGg3m1g=="
+  "resolved" "https://registry.npmmirror.com/dombo/-/dombo-3.2.0.tgz"
+  "version" "3.2.0"
+
 "domelementtype@^2.0.1", "domelementtype@^2.2.0":
   "integrity" "sha512-DtBMo82pv1dFtUmHyr48beiuq792Sxohr+8Hm9zoxklYPfa6n0Z3Byjj2IV7bmr2IyqClnqEQhfgHJJ5QF0R5A=="
   "resolved" "https://registry.npmmirror.com/domelementtype/-/domelementtype-2.2.0.tgz"
@@ -4739,6 +4751,17 @@
     "semver" "^7.2.1"
     "tslib" "^2.1.0"
     "unzip-crx-3" "^0.2.0"
+
+"electron-drag@^2.0.0":
+  "integrity" "sha512-/9AaqLoZR1JT4MJvWLGA8F4c0GPtUDbMoQ+tPFG4n55PxrvCZu3KkWKKGEjmuUQB/gvN8S+KbHRR0I2nZx7MaA=="
+  "resolved" "https://registry.npmmirror.com/electron-drag/-/electron-drag-2.0.0.tgz"
+  "version" "2.0.0"
+  dependencies:
+    "dombo" "^3.2.0"
+    "try-require" "^1.2.1"
+  optionalDependencies:
+    "osx-mouse" "^2.0.0"
+    "win-mouse" "^2.0.1"
 
 "electron-osx-sign@^0.5.0":
   "integrity" "sha512-icoRLHzFz/qxzDh/N4Pi2z4yVHurlsCAYQvsCSG7fCedJ4UJXBS6PoQyGH71IfcqKupcKeK7HX/NkyfG+v6vlQ=="
@@ -5420,6 +5443,11 @@
   dependencies:
     "loader-utils" "^2.0.0"
     "schema-utils" "^3.0.0"
+
+"file-uri-to-path@1.0.0":
+  "integrity" "sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw=="
+  "resolved" "https://registry.npmmirror.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz"
+  "version" "1.0.0"
 
 "filelist@^1.0.1":
   "integrity" "sha512-z7O0IS8Plc39rTCq6i6iHxk43duYOn8uFJiWSewIq0Bww1RNybVHSCjahmcC87ZqAm4OTvFzlzeGu3XAzG1ctQ=="
@@ -7933,7 +7961,7 @@
     "safe-buffer" "5.1.2"
     "sqlstring" "2.3.1"
 
-"nan@^2.13.2":
+"nan@^2.13.2", "nan@^2.14.1":
   "integrity" "sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ=="
   "resolved" "https://registry.npmmirror.com/nan/-/nan-2.15.0.tgz"
   "version" "2.15.0"
@@ -11324,6 +11352,11 @@
   dependencies:
     "utf8-byte-length" "^1.0.1"
 
+"try-require@^1.2.1":
+  "integrity" "sha512-aMzrGUIA/R2LwUgvsOusx+GTy8ERyNjpBzbWgS1Qx4oTFlXCMxY3PyyXbPE1pvrvK/CXpO+BBREEqrTkNroC+A=="
+  "resolved" "https://registry.npmmirror.com/try-require/-/try-require-1.2.1.tgz"
+  "version" "1.2.1"
+
 "tryer@^1.0.1":
   "integrity" "sha512-c3zayb8/kWWpycWYg87P71E1S1ZL6b6IJxfb5fvsUgsf0S2MVGaDhDXXjDMpdCpfWXqptc+4mXwmiy1ypXqRAA=="
   "resolved" "https://registry.npmmirror.com/tryer/-/tryer-1.0.1.tgz"
@@ -11928,6 +11961,14 @@
   "version" "3.1.0"
   dependencies:
     "string-width" "^4.0.0"
+
+"win-mouse@^2.0.1":
+  "integrity" "sha512-cSDvzeMMcE8v+TdeT8NfWgz1h4v1dd4M5WgGqbjyb2SXKI/la/X/ZdkgeC9hQd1MtSVSuHbmO/JC+aeaDS75LA=="
+  "resolved" "https://registry.npmmirror.com/win-mouse/-/win-mouse-2.0.1.tgz"
+  "version" "2.0.1"
+  dependencies:
+    "bindings" "^1.5.0"
+    "nan" "^2.14.1"
 
 "word-wrap@^1.2.3", "word-wrap@~1.2.3":
   "integrity" "sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ=="

@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import _filter from 'lodash/filter';
-import _union from 'lodash/union';
+import { Bookmark, Data } from '../types/global';
 const fs = window.require('fs');
 const sleep = (ms: number) => {
 	let start = new Date().getTime();
@@ -10,63 +10,63 @@ const sleep = (ms: number) => {
 		}
 	}
 };
+let root = String.raw`D:\webDemo\desktop-reader\src\json\catalog.json`;
+let bookmarkPath = String.raw`D:\webDemo\desktop-reader\src\json\bookmark.json`;
 
-export type Data = {
-	title: string;
-	stared: boolean;
-	index: number;
-	cover: string;
-	path: string;
-};
 enum Mode {
 	Normal,
 	Search,
-	Stared
+	Stared,
+	Bookmark
 }
 const positive = (n: number) => {
 	return n >= 0 ? n : 0;
 };
 
 //DONE 增加、搜索、星标
-//TODO 删除、去重
+//TODO 删除、去重、动态设置catalog.json的路径、书签
 export class FileOperator {
-	private constructor() {}
+	currentPack: Data | null = null;
+	total = 0;
 	private static instance: FileOperator;
 	private prevPage = '';
+
 	static getInstance(): FileOperator {
 		if (!FileOperator.instance) {
 			FileOperator.instance = new FileOperator();
 		}
 		return FileOperator.instance;
 	}
-	private pages = [] as number[];
 	private dirty = false;
-	private packs = [] as Data[][];
-	private stared = [] as Data[];
 	private mode: Mode = Mode.Normal;
+	private pages = [] as number[];
+
+	private packs = [] as Data[][];
+
+	private stared = [] as Data[];
 	private staredShouldBeUpdated = [] as { index: number; stared: boolean }[];
+
+	private bookmark: Bookmark[] = [];
+	private bookmarksToBeAdded = [] as Bookmark[];
+	private bookmarksToBeRemoved = [] as Bookmark[];
+
 	private countOfSinglePage = 20;
-	currentPack: Data | null = null;
-	private missing = new Set<string>();
-	total = 0;
+
 	private searchParams = {
 		key: '',
 		res: [] as Data[],
 		total: 0
 	};
-	get(index: number) {
+	private constructor() {}
+	//获取图包
+	getPacksNormally(index: number) {
 		this.switchMode(Mode.Normal);
 		if (this.pages.includes(index) && !this.dirty) {
 			return this.packs[this.pages.indexOf(index)];
 		}
 		let files: Data[] = [];
 		try {
-			files = JSON.parse(
-				fs.readFileSync(
-					'D:\\webDemo\\desktop-reader\\catalog.json',
-					'utf-8'
-				)
-			);
+			files = JSON.parse(fs.readFileSync(root, 'utf-8'));
 		} catch (err) {
 			sleep(1000);
 		}
@@ -95,7 +95,9 @@ export class FileOperator {
 		files = [];
 		return this.packs[0];
 	}
-	search(key: string, page: number) {
+
+	//搜索图包
+	searchPacks(key: string, page: number) {
 		this.switchMode(Mode.Search);
 		if (this.searchParams.key === key) {
 			return this.searchParams.res.slice(
@@ -105,12 +107,7 @@ export class FileOperator {
 		}
 		this.searchParams.key = key;
 		this.searchParams.res = [];
-		let files: Data[] = JSON.parse(
-			fs.readFileSync(
-				'D:\\webDemo\\desktop-reader\\catalog.json',
-				'utf-8'
-			)
-		);
+		let files: Data[] = JSON.parse(fs.readFileSync(root, 'utf-8'));
 		let result = _filter(files, (item) =>
 			item.title.includes(key)
 		).reverse();
@@ -122,20 +119,17 @@ export class FileOperator {
 			page * this.countOfSinglePage
 		);
 	}
+
+	//星标缓存
 	staredWillUpdated(index: number, stared: boolean) {
 		this.staredShouldBeUpdated.push({ index, stared });
 	}
-
+	//更新星标
 	private staredUpdated() {
 		if (this.staredShouldBeUpdated.length === 0) {
 			return;
 		}
-		let files = JSON.parse(
-			fs.readFileSync(
-				'D:\\webDemo\\desktop-reader\\catalog.json',
-				'utf-8'
-			)
-		);
+		let files = JSON.parse(fs.readFileSync(root, 'utf-8'));
 		this.staredShouldBeUpdated.forEach((item) => {
 			files[item.index].stared = item.stared;
 			if (item.stared) {
@@ -174,23 +168,20 @@ export class FileOperator {
 			}
 		});
 		this.staredShouldBeUpdated = [];
-		fs.writeFile(
-			'D:\\webDemo\\desktop-reader\\catalog.json',
-			JSON.stringify(files),
-			'utf-8',
-			(err: any) => {
-				if (err) {
-					console.log(err);
-				}
+		fs.writeFile(root, JSON.stringify(files), 'utf-8', (err: any) => {
+			if (err) {
+				console.log(err);
 			}
-		);
+		});
 	}
+
+	//添加图包
 	addNewPack(data: { path: string; cover: string; title: string }) {
 		if (!data.path || !data.cover || !data.title) {
 			return;
 		}
 		this.dirty = true;
-		let root = String.raw`D:\webDemo\desktop-reader\catalog.json`;
+
 		//let newPacks = JSON.parse(fs.readFileSync('./new.json', 'utf8'));
 		let catalog = JSON.parse(fs.readFileSync(root, 'utf8'));
 		let index = catalog.length;
@@ -205,6 +196,8 @@ export class FileOperator {
 		this.dirty = true;
 		this.refresh();
 	}
+
+	//获取星标图包
 	getStared(page: number) {
 		this.switchMode(Mode.Stared);
 		return this.stared.slice(
@@ -212,44 +205,23 @@ export class FileOperator {
 			page * this.countOfSinglePage
 		);
 	}
+
+	//模式切换
 	private switchMode(mode: Mode) {
 		this.staredUpdated();
+		this.updateBookmark();
 		if (mode === this.mode) {
 			return;
 		}
 		this.mode = mode;
 	}
 
-	//FIXME 不能正确收集错误的数据
-	collectMissing(title: string, index: number) {
-		if (this.missing.has(title)) {
-			return;
-		}
-		this.missing.add(title);
-	}
-	missingUpdated() {
-		if (this.missing.size === 0) {
-			return;
-		}
-		let missing = JSON.parse(
-			fs.readFileSync('D:\\webDemo\\desktop-reader\\missing.json')
-		) as string[];
-		fs.writeFile(
-			'D:\\webDemo\\desktop-reader\\missing.json',
-			JSON.stringify(_union(missing, Array.from(this.missing))),
-			'utf-8',
-			(err: Error) => {
-				this.missing.clear();
-				if (err) {
-					console.log(err);
-				}
-			}
-		);
-	}
+	//刷新
 	refresh() {
 		this.pages = this.packs = [];
 		this.total = 0;
 	}
+
 	get searchTotal() {
 		return this.searchParams.total;
 	}
@@ -257,6 +229,7 @@ export class FileOperator {
 	get staredTotal() {
 		return this.stared.length;
 	}
+
 	savePrevPage(url: string) {
 		this.prevPage = url;
 	}
@@ -268,10 +241,58 @@ export class FileOperator {
 
 	current(pack: string) {
 		if (this.mode === Mode.Normal) {
-			return this.packs.flat().find((v) => v.title === pack)?.path;
+			return this.packs.flat().find((v) => v.title === pack);
 		} else if (this.mode === Mode.Stared) {
-			return this.stared.find((v) => v.title === pack)?.path;
+			return this.stared.find((v) => v.title === pack);
+		} else if (this.mode === Mode.Search) {
+			return this.searchParams.res.find((v) => v.title === pack);
+		} else if (this.mode === Mode.Bookmark) {
+			return this.bookmark.find((v) => v.title === pack);
 		}
-		return this.searchParams.res.find((v) => v.title === pack)?.path;
+	}
+
+	bookmarkWillBeUpdated(bookmark: Bookmark, marked: boolean = true) {
+		if (marked) {
+			this.bookmarksToBeAdded.push(bookmark);
+		} else {
+			this.bookmarksToBeRemoved.push(bookmark);
+		}
+	}
+	private updateBookmark() {
+		if (
+			this.bookmarksToBeAdded.length === 0 &&
+			this.bookmarksToBeRemoved.length === 0
+		) {
+			return;
+		}
+		let marks = JSON.parse(
+			fs.readFileSync(bookmarkPath, 'utf8')
+		) as Bookmark[];
+		let newMarks = [...marks];
+		this.bookmarksToBeRemoved.forEach((item) => {
+			newMarks = newMarks.filter((v) => {
+				if (v.timeStamp !== item.timeStamp) {
+					return true;
+				}
+				return false;
+			});
+		});
+		this.bookmarksToBeAdded.forEach((item) => {
+			newMarks.push(item);
+		});
+		this.bookmarksToBeAdded = [];
+		this.bookmarksToBeRemoved = [];
+		this.bookmark = [];
+		fs.writeFileSync(bookmarkPath, JSON.stringify(newMarks), 'utf-8');
+	}
+
+	getBookmarks() {
+		this.switchMode(Mode.Bookmark);
+		if (this.bookmark.length === 0) {
+			this.bookmark = JSON.parse(
+				fs.readFileSync(bookmarkPath, 'utf8')
+			) as Bookmark[];
+		}
+		return this.bookmark;
 	}
 }

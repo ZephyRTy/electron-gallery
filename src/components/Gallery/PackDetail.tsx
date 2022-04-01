@@ -3,103 +3,25 @@
 /* eslint-disable no-undef */
 /* eslint-disable react-hooks/exhaustive-deps */
 import _sortBy from 'lodash/sortBy';
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useRef,
-	useState
-} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
+import { ReactComponent as AddBookmark } from '../../icon/addBookmark.svg';
 import { ReactComponent as Back } from '../../icon/back.svg';
+import { ReactComponent as HomePage } from '../../icon/homepage.svg';
+import { imgCountInOnePage } from '../../types/constant';
+import { Data } from '../../types/global';
 import { FileOperator } from '../../utils/fileOperator';
+import { formatDate } from '../../utils/functions';
+import { DetailContainer } from './ImgDetail';
+import { Menu } from './Menu';
 import { PageNav } from './PageNav';
 import './style/PackDetail.scss';
-import { ImageZoomIn } from './ZoomIn';
+import { Toast } from './Toast';
 const fs = window.require('fs');
 const path = window.require('path');
-const ImgDetail = (props: {
-	src: string;
-	setCurrent: React.Dispatch<React.SetStateAction<number>>;
-	index: number;
-}) => {
-	let clickHandler = useCallback(() => {
-		props.setCurrent(props.index);
-	}, [props.src]);
-	return (
-		<img
-			alt=""
-			src={props.src}
-			className="pack-detail"
-			onClick={clickHandler}
-		></img>
-	);
-};
-const imgCountInOnePage = 20;
-const WIDTH = document.body.clientWidth * 0.7 * 0.65;
-const DetailContainer = (props: {
-	images: HTMLImageElement[];
-	total: number;
-}) => {
-	const [current, setCurrent] = useState(-1);
-	let [searchParams, setParams] = useSearchParams();
-	let page = Number(searchParams.get('page') || '1');
-	const prev = useCallback(() => {
-		if (current <= 0) {
-			if (page > 1) {
-				setParams({ 'page': (page - 1).toString() });
-			}
-			return;
-		}
-		setCurrent((v) => v - 1);
-	}, [props.images, current, page]);
-	const next = useCallback(() => {
-		if (current >= props.images.length - 1) {
-			if (page < props.total) {
-				setParams({ 'page': (page + 1).toString() });
-			}
-			return;
-		}
-		setCurrent((v) => v + 1);
-	}, [props.images, current, page]);
-	useEffect(() => {
-		if (current > 0) {
-			setCurrent(0);
-		} else if (current === 0) {
-			setCurrent(imgCountInOnePage - 1);
-		}
-	}, [page]);
-	useLayoutEffect(() => {
-		if (current < 0) {
-			return;
-		}
-		let h = 0;
-		props.images.slice(0, current).forEach((v, i) => {
-			h += (v.naturalHeight / v.naturalWidth) * WIDTH;
-		});
-		(document.scrollingElement as any).scrollTop = h;
-	}, [current]);
-	return (
-		<div className="pack-detail-list">
-			{props.images.map((v, i) => {
-				return (
-					<ImgDetail
-						src={v.src}
-						key={i + v.src.slice(0, 5) + i}
-						setCurrent={setCurrent}
-						index={i}
-					/>
-				);
-			})}
-			<ImageZoomIn
-				src={current >= 0 ? props.images[current]?.src : ''}
-				setCurrent={setCurrent}
-				prev={prev}
-				next={next}
-			/>
-		</div>
-	);
+const parseToInt = (str: string) => {
+	return Number(/[0-9]+/.exec(str)?.[0]) ?? NaN;
 };
 export const PackDetail = () => {
 	const { pack } = useParams();
@@ -112,6 +34,7 @@ export const PackDetail = () => {
 	const imgList = useRef([] as string[]);
 	const length = useRef({ value: 0 }).current;
 	const [total, setTotal] = useState(0);
+	const toastHandler = useRef((arg: boolean) => {});
 	useEffect(() => {
 		(document.scrollingElement as any).scrollTop = 0;
 	}, [images]);
@@ -120,7 +43,10 @@ export const PackDetail = () => {
 			imgList.current = [];
 			return;
 		}
-		let filePath = fileOperator.current(pack);
+		let filePath = fileOperator.current(pack)?.path;
+		if (!filePath) {
+			return;
+		}
 		imgList.current = _sortBy(fs.readdirSync(filePath), (e) => parseInt(e));
 		if (!total) {
 			setTotal(imgList.current.length);
@@ -130,12 +56,6 @@ export const PackDetail = () => {
 		};
 	}, []);
 	useEffect(() => {
-		window.history.replaceState(
-			'',
-			window.location.href,
-			fileOperator.loadPrevPage()
-		);
-
 		let currentList = imgList.current.slice(
 			imgCountInOnePage * (page - 1),
 			imgCountInOnePage * page
@@ -153,11 +73,11 @@ export const PackDetail = () => {
 				--length.value;
 				return;
 			}
-			let filePath = fileOperator.current(pack as any);
+			let filePath = fileOperator.current(pack as any)?.path;
 			let img = new Image();
 			img.src = path.join(filePath, v);
 			img.onload = () => {
-				cache.push({ img, index: parseInt(v) });
+				cache.push({ img, index: parseToInt(v) });
 				if (cache.length === length.value) {
 					setImages(
 						cache
@@ -190,14 +110,66 @@ export const PackDetail = () => {
 	}, [page]);
 	return (
 		<div className="pack-detail-container">
-			<button
-				className="back"
-				onClick={() => {
-					window.history.back();
-				}}
-			>
-				<Back />
-			</button>
+			<Menu>
+				<button
+					className="back detail-icon"
+					onClick={() => {
+						window.history.back();
+					}}
+				>
+					<Back />
+				</button>
+				<button
+					className="add-bookmark detail-icon"
+					onClick={(e) => {
+						let top = Math.round(
+							document.getElementsByClassName(
+								'pack-detail-list'
+							)[0].scrollTop
+						);
+						let elements = Array.from(
+							document.getElementsByClassName('pack-detail')
+						) as HTMLImageElement[];
+						let imgIndex = 0;
+						for (let i = 0; i < elements.length; i++) {
+							if (elements[i].offsetTop > top) {
+								imgIndex = i - 1;
+								break;
+							}
+						}
+						if (imgIndex < 0) {
+							imgIndex = 0;
+						}
+						let imgSrc =
+							'\\' + elements[imgIndex].src.split('/').pop();
+						let data = fileOperator.current(pack as any) as Data;
+						fileOperator.bookmarkWillBeUpdated({
+							...data,
+							cover: imgSrc,
+							url: window.location.href + '&scroll=' + top,
+							timeStamp: formatDate(new Date())
+						});
+						toastHandler.current(true);
+
+						(e.target as HTMLButtonElement).disabled = true;
+						setTimeout(() => {
+							(e.target as HTMLButtonElement).disabled = false;
+							toastHandler.current(false);
+						}, 1000);
+					}}
+				>
+					<AddBookmark />
+				</button>
+				<button
+					className="btn-homepage icon"
+					onClick={() => {
+						window.location.href = fileOperator.loadPrevPage();
+					}}
+				>
+					<HomePage />
+				</button>
+			</Menu>
+			<Toast message="成功添加书签！" handler={toastHandler} />
 			<DetailContainer
 				images={images}
 				total={Math.ceil(total / imgCountInOnePage)}

@@ -1,29 +1,20 @@
-import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as SearchIcon } from '../../icon/search.svg';
-export const Search = () => {
-	const [hidden, setHidden] = useState(true);
-	const [, setSearch] = useSearchParams();
+import styles from './style/header.module.scss';
+
+export const WindowSearch = () => {
 	return (
-		<div className={'search' + (hidden ? ' hidden' : '')}>
-			<button
-				onClick={() => {
-					setHidden(!hidden);
-				}}
-				className={'search-btn'}
-			>
+		<div className={styles['search']}>
+			<span>
 				<SearchIcon />
-			</button>
+			</span>
 			<input
-				className={'search-input' + (hidden ? ' hidden' : '')}
+				className={styles['search-input']}
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {
-						setSearch({
-							search: (e.target as HTMLInputElement).value,
-							page: '1'
-						});
+						window.location.href =
+							'#/gallery?search=' +
+							(e.target as HTMLInputElement).value;
 						(e.target as HTMLInputElement).value = '';
-						setHidden(true);
 					}
 				}}
 			/>

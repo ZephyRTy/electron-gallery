@@ -1,8 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as Star } from '../../icon/star.svg';
-import { Data, FileOperator } from '../../utils/fileOperator';
+import { Bookmark, Data } from '../../types/global';
+import { FileOperator } from '../../utils/fileOperator';
+import { bookmarkOrData } from '../../utils/functions';
 import { snapshot } from '../../utils/snapshot';
+import { BookmarkItem } from './Bookmarks';
 import styles from './style/img.module.scss';
 const minIndex = (arr: number[]) => {
 	let min = 0;
@@ -28,9 +31,13 @@ export const Img = (props: { src: string; data: Data; util: FileOperator }) => {
 
 	return (
 		<div className={styles.img}>
-			<img alt="" src={props.src}></img>
+			<div className={styles['img-wrapper']}>
+				<a href={'#/gallery/pack/' + props.data.title + '?page=1'}>
+					<img alt="" src={props.src}></img>
+				</a>
+			</div>
 			<a
-				href={'#/gallery/pack/' + props.data.title}
+				href={'#/gallery/pack/' + props.data.title + '?page=1'}
 				className={styles['pack-title']}
 			>
 				<span title={props.data.title}>{props.data.title}</span>
@@ -47,18 +54,16 @@ export const Img = (props: { src: string; data: Data; util: FileOperator }) => {
 	);
 };
 let index = 0;
-export const ImgContainer = (props: { packs: Data[]; util: FileOperator }) => {
+export const ImgContainer = (props: {
+	packs: Data[] | Bookmark[];
+	util: FileOperator;
+}) => {
 	const [images, setImages] = useState([[], [], [], []] as {
 		img: HTMLImageElement;
-		data: Data;
+		data: Data | Bookmark;
 	}[][]);
 	const length = useRef({ value: 0, loaded: 0 }).current;
 	const snapshotRef = useRef(snapshot).current;
-	// useEffect(() => {
-	// 	return () => {
-	// 		snapshotRef.save(images);
-	// 	};
-	// }, []);
 	useEffect(() => {
 		if (snapshotRef.ready) {
 			setImages(snapshotRef.load());
@@ -96,7 +101,7 @@ export const ImgContainer = (props: { packs: Data[]; util: FileOperator }) => {
 						setImages([...cache]);
 						cache = [];
 					}
-					props.util.collectMissing(v.title, v.index);
+					//props.util.collectMissing(v.title, v.index);
 					let err = new Error(
 						`${v.title} with index ${v.index} get wrong`
 					);
@@ -117,11 +122,21 @@ export const ImgContainer = (props: { packs: Data[]; util: FileOperator }) => {
 		(document.scrollingElement as any).scrollTop = 0;
 	}, [images]);
 	return (
-		<div className={styles['img-main-content']}>
+		<main className={styles['img-main-content']}>
 			{images?.map((v) => {
 				return (
 					<div key={index++} className={styles['img-pack']}>
 						{v.map((ele) => {
+							if (bookmarkOrData(ele.data)) {
+								return (
+									<BookmarkItem
+										key={index++}
+										data={ele.data}
+										src={ele.img.src}
+										util={props.util}
+									></BookmarkItem>
+								);
+							}
 							return (
 								<Img
 									key={index++}
@@ -134,6 +149,6 @@ export const ImgContainer = (props: { packs: Data[]; util: FileOperator }) => {
 					</div>
 				);
 			})}
-		</div>
+		</main>
 	);
 };

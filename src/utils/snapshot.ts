@@ -1,4 +1,4 @@
-import { Data } from './fileOperator';
+import { Data } from '../types/global';
 
 export const snapshot = {
 	value: [] as {

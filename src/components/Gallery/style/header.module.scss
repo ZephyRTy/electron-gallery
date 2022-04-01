@@ -1,0 +1,78 @@
+$size: 16px;
+$header-height: 34px;
+$fullscreen-height: 96vh;
+.header {
+	-webkit-app-region: drag;
+	display: flex;
+	height: $header-height;
+	position: fixed;
+	width: 100%;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+	background-color: #276893;
+	span {
+		display: inline-block;
+		margin: 10px;
+	}
+	&-btn {
+		-webkit-app-region: no-drag;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: auto;
+		height: auto;
+		position: absolute;
+		right: 1%;
+		button {
+			width: $size;
+			height: $size;
+			margin-right: 5px;
+			border: none;
+			border-radius: $size / 2;
+			outline: none;
+			cursor: pointer;
+		}
+		#close {
+			background: rgb(255, 82, 14);
+		}
+		#maximize {
+			background: rgba(24, 207, 24, 0.89);
+		}
+		#minimize {
+			background: rgb(255, 252, 73);
+		}
+	}
+}
+.search {
+	-webkit-app-region: no-drag;
+	position: absolute;
+	left: 2%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: white;
+	border-radius: 2px;
+	height: 70%;
+	span {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 10%;
+		margin: 0;
+		margin-left: 3px;
+		height: 60%;
+	}
+	&-input {
+		left: 30px;
+		width: 90%;
+		height: 80%;
+		border-radius: 2px;
+		border: 1px solid transparent;
+		outline: none;
+		background-color: transparent;
+		&.hidden {
+			visibility: hidden;
+		}
+	}
+}

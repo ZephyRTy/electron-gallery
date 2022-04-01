@@ -1,9 +1,5 @@
-@import '~antd/dist/antd.css';
 .App {
 	text-align: center;
-}
-body {
-	overflow: auto;
 }
 * {
 	user-select: none;
@@ -14,6 +10,13 @@ body {
 	display: flex;
 	justify-content: center;
 }
+
+body {
+	width: 100%;
+	height: fit-content;
+	overflow-y: hidden;
+}
+
 .App-logo {
 	height: 40vmin;
 	pointer-events: none;
@@ -48,3 +51,4 @@ body {
 		transform: rotate(360deg);
 	}
 }
+

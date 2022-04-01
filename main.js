@@ -1,6 +1,6 @@
 // 引入electron并创建一个BrowserWindow
 
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
 // 保持window对象的全局引用,避免JavaScript对象被垃圾回收时,窗口被自动关闭.
@@ -11,6 +11,7 @@ function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: 1000,
 		height: 900,
+		frame: false,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
@@ -30,8 +31,6 @@ function createWindow() {
 			})
 		);
 	}
-	// 打开开发者工具，默认不打开
-
 	// 关闭window时触发下列事件.
 	mainWindow.on('closed', function () {
 		mainWindow = null;
@@ -59,3 +58,12 @@ if (!app.isPackaged) {
 			.catch((err) => console.log('An error occurred: ', err));
 	});
 }
+ipcMain.on('min', () => mainWindow.minimize());
+ipcMain.on('max', () => {
+	if (mainWindow.isMaximized()) {
+		mainWindow.restore();
+	} else {
+		mainWindow.maximize();
+	}
+});
+ipcMain.on('close', () => mainWindow.close());
