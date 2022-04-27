@@ -9,3 +9,13 @@ export const Menu = (props: { children: ReactChild[] }) => {
 		</ul>
 	);
 };
+
+export const TopMenu = (props: { children: ReactChild[] }) => {
+	return (
+		<ul className="top-menu">
+			{props.children.map((child, index) => {
+				return <li key={index}>{child}</li>;
+			})}
+		</ul>
+	);
+};

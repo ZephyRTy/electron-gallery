@@ -1,20 +1,12 @@
 import React from 'react';
-import { ReactComponent as LastPage } from '../../icon/lastPage.svg';
-import { ReactComponent as NextPage } from '../../icon/nextPage.svg';
+import { ReactComponent as LastPage } from '../../../icon/lastPage.svg';
+import { ReactComponent as NextPage } from '../../../icon/nextPage.svg';
 export const ImageZoomIn = (props: {
 	src: string;
 	setCurrent: React.Dispatch<React.SetStateAction<number>>;
 	prev: () => void;
 	next: () => void;
 }) => {
-	// useEffect(() => {
-	// 	if (props.src?.length > 0) {
-	// 		document.body.style.overflow = 'hidden';
-	// 	}
-	// 	return () => {
-	// 		document.body.style.overflow = 'auto';
-	// 	};
-	// }, [props.src]);
 	return (
 		<div
 			id={'zoom-in'}

@@ -1,4 +1,4 @@
-import { Bookmark, Data } from '../types/global';
+import { BasicData, Bookmark } from '../types/global';
 
 export function formatDate(
 	time: string | number | Date,
@@ -36,6 +36,6 @@ export const notMoreThanOne = (...arr: any[]) => {
 	return count <= 1;
 };
 
-export const bookmarkOrData = (data: Bookmark | Data): data is Bookmark => {
+export const isBookmark = (data: Bookmark | BasicData): data is Bookmark => {
 	return Boolean((data as Bookmark).timeStamp);
 };

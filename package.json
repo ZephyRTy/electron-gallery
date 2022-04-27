@@ -36,6 +36,7 @@
 		"fs-extra": "^10.0.0",
 		"html-webpack-plugin": "^5.5.0",
 		"identity-obj-proxy": "^3.0.0",
+		"immutable": "^4.0.0",
 		"jest": "^27.4.3",
 		"jest-resolve": "^27.4.2",
 		"jest-watch-typeahead": "^1.0.0",
@@ -75,7 +76,7 @@
 		"electron-start": "electron .",
 		"build": "node scripts/build.js",
 		"test": "node scripts/test.js",
-		"package": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite"
+		"package": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite --ignore=node_modules"
 	},
 	"eslintConfig": {
 		"extends": [

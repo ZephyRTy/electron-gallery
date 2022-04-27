@@ -2,22 +2,21 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 /* eslint-disable react-hooks/exhaustive-deps */
-import _sortBy from 'lodash/sortBy';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
-import { ReactComponent as AddBookmark } from '../../icon/addBookmark.svg';
-import { ReactComponent as Back } from '../../icon/back.svg';
-import { ReactComponent as HomePage } from '../../icon/homepage.svg';
-import { imgCountInOnePage } from '../../types/constant';
-import { Data } from '../../types/global';
-import { FileOperator } from '../../utils/fileOperator';
-import { formatDate } from '../../utils/functions';
-import { DetailContainer } from './ImgDetail';
-import { Menu } from './Menu';
-import { PageNav } from './PageNav';
-import './style/PackDetail.scss';
-import { Toast } from './Toast';
+import { ReactComponent as AddBookmark } from '../../../icon/addBookmark.svg';
+import { ReactComponent as Back } from '../../../icon/back.svg';
+import { ReactComponent as HomePage } from '../../../icon/homepage.svg';
+import { imgCountInOnePage } from '../../../types/constant';
+import { BasicData } from '../../../types/global';
+import { FileOperator } from '../../../utils/fileOperator';
+import { formatDate } from '../../../utils/functions';
+import { Menu } from '../Menu';
+import { PageNav } from '../PageNav';
+import '../style/PackDetail.scss';
+import { Toast } from '../Toast';
+import { DetailContainer } from './DetailContainer';
 const fs = window.require('fs');
 const path = window.require('path');
 const parseToInt = (str: string) => {
@@ -31,7 +30,7 @@ export const PackDetail = () => {
 		? parseInt(searchParams.get('page') as string, 10)
 		: 1;
 	const [images, setImages] = useState([] as HTMLImageElement[]);
-	const imgList = useRef([] as string[]);
+	const imgList = useRef([] as { src: string; index: number }[]);
 	const length = useRef({ value: 0 }).current;
 	const [total, setTotal] = useState(0);
 	const toastHandler = useRef((arg: boolean) => {});
@@ -47,7 +46,15 @@ export const PackDetail = () => {
 		if (!filePath) {
 			return;
 		}
-		imgList.current = _sortBy(fs.readdirSync(filePath), (e) => parseInt(e));
+		imgList.current = fs
+			.readdirSync(filePath)
+			.map((v: any, i: any) => {
+				return { src: path.join(filePath, v), index: parseToInt(v) };
+			})
+			.sort(
+				(a: { index: number }, b: { index: number }) =>
+					a.index - b.index
+			);
 		if (!total) {
 			setTotal(imgList.current.length);
 		}
@@ -65,19 +72,18 @@ export const PackDetail = () => {
 		currentList.forEach((v, i) => {
 			if (
 				!(
-					v.toLocaleLowerCase().endsWith('.jpg') ||
-					v.toLocaleLowerCase().endsWith('.png') ||
-					v.toLocaleLowerCase().endsWith('.gif')
+					v.src.toLocaleLowerCase().endsWith('.jpg') ||
+					v.src.toLocaleLowerCase().endsWith('.png') ||
+					v.src.toLocaleLowerCase().endsWith('.gif')
 				)
 			) {
 				--length.value;
 				return;
 			}
-			let filePath = fileOperator.current(pack as any)?.path;
 			let img = new Image();
-			img.src = path.join(filePath, v);
+			img.src = v.src;
 			img.onload = () => {
-				cache.push({ img, index: parseToInt(v) });
+				cache.push({ img, index: v.index });
 				if (cache.length === length.value) {
 					setImages(
 						cache
@@ -92,15 +98,6 @@ export const PackDetail = () => {
 			img.onerror = () => {
 				img.onerror = null;
 				console.log(img.src);
-				fs.rename(
-					filePath + '\\' + v,
-					filePath + '\\' + v.replace(/#| /g, '-'),
-					(err: any) => {
-						if (err) {
-							console.error(err);
-						}
-					}
-				);
 				--length.value;
 			};
 		});
@@ -131,9 +128,19 @@ export const PackDetail = () => {
 							document.getElementsByClassName('pack-detail')
 						) as HTMLImageElement[];
 						let imgIndex = 0;
-						for (let i = 0; i < elements.length; i++) {
-							if (elements[i].offsetTop > top) {
-								imgIndex = i - 1;
+						for (let i = 0; i < elements.length - 1; i++) {
+							if (
+								elements[i].offsetTop > top &&
+								top < elements[i + 1].offsetTop
+							) {
+								if (
+									elements[i].offsetTop - top <
+									elements[i + 1].offsetTop - top
+								) {
+									imgIndex = i;
+								} else {
+									imgIndex = i + 1;
+								}
 								break;
 							}
 						}
@@ -142,11 +149,25 @@ export const PackDetail = () => {
 						}
 						let imgSrc =
 							'\\' + elements[imgIndex].src.split('/').pop();
-						let data = fileOperator.current(pack as any) as Data;
-						fileOperator.bookmarkWillBeUpdated({
+						let data = fileOperator.current(
+							pack as any
+						) as BasicData;
+						let url = '';
+						if (window.location.href.includes('&scroll')) {
+							url = `#${window.location.href
+								.split('#')
+								.pop()
+								?.replace(/scroll=[0-9]+/, '&scroll=' + top)}`;
+						} else {
+							url =
+								`#${window.location.href.split('#')[1]}` +
+								'&scroll=' +
+								top;
+						}
+						fileOperator.bookmarksUpdate({
 							...data,
 							cover: imgSrc,
-							url: window.location.href + '&scroll=' + top,
+							url,
 							timeStamp: formatDate(new Date())
 						});
 						toastHandler.current(true);

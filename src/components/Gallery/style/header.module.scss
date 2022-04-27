@@ -24,12 +24,12 @@ $fullscreen-height: 96vh;
 		height: auto;
 		position: absolute;
 		right: 1%;
-		button {
+		button:not(#console) {
 			width: $size;
 			height: $size;
 			margin-right: 5px;
 			border: none;
-			border-radius: $size / 2;
+			border-radius: calc($size / 2);
 			outline: none;
 			cursor: pointer;
 		}
@@ -41,6 +41,22 @@ $fullscreen-height: 96vh;
 		}
 		#minimize {
 			background: rgb(255, 252, 73);
+		}
+		#console {
+			fill: white;
+			border: none;
+			background-color: transparent;
+			margin: {
+				top: 4px;
+				right: 2px;
+			}
+			&:focus-visible {
+				outline: none;
+			}
+			svg {
+				width: 20px;
+				height: 20px;
+			}
 		}
 	}
 }
@@ -74,5 +90,48 @@ $fullscreen-height: 96vh;
 		&.hidden {
 			visibility: hidden;
 		}
+	}
+}
+
+.console {
+	-webkit-app-region: no-drag;
+	position: absolute;
+	left: 2%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: transparent;
+	border-radius: 2px;
+	height: 70%;
+}
+
+.app-title {
+	font-family: Pristina;
+	font-style: italic;
+	font-size: 20px;
+	color: white;
+	animation: text-neon 2s linear infinite;
+}
+
+@keyframes text-neon {
+	0% {
+		text-shadow: 1px 1px 3px #cc0687, -1px -1px 3px #58e5fc,
+			3px 3px 0px #58fccf;
+	}
+	25% {
+		text-shadow: 2px 2px 3px #9909e2, -1px -1px 3px #58fcd0,
+			3px 3px 1px #6efc58;
+	}
+	50% {
+		text-shadow: 3px 3px 3px #f449f1, -1px -1px 3px #16f9bd,
+			3px 3px 2px #65dc20;
+	}
+	75% {
+		text-shadow: 2px 2px 3px #d95ac0, -1px -1px 3px #16f9bd,
+			3px 3px 1px #badc20;
+	}
+	100% {
+		text-shadow: 1px 1px 3px #cc0687, -1px -1px 3px #58e5fc,
+			3px 3px 0px #58fccf;
 	}
 }

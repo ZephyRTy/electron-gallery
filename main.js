@@ -66,4 +66,9 @@ ipcMain.on('max', () => {
 		mainWindow.maximize();
 	}
 });
-ipcMain.on('close', () => mainWindow.close());
+ipcMain.on('close', () => {
+	mainWindow.close();
+});
+ipcMain.on('console', () =>
+	mainWindow.webContents.openDevTools({ mode: 'detach' })
+);

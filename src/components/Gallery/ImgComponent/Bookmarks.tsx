@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ReactComponent as BookmarkIcon } from '../../icon/mark.svg';
-import { Bookmark } from '../../types/global';
-import { FileOperator } from '../../utils/fileOperator';
-import styles from './style/img.module.scss';
-export const BookmarkItem = (props: {
+import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
+import { Bookmark, ImageComponent } from '../../../types/global';
+import { FileOperator } from '../../../utils/fileOperator';
+import styles from '../style/img.module.scss';
+export const BookmarkItem: ImageComponent<Bookmark> = (props: {
 	src: string;
 	data: Bookmark;
 	util: FileOperator;
@@ -12,7 +12,7 @@ export const BookmarkItem = (props: {
 	const [changed, setChanged] = useState(false);
 	useEffect(() => {
 		if (changed) {
-			props.util.bookmarkWillBeUpdated(props.data, marked);
+			props.util.bookmarksUpdate(props.data, marked);
 		}
 	}, [changed, marked, props.data, props.util]);
 	const clickHandler = useCallback(() => {
@@ -27,7 +27,18 @@ export const BookmarkItem = (props: {
 				</a>
 			</div>
 			<a href={props.data.url} className={styles['pack-title']}>
-				<span title={props.data.title}>{props.data.title}</span>
+				<span
+					title={props.data.title}
+					className={styles['pack-title-name']}
+				>
+					{props.data.title}
+				</span>
+				<span
+					title={props.data.title}
+					className={styles['pack-title-timestamp']}
+				>
+					{props.data.timeStamp}
+				</span>
 			</a>
 			<span
 				onClick={clickHandler}

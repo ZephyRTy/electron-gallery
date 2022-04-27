@@ -7,7 +7,7 @@ import React, {
 	useState
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { imgCountInOnePage } from '../../types/constant';
+import { imgCountInOnePage } from '../../../types/constant';
 import { ImageZoomIn } from './ZoomIn';
 
 const ImgDetail = (props: {
