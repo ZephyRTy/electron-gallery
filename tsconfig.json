@@ -16,15 +16,8 @@
 		"isolatedModules": false,
 		"jsx": "react-jsx",
 		"plugins": [{ "name": "typescript-plugin-css-modules" }],
-		"typeRoots": ["node_modules/@types", "src/types"]
+		"typeRoots": ["node_modules/@types", "src/types"],
+		"experimentalDecorators": true
 	},
-	"include": [
-		"src/*.ts",
-		"src/components/**/**/*",
-		"src/components/**/*",
-		"ipcMain.ts",
-		"src/ipc/ipcRender.js",
-		"src/ipc/ipcMain.js",
-		"src/types/global.d.ts"
-	]
+	"include": ["src/**/*", "ipcMain.ts"]
 }

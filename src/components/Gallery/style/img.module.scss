@@ -1,12 +1,14 @@
+$radius: 15px;
 .img {
-	width: 170px;
+	width: 180px;
 	height: auto;
-	font-size: smaller;
-	border: 1px solid black;
+	font-size: 12px;
+	background-color: #e0e0e000;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
+	position: relative;
 	margin: {
 		bottom: 10px;
 	}
@@ -17,28 +19,125 @@
 		margin: 10px;
 	}
 	&-main-content {
-		width: 800px;
+		transform: translateZ(0);
+		width: 100%;
 		height: fit-content;
 		display: flex;
 		justify-content: center;
+		overflow-y: scroll;
+		&::-webkit-scrollbar {
+			width: 0px;
+		}
+	}
+	&-wrapper {
+		width: 90%;
+		height: fit-content;
+		display: flex;
+		justify-content: center;
+		box-shadow: 2px 3px 6px 1px #64646470, -2px -2px 6px 1px #64646470;
+		transition: all 0.5s ease-out;
+		border-radius: $radius;
+		&:not(.in-select):hover {
+			transform: scale(1.08, 1.08);
+			animation: border-light 2s infinite linear alternate;
+		}
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+			border-radius: $radius;
+		}
 	}
 }
-
+.directory {
+	width: 100%;
+	height: 200px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	img {
+		width: 50%;
+		border-radius: 0;
+	}
+}
 .pack-title {
 	display: block;
 	width: 90%;
 	margin: 5px 0;
 }
-img {
-	display: block;
-	width: 90%;
-	height: auto;
-}
-a.pack-title {
+
+.pack-title {
 	text-decoration: none;
-	color: black;
-	&:hover {
-		color: inherit;
-		font-weight: bolder;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 160px;
+	height: auto;
+	transition: none;
+	span {
+		margin-top: 5px;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
+	}
+	&-timestamp {
+		color: #4d8bffac;
+	}
+	&-name {
+		color: black;
+		&:hover {
+			color: rgb(110, 182, 230);
+		}
+	}
+}
+
+.icon-span,
+.bookmark-span {
+	display: flex;
+	justify-content: center;
+	position: relative;
+	align-items: center;
+	svg {
+		fill: rgb(109, 109, 109);
+		height: 18px;
+		width: 18px;
+		margin: 0 5px;
+	}
+}
+.marked {
+	svg {
+		fill: rgb(26, 99, 138);
+	}
+}
+svg.stared {
+	fill: #f9cc4b;
+}
+svg.cross {
+	fill: #ff4d4d;
+}
+.check-box {
+	position: absolute;
+	right: 8%;
+	top: 8%;
+	width: 20px;
+	height: 20px;
+}
+.blank {
+	width: 800px;
+	height: 800px;
+	position: absolute;
+	background-color: #e0e0e000;
+}
+@keyframes border-light {
+	0% {
+		box-shadow: 2px 3px 8px 2px #4d8bffac, -2px -2px 8px 2px #fc5cbcac;
+	}
+	50% {
+		box-shadow: 2px 3px 8px 2px #4dffe7ac, -2px -2px 8px 2px #5c5cfcac;
+	}
+	100% {
+		box-shadow: 2px 3px 8px 2px #4dff7cac, -2px -2px 8px 2px #5cb9fcac;
 	}
 }

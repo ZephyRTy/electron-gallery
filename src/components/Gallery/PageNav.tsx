@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as LeftArrow } from '../../icon/leftArrow.svg';
@@ -15,10 +17,34 @@ export const range = (start: number, end: number) => {
 	}
 	return arr;
 };
-const PageSpan = (props: {
-	search: string | null;
+const parseQueryString = (
+	queryString: {
+		search?: string | null;
+		stared?: string | null;
+		pack?: string;
+	},
+	page: number
+) => {
+	let href = `#/${
+		queryString.search
+			? `gallery?search=${queryString.search}&page=${page}`
+			: queryString.stared
+			? 'gallery?stared=true&page=' + page
+			: 'gallery?page=' + page
+	}`;
+	if (queryString.pack) {
+		href = `#/gallery/pack/${queryString.pack}?page=${page}`;
+	}
+	return href;
+};
+export const PageSpan = (props: {
+	params: {
+		search?: string | null;
+		stared?: string | null;
+		pack?: string;
+	};
 	page: number;
-	current: number;
+	currentPage: number;
 	special?: string;
 	icon?: React.ReactElement;
 	disable?: boolean;
@@ -33,13 +59,9 @@ const PageSpan = (props: {
 						e.preventDefault();
 					}
 				}}
-				href={`#/${
-					props.search
-						? `?search=${props.search}&page=${props.page}`
-						: 'gallery/' + props.page
-				}`}
+				href={parseQueryString(props.params, props.page)}
 				className={
-					(props.current === props.page ? 'active' : '') +
+					(props.currentPage === props.page ? 'active' : '') +
 					' page-link' +
 					(props.disable ? ' disable' : '')
 				}
@@ -49,7 +71,11 @@ const PageSpan = (props: {
 		</li>
 	);
 };
-export const PageNav = (props: { total: number; current: number }) => {
+export const PageNav = (props: {
+	total: number;
+	current: number;
+	pack?: string;
+}) => {
 	let pages = useMemo(
 		() =>
 			props.current <= 3
@@ -61,55 +87,56 @@ export const PageNav = (props: { total: number; current: number }) => {
 	);
 	const [searchParam, setSearch] = useSearchParams();
 	let search = searchParam.get('search');
+	let stared = searchParam.get('stared');
 	return (
 		<nav>
 			<ul className="page-nav">
 				<PageSpan
 					icon={<LeftDoubleArrow />}
-					search={search}
+					params={{ search, stared, pack: props.pack }}
 					page={1}
-					current={props.current}
+					currentPage={props.current}
 					special="first"
 				/>
 
 				<PageSpan
 					icon={<LeftArrow />}
-					search={search}
+					params={{ search, stared, pack: props.pack }}
 					page={props.current - 1}
-					current={props.current}
+					currentPage={props.current}
 					special="prev"
 					disable={props.current === 1}
 				/>
 				{pages.map((v, i) => {
 					return (
 						<PageSpan
-							current={props.current}
+							currentPage={props.current}
 							page={v}
 							key={i}
-							search={search}
+							params={{ search, stared, pack: props.pack }}
 						/>
 					);
 				})}
 				<span>...</span>
 				<PageSpan
-					search={search}
+					params={{ search, stared, pack: props.pack }}
 					page={props.total}
-					current={props.current}
+					currentPage={props.current}
 					special="total"
 				/>
 				<PageSpan
 					icon={<RightArrow />}
-					search={search}
+					params={{ search, stared, pack: props.pack }}
 					page={props.current + 1}
-					current={props.current}
+					currentPage={props.current}
 					special="next"
 					disable={props.current === props.total}
 				/>
 				<PageSpan
 					icon={<RightDoubleArrow />}
-					search={search}
+					params={{ search, stared, pack: props.pack }}
 					page={props.total}
-					current={props.current}
+					currentPage={props.current}
 					special="last"
 				/>
 				<li className="page-span jump">
@@ -135,8 +162,21 @@ export const PageNav = (props: { total: number; current: number }) => {
 										page: value
 									});
 									return;
+								} else if (stared) {
+									(e.target as HTMLInputElement).value = '';
+									(
+										document.activeElement as HTMLElement
+									).blur();
+									setSearch({
+										stared: 'true',
+										page: value
+									});
+									return;
 								}
-								window.location.href = `#/gallery/${value}`;
+								window.location.href = parseQueryString(
+									{ search, stared, pack: props.pack },
+									parseInt(value)
+								);
 								(e.target as HTMLInputElement).value = '';
 								(document.activeElement as HTMLElement).blur();
 							}

@@ -1,12 +1,12 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
-import { Gallery } from './components/Gallery/Gallery';
-import { PackDetail } from './components/Gallery/PackDetail';
+import { PackDetail } from './components/Gallery/detail/PackDetail';
+import { Gallery } from './components/Gallery/index/Gallery';
 export const MainRouter = () => {
 	return (
 		<HashRouter>
 			<Routes>
 				<Route element={<Gallery />} path="/">
-					<Route element={<Gallery />} path="gallery/:page"></Route>
+					<Route element={<Gallery />} path="gallery" />
 				</Route>
 				<Route
 					element={<PackDetail />}

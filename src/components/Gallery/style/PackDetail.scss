@@ -1,25 +1,92 @@
-.back {
-	position: fixed;
-	left: 10px;
+@import './header.module.scss';
+.detail-icon {
+	//position: fixed;
+	left: 3px;
+	//top: $header-height;
 	background-color: transparent;
 	font-size: 20px;
 	border: none;
+	z-index: 1000;
 	&:hover {
 		color: rgba(34, 143, 245, 0.938);
 		cursor: pointer;
 	}
+	svg {
+		width: 26px;
+		height: 26px;
+	}
 }
 
+.add-bookmark {
+	position: relative;
+}
 .pack {
 	&-detail {
-		width: 100%;
+		width: 55vh;
+		max-width: 600px;
 		margin: 10px;
-		&-container {
-			width: 40%;
+		cursor: zoom-in;
+		&-list {
+			transform: translateZ(0);
+			width: 100%;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			flex-direction: column;
+			overflow-y: scroll;
 		}
+		&-container {
+			width: 100%;
+			height: $fullscreen-height;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-direction: column;
+			margin-top: $header-height;
+		}
+	}
+}
+
+#zoom-in {
+	position: fixed;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: $fullscreen-height;
+	z-index: 100;
+	background-color: rgba(128, 128, 128, 0.5);
+	width: calc(100% - 40px);
+	right: 0;
+	img {
+		width: auto;
+		height: auto;
+		max-width: 100%;
+		max-height: 100%;
+		cursor: zoom-out;
+	}
+}
+
+.zoom {
+	&-page {
+		position: absolute;
+		z-index: 300;
+		opacity: 0;
+		background-color: rgba(106, 106, 106, 0.324);
+		height: 100px;
+		width: 40px;
+		transition: all 0.2s;
+		border: none;
+		svg {
+			fill: white;
+		}
+		&:hover {
+			opacity: 1;
+		}
+	}
+	&-prev {
+		left: 2%;
+	}
+	&-next {
+		right: 2%;
 	}
 }

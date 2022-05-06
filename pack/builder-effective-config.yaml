@@ -1,0 +1,30 @@
+directories:
+  output: pack
+  buildResources: ./
+productName: ele
+appId: com.ele.eletest
+copyright: cd©20211209
+files:
+  - filter:
+      - build/*
+      - build/**/*
+      - node_modules/**/*
+      - main.js
+nsis:
+  oneClick: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  installerIcon: ./public/gallery.ico
+  uninstallerIcon: ./public/gallery.ico
+  installerHeaderIcon: ./public/gallery.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  perMachine: true
+  shortcutName: elename
+win:
+  icon: ./public/gallery.ico
+  target:
+    - target: nsis
+      arch:
+        - ia32
+electronVersion: 17.1.2

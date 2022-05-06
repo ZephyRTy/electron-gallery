@@ -1,5 +1,6 @@
 // 引入electron并创建一个BrowserWindow
-const { app, BrowserWindow } = require('electron');
+
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
 // 保持window对象的全局引用,避免JavaScript对象被垃圾回收时,窗口被自动关闭.
@@ -9,7 +10,8 @@ function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
 	mainWindow = new BrowserWindow({
 		width: 1000,
-		height: 800,
+		height: 900,
+		frame: false,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
@@ -19,7 +21,7 @@ function createWindow() {
 	});
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
-		mainWindow.loadURL('http://localhost:3000/');
+		mainWindow.loadURL('http://localhost:8097/');
 	} else {
 		mainWindow.loadURL(
 			url.format({
@@ -29,17 +31,13 @@ function createWindow() {
 			})
 		);
 	}
-	require('@electron/remote/main').initialize();
-	require('@electron/remote/main').enable(mainWindow.webContents);
-	// 打开开发者工具，默认不打开
-
 	// 关闭window时触发下列事件.
 	mainWindow.on('closed', function () {
 		mainWindow = null;
 	});
-	require('./src/ipc/ipcMain.js');
 }
 // 当 Electron 完成初始化并准备创建浏览器窗口时调用此方法
+app.disableHardwareAcceleration();
 app.on('ready', createWindow);
 // 所有窗口关闭时退出应用.
 app.on('window-all-closed', function () {
@@ -48,9 +46,29 @@ app.on('window-all-closed', function () {
 		app.quit();
 	}
 });
-app.on('activate', function () {
-	// macOS中点击Dock图标时没有已打开的其余应用窗口时,则通常在应用中重建一个窗口
-	if (mainWindow === null) {
-		createWindow();
+
+if (!app.isPackaged) {
+	const {
+		default: installExtension,
+		REACT_DEVELOPER_TOOLS
+	} = require('electron-devtools-installer');
+	app.whenReady().then(() => {
+		installExtension(REACT_DEVELOPER_TOOLS)
+			.then((name) => console.log(`Added Extension:  ${name}`))
+			.catch((err) => console.log('An error occurred: ', err));
+	});
+}
+ipcMain.on('min', () => mainWindow.minimize());
+ipcMain.on('max', () => {
+	if (mainWindow.isMaximized()) {
+		mainWindow.restore();
+	} else {
+		mainWindow.maximize();
 	}
 });
+ipcMain.on('close', () => {
+	mainWindow.close();
+});
+ipcMain.on('console', () =>
+	mainWindow.webContents.openDevTools({ mode: 'detach' })
+);

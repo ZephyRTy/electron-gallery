@@ -1,12 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './App.css';
+import { Header } from './components/Gallery/Header';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { MainRouter } from './Router';
-
 ReactDOM.render(
 	<React.StrictMode>
+		<Header />
 		<MainRouter />
 	</React.StrictMode>,
 	document.getElementById('root')
