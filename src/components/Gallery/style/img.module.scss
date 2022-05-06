@@ -124,6 +124,12 @@ svg.cross {
 	width: 20px;
 	height: 20px;
 }
+.blank {
+	width: 800px;
+	height: 800px;
+	position: absolute;
+	background-color: #e0e0e000;
+}
 @keyframes border-light {
 	0% {
 		box-shadow: 2px 3px 8px 2px #4d8bffac, -2px -2px 8px 2px #fc5cbcac;

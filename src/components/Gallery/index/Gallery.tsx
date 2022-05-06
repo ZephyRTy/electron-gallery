@@ -29,33 +29,10 @@ export const Gallery = () => {
 	}, []);
 	useEffect(() => {
 		fileOperator.savePrevPage(window.location.href);
-		let res: BasicData[] = [];
-		if (search) {
-			res = fileOperator.searchPacks(search, page);
-			setPacks(res);
-			setTotal(fileOperator.searchTotal);
-		} else if (stared) {
-			res = fileOperator.getStared(page);
-			setPacks(res);
-			setTotal(fileOperator.staredTotal);
-		} else if (bookmark) {
-			res = fileOperator.getBookmarks(page);
-			setPacks(res);
-			setTotal(fileOperator.bookmarksTotal);
-		} else if (directory) {
-			let [res, total] = fileOperator.getDirectory(
-				parseInt(directory),
-				page
-			);
-			setPacks(res);
-			setTotal(total);
-		} else {
-			res = fileOperator.getPacksNormally(page);
-			setPacks(res);
-			setTotal(fileOperator.total);
-		}
+		let [res, total] = fileOperator.getPacks(page, window.location.href);
+		setPacks(res);
+		setTotal(total);
 	}, [page, search, stared, bookmark, directory, refresh]);
-
 	return (
 		<div className="gallery">
 			{search ? (

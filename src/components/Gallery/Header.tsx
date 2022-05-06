@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as Console } from '../../icon/console.svg';
 import { FileOperator } from '../../utils/fileOperator';
 import { WindowSearch } from './Search';
@@ -40,6 +40,8 @@ const WindowButtons = () => {
 	);
 };
 export const Header = () => {
+	const [title, setTitle] = useState('');
+	const fileOperator = useRef(FileOperator.getInstance()).current;
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
 		if (e.ctrlKey) {
 			let page = Number(
@@ -61,6 +63,9 @@ export const Header = () => {
 		}
 	}, []);
 	useEffect(() => {
+		fileOperator.register(setTitle, true);
+	}, [fileOperator]);
+	useEffect(() => {
 		document.addEventListener('keydown', handleKeyDown);
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown);
@@ -69,7 +74,9 @@ export const Header = () => {
 	return (
 		<header className={styles['header']} id="header">
 			<WindowButtons />
-			<span className={styles['app-title']}>{'Interesting gallery'}</span>
+			<span className={styles['app-title']}>
+				{title.length > 0 ? title : 'Interesting gallery'}
+			</span>
 			<WindowSearch />
 		</header>
 	);

@@ -24,12 +24,25 @@ enum Mode {
 	Search,
 	Stared,
 	Bookmark,
-	Directory
+	Directory,
+	Detail
 }
 const positive = (n: number) => {
 	return n >= 0 ? n : 0;
 };
-
+const parseUrlQuery = (url: string) => {
+	const query = decodeURIComponent(url.split('?')[1]);
+	if (query) {
+		const queryObj: any = {};
+		const queryArr = query.split('&');
+		queryArr.forEach((item) => {
+			const [key, value] = item.split('=');
+			queryObj[key] = value;
+		});
+		return queryObj;
+	}
+	return {};
+};
 //DONE 增加、搜索、星标、书签
 //TODO 删除、去重、用数据库系统读取文件、图片文件夹功能
 export class FileOperator {
@@ -40,7 +53,9 @@ export class FileOperator {
 	private refreshFn: React.Dispatch<React.SetStateAction<boolean>> = (
 		v: any
 	) => {};
-
+	private setTitleFn: React.Dispatch<React.SetStateAction<string>> = (
+		v: any
+	) => {};
 	private static instance: FileOperator;
 	static getInstance(): FileOperator {
 		if (!FileOperator.instance) {
@@ -79,8 +94,15 @@ export class FileOperator {
 			fs.readFileSync(bookmarksPath, 'utf8')
 		) as Bookmark[];
 	}
-	register(fn: React.Dispatch<React.SetStateAction<boolean>>) {
-		this.refreshFn = fn;
+	register(
+		fn: React.Dispatch<React.SetStateAction<any>>,
+		flag: boolean = false
+	) {
+		if (!flag) {
+			this.refreshFn = fn;
+		} else {
+			this.setTitleFn = fn;
+		}
 	}
 	writeBack(...args: string[]) {
 		if (this.data.length === 0) {
@@ -130,7 +152,7 @@ export class FileOperator {
 		this.starModel.dirty = false;
 	}
 	//获取图包
-	getPacksNormally(page: number) {
+	private getPacksNormally(page: number) {
 		this.switchMode(Mode.Normal);
 		let files: BasicData[] = this.data;
 		if (files.length === 0) {
@@ -140,7 +162,7 @@ export class FileOperator {
 			this.data = files;
 			this.filesNotInDir = this.data.filter((v) => v.status % 2 === 0);
 		}
-		if (this.staredTotal === 0) {
+		if (this.starModel.data.length === 0) {
 			this.starModel.data = _filter(
 				files,
 				(item) => item.stared
@@ -155,22 +177,27 @@ export class FileOperator {
 		}
 		this.currentPacks = this.filesNotInDir
 			.slice(
-				positive(this.total - page * this.countOfSinglePage),
-				positive(this.total - (page - 1) * this.countOfSinglePage)
+				positive(
+					this.filesNotInDir.length - page * this.countOfSinglePage
+				),
+				positive(
+					this.filesNotInDir.length -
+						(page - 1) * this.countOfSinglePage
+				)
 			)
 			.reverse();
 		return this.currentPacks;
 	}
 
 	//搜索图包
-	searchPacks(key: string, page: number) {
+	private searchPacks(key: string, page: number) {
 		this.switchMode(Mode.Search);
 		if (this.searchParams.key === key) {
 			this.currentPacks = this.searchParams.res.slice(
 				(page - 1) * this.countOfSinglePage,
 				page * this.countOfSinglePage
 			);
-			return this.packs;
+			return this.currentPacks;
 		}
 		this.searchParams.key = key;
 		this.searchParams.res = [];
@@ -184,7 +211,7 @@ export class FileOperator {
 			(page - 1) * this.countOfSinglePage,
 			page * this.countOfSinglePage
 		);
-		return this.packs;
+		return this.currentPacks;
 	}
 	addNewPack(data: { path: string; cover: string; title: string }) {
 		if (!data.path || !data.cover || !data.title) {
@@ -211,17 +238,40 @@ export class FileOperator {
 	}
 
 	//获取星标图包
-	getStared(page: number) {
+	private getStared(page: number) {
 		this.switchMode(Mode.Stared);
 		this.currentPacks = this.starModel.data.slice(
 			(page - 1) * this.countOfSinglePage,
 			page * this.countOfSinglePage
 		);
-		return this.packs;
+		return this.currentPacks;
 	}
 
+	getPacks(page: number, url: string): [BasicData[], number] {
+		let query: {
+			search?: string;
+			directory?: string;
+			stared?: string;
+			bookmark?: string;
+			page?: string;
+		} = parseUrlQuery(url);
+		if (query.search) {
+			return [
+				this.searchPacks(query.search, page),
+				this.searchParams.total
+			];
+		} else if (query.directory) {
+			return this.getDirectory(parseInt(query.directory), page);
+		} else if (query.stared) {
+			return [this.getStared(page), this.starModel.data.length];
+		} else if (query.bookmark) {
+			return [this.getBookmarks(page), this.bookmarks.length];
+		}
+		return [this.getPacksNormally(page), this.filesNotInDir.length];
+	}
 	//模式切换
 	private switchMode(mode: Mode) {
+		this.setTitle('');
 		this.starModel.writeBack();
 		if (mode === this.mode) {
 			return;
@@ -229,6 +279,9 @@ export class FileOperator {
 		this.mode = mode;
 	}
 
+	setTitle(title: string) {
+		this.setTitleFn(title);
+	}
 	//刷新
 	refresh() {
 		this.refreshFn((v) => !v);
@@ -244,6 +297,7 @@ export class FileOperator {
 	}
 
 	current(pack: string) {
+		this.setTitle(pack);
 		if (this.mode === Mode.Bookmark) {
 			return this.bookmarks.find((v) => v.title === pack);
 		}
@@ -258,7 +312,7 @@ export class FileOperator {
 		this.writeBack();
 	}
 
-	getBookmarks(page: number) {
+	private getBookmarks(page: number) {
 		this.switchMode(Mode.Bookmark);
 		if (this.bookmarkModel.data.length === 0) {
 			this.bookmarkModel.data = JSON.parse(
@@ -334,7 +388,7 @@ export class FileOperator {
 		this.filesNotInDir = this.data.filter((v) => v.status % 2 === 0);
 		this.writeBack('dir');
 	}
-	getDirectory(index: number, page: number): [BasicData[], number] {
+	private getDirectory(index: number, page: number): [BasicData[], number] {
 		const directoryInfo: number[] = this.directories!.get(
 			index.toString()
 		)!.content;
@@ -348,29 +402,7 @@ export class FileOperator {
 		return [this.currentPacks, directoryInfo.length];
 	}
 
-	get searchTotal() {
-		return this.searchParams.total;
-	}
-
-	get staredTotal() {
-		return this.starModel.data.length;
-	}
-
-	get packs() {
-		return this.currentPacks;
-	}
-	get bookmarks() {
+	private get bookmarks() {
 		return this.bookmarkModel.data;
-	}
-
-	get bookmarksTotal() {
-		return this.bookmarks.length;
-	}
-
-	get directoryList() {
-		return this.directories!;
-	}
-	get total() {
-		return this.filesNotInDir.length;
 	}
 }

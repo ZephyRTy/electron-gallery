@@ -70,11 +70,12 @@ export const PackDetail = () => {
 		length.value = currentList.length;
 		let cache = [] as { index: number; img: HTMLImageElement }[];
 		currentList.forEach((v, i) => {
+			let src = v.src.toLocaleLowerCase();
 			if (
 				!(
-					v.src.toLocaleLowerCase().endsWith('.jpg') ||
-					v.src.toLocaleLowerCase().endsWith('.png') ||
-					v.src.toLocaleLowerCase().endsWith('.gif')
+					src.endsWith('.jpg') ||
+					src.endsWith('.png') ||
+					src.endsWith('.gif')
 				)
 			) {
 				--length.value;
@@ -84,7 +85,8 @@ export const PackDetail = () => {
 			img.src = v.src;
 			img.onload = () => {
 				cache.push({ img, index: v.index });
-				if (cache.length === length.value) {
+
+				if (cache.length >= length.value) {
 					setImages(
 						cache
 							.sort((a, b) => {
@@ -97,8 +99,17 @@ export const PackDetail = () => {
 			};
 			img.onerror = () => {
 				img.onerror = null;
-				console.log(img.src);
+				console.log(decodeURIComponent(img.src));
 				--length.value;
+				if (cache.length >= length.value) {
+					setImages(
+						cache
+							.sort((a, b) => {
+								return a.index - b.index;
+							})
+							.map((e) => e.img)
+					);
+				}
 			};
 		});
 		return () => {
@@ -153,6 +164,8 @@ export const PackDetail = () => {
 							pack as any
 						) as BasicData;
 						let url = '';
+
+						// 记录当前图片的位置
 						if (window.location.href.includes('&scroll')) {
 							url = `#${window.location.href
 								.split('#')

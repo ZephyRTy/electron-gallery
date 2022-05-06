@@ -46,3 +46,4 @@ export const ImageDir: ImageComponent<BasicData> = (props: {
 		</div>
 	);
 };
+export default ImageDir;

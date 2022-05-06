@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BasicData, Bookmark, ImageComponent } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
 import { isBookmark } from '../../../utils/functions';
@@ -13,12 +13,11 @@ import {
 	Stared
 } from '../Buttons';
 import { Dialog } from '../Dialog';
-import { BookmarkItem } from '../ImgComponent/Bookmarks';
-import { ImageDir } from '../ImgComponent/Directory';
-import { minIndex, NormalImg } from '../ImgComponent/NormalImg';
+import BookmarkItem from '../ImgComponent/Bookmarks';
+import ImageDir from '../ImgComponent/Directory';
+import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
 import { Menu } from '../Menu';
 import styles from '../style/img.module.scss';
-
 let index = 0;
 export const ImgContainer = (props: {
 	packs: BasicData[] | Bookmark[];
@@ -48,10 +47,6 @@ export const ImgContainer = (props: {
 				<SelectPacks
 					inSelect={inSelect}
 					handleClick={() => {
-						// let newDirIndex = props.util.newDir('新建文件夹');
-						// props.util.submitSelection(newDirIndex);
-						// props.refresh((v: boolean) => !v);
-						// setInSelect(false);
 						handleDialog.current(true);
 					}}
 				/>
@@ -60,53 +55,57 @@ export const ImgContainer = (props: {
 	}, [inSelect, props]);
 	useEffect(() => {
 		return () => {
-			waterfallCache.save(images);
+			waterfallCache.save();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 	useEffect(() => {
-		if (waterfallCache.isDirty()) {
-			setImages(waterfallCache.load());
+		if (props.packs.length === 0) {
 			return;
 		}
-		length.value = props.packs.length;
-		let buffer: { img: HTMLImageElement; data: BasicData }[][] = [
-			[],
-			[],
-			[],
-			[]
-		];
-		let heights = [0, 0, 0, 0];
-		//NOTE 预渲染图像
-		props.packs.forEach((v) => {
-			let img = new Image();
-			let imgPath = v.path + v.cover;
-			img.src = imgPath;
-			img.onload = () => {
-				img.onload = null;
-				let min = minIndex(heights);
-				heights[min] +=
-					Math.ceil(180 * (img.naturalHeight / img.naturalWidth)) +
-					buffer[min].push({ img, data: v });
-				length.loaded++;
-				if (length.loaded === length.value) {
-					setImages([...buffer]);
-				}
-			};
-			img.onerror = () => {
-				--length.value;
-				img.onerror = null;
-				if (length.loaded >= length.value) {
-					setImages([...buffer]);
-				}
-				let err = new Error(
-					`${v.title} with index ${v.index} get wrong`
-				);
-				console.error(err);
-				console.log(imgPath);
-			};
-		});
-
+		length.loaded = 0;
+		if (waterfallCache.isNeeded(props.packs)) {
+			setImages(waterfallCache.load());
+		} else {
+			length.value = props.packs.length;
+			let buffer: { img: HTMLImageElement; data: BasicData }[][] = [
+				[],
+				[],
+				[],
+				[]
+			];
+			let heights = [0, 0, 0, 0];
+			//NOTE 预渲染图像
+			props.packs.forEach((v) => {
+				let img = new Image();
+				let imgPath = v.path + v.cover;
+				img.src = imgPath;
+				img.onload = () => {
+					img.onload = null;
+					let min = minIndex(heights);
+					heights[min] +=
+						Math.ceil(
+							180 * (img.naturalHeight / img.naturalWidth)
+						) + buffer[min].push({ img, data: v });
+					length.loaded++;
+					if (length.loaded >= length.value) {
+						setImages([...buffer]);
+					}
+				};
+				img.onerror = () => {
+					--length.value;
+					img.onerror = null;
+					if (length.loaded >= length.value) {
+						setImages([...buffer]);
+					}
+					let err = new Error(
+						`${v.title} with index ${v.index} get wrong`
+					);
+					console.error(err);
+					console.log(imgPath);
+				};
+			});
+		}
 		return () => {
 			setImages([[], [], [], []]);
 			length.loaded = 0;
@@ -115,7 +114,11 @@ export const ImgContainer = (props: {
 	}, [props.packs]);
 	useEffect(() => {
 		(document.scrollingElement as any).scrollTop = 0;
-	}, [images]);
+		if (images[0].length === 0) {
+			return;
+		}
+		waterfallCache.saveTemp([...images]);
+	}, [images, waterfallCache]);
 	return (
 		<>
 			{menu}
@@ -130,7 +133,6 @@ export const ImgContainer = (props: {
 						<div key={index++} className={styles['img-pack']}>
 							{v.map((ele) => {
 								let Component: ImageComponent<any>;
-
 								if (isBookmark(ele.data)) {
 									Component = BookmarkItem;
 								} else if (ele.data.status >= 2) {

@@ -52,3 +52,4 @@ export const BookmarkItem: ImageComponent<Bookmark> = (props: {
 		</div>
 	);
 };
+export default BookmarkItem;

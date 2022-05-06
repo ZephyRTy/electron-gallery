@@ -102,3 +102,4 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 		</div>
 	);
 };
+export default NormalImg;
