@@ -59,6 +59,11 @@ export const Header = () => {
 						'page=' + (page - 1)
 					);
 				}
+			} else if (e.key === 'a') {
+				document
+					// eslint-disable-next-line quotes
+					.querySelectorAll("input[type='checkbox']")
+					.forEach((e: any) => e.click());
 			}
 		}
 	}, []);
@@ -74,9 +79,7 @@ export const Header = () => {
 	return (
 		<header className={styles['header']} id="header">
 			<WindowButtons />
-			<span className={styles['app-title']}>
-				{title.length > 0 ? title : 'Interesting gallery'}
-			</span>
+			<span className={styles['app-title']}>{title}</span>
 			<WindowSearch />
 		</header>
 	);

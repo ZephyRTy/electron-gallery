@@ -83,6 +83,11 @@ $height: 60%;
 	&-newDir {
 		width: 38px;
 	}
+	&-showDir {
+		position: relative;
+		width: 38px;
+		left: 1px;
+	}
 }
 #file-input {
 	display: none;

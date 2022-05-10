@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { ReactComponent as AddIcon } from '../../icon/add.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as BookmarkIcon } from '../../icon/bookmark.svg';
+import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
@@ -124,6 +125,19 @@ export const SelectPacks = (props: {
 			onClick={props.handleClick}
 		>
 			<SelectPacksIcon />
+		</button>
+	);
+};
+
+export const ShowDir = (props: {}) => {
+	return (
+		<button
+			className="btn-showDir icon"
+			onClick={() => {
+				window.location.href = '#/gallery?show_dir=true&page=1';
+			}}
+		>
+			<ShowDirs />
 		</button>
 	);
 };

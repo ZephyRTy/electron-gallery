@@ -39,3 +39,16 @@ export const notMoreThanOne = (...arr: any[]) => {
 export const isBookmark = (data: Bookmark | BasicData): data is Bookmark => {
 	return Boolean((data as Bookmark).timeStamp);
 };
+export const parseUrlQuery = (url: string) => {
+	const query = decodeURIComponent(url.split('?')[1]);
+	if (query) {
+		const queryObj: any = {};
+		const queryArr = query.split('&');
+		queryArr.forEach((item) => {
+			const [key, value] = item.split('=');
+			queryObj[key] = value;
+		});
+		return queryObj;
+	}
+	return {};
+};

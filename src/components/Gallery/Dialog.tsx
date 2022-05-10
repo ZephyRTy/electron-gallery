@@ -33,8 +33,8 @@ export const Dialog = (props: {
 		>
 			<div className={styles['dialog']}>
 				<ul className={styles['dialog-list']}>
-					{dirs.entrySeq().map((k: [string, DirectoryInfo], v) => {
-						const dirIndex = k[0];
+					{dirs.entrySeq().map((dir: [string, DirectoryInfo], v) => {
+						const dirIndex = dir[0];
 						return (
 							<li
 								key={dirIndex}
@@ -61,7 +61,14 @@ export const Dialog = (props: {
 											styles['dialog-list-item-content']
 										}
 									>
-										<span>{k[1].title}</span>
+										<span>{dir[1].title}</span>
+										<span
+											className={
+												styles['dialog-list-item-count']
+											}
+										>
+											{dir[1].content.length}
+										</span>
 									</div>
 								</label>
 							</li>

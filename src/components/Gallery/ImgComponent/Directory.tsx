@@ -40,8 +40,11 @@ export const ImageDir: ImageComponent<BasicData> = (props: {
 					{props.data.title}
 				</span>
 			</a>
-			<span className={styles['icon-span']} onClick={clickHandler}>
-				<Star className={stared ? styles['stared'] + ' ' : ''} />
+			<span className={styles['icon-span']}>
+				<Star
+					className={stared ? styles['stared'] + ' ' : ''}
+					onClick={clickHandler}
+				/>
 			</span>
 		</div>
 	);

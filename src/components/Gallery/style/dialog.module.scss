@@ -7,6 +7,7 @@
 	align-items: center;
 	width: 400px;
 	height: 600px;
+	border-radius: 20px;
 	&-list {
 		transform: translateZ(0);
 		display: flex;
@@ -34,7 +35,6 @@
 				height: 41px;
 				&::before {
 					content: ' ';
-					left: -3px;
 					position: relative;
 					background-color: #3c9ad8;
 					width: 10px;
@@ -51,6 +51,14 @@
 						left: 15px;
 					}
 				}
+			}
+			&-count {
+				position: relative;
+				text-align: right;
+				right: 9px;
+				font-family: Harrington, fantasy;
+				color: white;
+				font-size: x-large;
 			}
 			input {
 				display: none;

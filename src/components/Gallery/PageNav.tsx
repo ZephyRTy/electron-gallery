@@ -17,25 +17,18 @@ export const range = (start: number, end: number) => {
 	}
 	return arr;
 };
-const parseQueryString = (
-	queryString: {
-		search?: string | null;
-		stared?: string | null;
-		pack?: string;
-	},
-	page: number
-) => {
-	let href = `#/${
-		queryString.search
-			? `gallery?search=${queryString.search}&page=${page}`
-			: queryString.stared
-			? 'gallery?stared=true&page=' + page
-			: 'gallery?page=' + page
-	}`;
-	if (queryString.pack) {
-		href = `#/gallery/pack/${queryString.pack}?page=${page}`;
+const parseQueryString = (url: string, page: number) => {
+	let href = '#';
+	if (url.includes('#')) {
+		href += url.split('#')[1];
 	}
-	return href;
+	if (!url.includes('page')) {
+		if (url.includes('?')) {
+			return href + '&page=' + page;
+		}
+		return href + '?page=' + page;
+	}
+	return href.replace(/page=[0-9]+/, 'page=' + page);
 };
 export const PageSpan = (props: {
 	params: {
@@ -59,7 +52,7 @@ export const PageSpan = (props: {
 						e.preventDefault();
 					}
 				}}
-				href={parseQueryString(props.params, props.page)}
+				href={parseQueryString(window.location.href, props.page)}
 				className={
 					(props.currentPage === props.page ? 'active' : '') +
 					' page-link' +
@@ -81,8 +74,8 @@ export const PageNav = (props: {
 			props.current <= 3
 				? range(1, props.total < 5 ? props.total : 5)
 				: props.current >= props.total - 2
-				? range(props.total - 4, props.total)
-				: range(props.current - 2, props.current + 2),
+				? range(props.total - 4 || 1, props.total)
+				: range(props.current - 2 || 1, props.current + 2),
 		[props]
 	);
 	const [searchParam, setSearch] = useSearchParams();
@@ -174,7 +167,7 @@ export const PageNav = (props: {
 									return;
 								}
 								window.location.href = parseQueryString(
-									{ search, stared, pack: props.pack },
+									window.location.href,
 									parseInt(value)
 								);
 								(e.target as HTMLInputElement).value = '';

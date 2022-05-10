@@ -10,6 +10,7 @@ import {
 	HomePage,
 	Refresh,
 	SelectPacks,
+	ShowDir,
 	Stared
 } from '../Buttons';
 import { Dialog } from '../Dialog';
@@ -41,9 +42,10 @@ export const ImgContainer = (props: {
 				<HomePage />
 				<Back setInSelect={setInSelect} inSelect={inSelect} />
 				<Stared />
-				<Add util={props.util} />
-				<Refresh util={props.util} />
 				<BookmarkBtn />
+				<ShowDir />
+				<Refresh util={props.util} />
+				<Add util={props.util} />
 				<SelectPacks
 					inSelect={inSelect}
 					handleClick={() => {

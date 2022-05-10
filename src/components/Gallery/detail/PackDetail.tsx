@@ -120,6 +120,14 @@ export const PackDetail = () => {
 		<div className="pack-detail-container">
 			<Menu>
 				<button
+					className="btn-homepage icon"
+					onClick={() => {
+						window.location.href = fileOperator.loadPrevPage();
+					}}
+				>
+					<HomePage />
+				</button>
+				<button
 					className="back detail-icon"
 					onClick={() => {
 						window.history.back();
@@ -193,14 +201,6 @@ export const PackDetail = () => {
 					}}
 				>
 					<AddBookmark />
-				</button>
-				<button
-					className="btn-homepage icon"
-					onClick={() => {
-						window.location.href = fileOperator.loadPrevPage();
-					}}
-				>
-					<HomePage />
 				</button>
 			</Menu>
 			<Toast message="成功添加书签！" handler={toastHandler} />

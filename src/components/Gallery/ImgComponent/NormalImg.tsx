@@ -53,21 +53,22 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 		props.util.refresh();
 		return;
 	}, [props.data.index, props.util]);
+	const selectHandler = useCallback(
+		(e) => {
+			props.util.selectionUpdate(props.data.index, e.target.checked);
+		},
+		[props.data.index, props.util]
+	);
 	return (
 		<div className={styles.img}>
 			<input
 				type="checkbox"
 				className={styles['check-box']}
-				disabled={props.data.status % 2 === 1}
+				disabled={props.data.status % 2 === 1 || !props.inSelect}
 				style={{
 					display: props.inSelect ? 'initial' : 'none'
 				}}
-				onChange={(e) => {
-					props.util.selectionUpdate(
-						props.data.index,
-						e.target.checked
-					);
-				}}
+				onChange={selectHandler}
 			/>
 			<div
 				className={
