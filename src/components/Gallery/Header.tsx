@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as Console } from '../../icon/console.svg';
 import { FileOperator } from '../../utils/fileOperator';
+import { mysqlOperator } from '../../utils/mysqlOperator';
 import { WindowSearch } from './Search';
 import styles from './style/header.module.scss';
 const { ipcRenderer } = window.require('electron');
@@ -31,8 +32,8 @@ const WindowButtons = () => {
 				<button
 					id={styles['close']}
 					onClick={() => {
-						FileOperator.getInstance().writeBack();
 						ipcRenderer.send('close');
+						mysqlOperator.end();
 					}}
 				></button>
 			</div>

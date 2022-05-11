@@ -46,11 +46,11 @@ export class ImgWaterfallCache {
 		} else if (
 			this.data
 				.flat()
-				.map((e) => e.data.index)
+				.map((e) => e.data.id)
 				.sort()
 				.join(',') !==
 			sample
-				.map((e) => e.index)
+				.map((e) => e.id)
 				.sort()
 				.join(',')
 		) {

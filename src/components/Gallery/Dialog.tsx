@@ -16,11 +16,11 @@ export const Dialog = (props: {
 	const [destination, setDestination] = useState('');
 	const [dirs, setDirs] = useState(Map({}) as Map<string, DirectoryInfo>);
 	useEffect(() => {
-		if (!props.util.directoryList) {
+		if (!props.util.dirMap) {
 			return;
 		}
-		setDirs(props.util.directoryList);
-	}, [props.util.directoryList]);
+		setDirs(props.util.dirMap);
+	}, [props.util.dirMap]);
 	useEffect(() => {
 		props.handleVisible.current = setVisible;
 	}, [props]);
@@ -33,47 +33,56 @@ export const Dialog = (props: {
 		>
 			<div className={styles['dialog']}>
 				<ul className={styles['dialog-list']}>
-					{dirs.entrySeq().map((dir: [string, DirectoryInfo], v) => {
-						const dirIndex = dir[0];
-						return (
-							<li
-								key={dirIndex}
-								className={styles['dialog-list-item']}
-							>
-								<input
-									type={'checkbox'}
-									id={'checkbox-' + dirIndex}
-									checked={checked === dirIndex}
-									readOnly
-									onClick={() => {
-										if (checked === dirIndex) {
-											setChecked('');
-											setDestination('');
-											return;
-										}
-										setChecked(dirIndex);
-										setDestination(dirIndex);
-									}}
-								/>
-								<label htmlFor={'checkbox-' + dirIndex}>
-									<div
-										className={
-											styles['dialog-list-item-content']
-										}
-									>
-										<span>{dir[1].title}</span>
-										<span
+					{dirs
+						.entrySeq()
+						.sort((a, b) => {
+							return a[0].localeCompare(b[0], 'zh-CN');
+						})
+						.map((dir: [string, DirectoryInfo], v) => {
+							const dirIndex = dir[0];
+							return (
+								<li
+									key={dirIndex}
+									className={styles['dialog-list-item']}
+								>
+									<input
+										type={'checkbox'}
+										id={'checkbox-' + dirIndex}
+										checked={checked === dirIndex}
+										readOnly
+										onClick={() => {
+											if (checked === dirIndex) {
+												setChecked('');
+												setDestination('');
+												return;
+											}
+											setChecked(dirIndex);
+											setDestination(dirIndex);
+										}}
+									/>
+									<label htmlFor={'checkbox-' + dirIndex}>
+										<div
 											className={
-												styles['dialog-list-item-count']
+												styles[
+													'dialog-list-item-content'
+												]
 											}
 										>
-											{dir[1].content.length}
-										</span>
-									</div>
-								</label>
-							</li>
-						);
-					})}
+											<span>{dir[1].title}</span>
+											<span
+												className={
+													styles[
+														'dialog-list-item-count'
+													]
+												}
+											>
+												{dir[1].count}
+											</span>
+										</div>
+									</label>
+								</li>
+							);
+						})}
 				</ul>
 				<input
 					type={'text'}
@@ -105,10 +114,9 @@ export const Dialog = (props: {
 							} else if (isNaN(parseInt(destination))) {
 								throw new Error('Wrong destination directory');
 							}
-							props.util.submitSelection(parseInt(destination));
+							props.util.addFileToDir(parseInt(destination));
 							setVisible(false);
 							props.setInSelect(false);
-							props.util.refresh();
 						}}
 					>
 						确认

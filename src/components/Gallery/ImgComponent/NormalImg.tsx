@@ -47,17 +47,16 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 	}, [props.data, props.util, stared]);
 	const removePack = useCallback(() => {
 		props.util.removeFileFromDir(
-			props.data.index,
+			props.data.id,
 			parseInt(/directory=(\d+)/.exec(window.location.hash)![1])
 		);
-		props.util.refresh();
 		return;
-	}, [props.data.index, props.util]);
+	}, [props.data.id, props.util]);
 	const selectHandler = useCallback(
 		(e) => {
-			props.util.selectionUpdate(props.data.index, e.target.checked);
+			props.util.selectionUpdate(props.data.id, e.target.checked);
 		},
-		[props.data.index, props.util]
+		[props.data.id, props.util]
 	);
 	return (
 		<div className={styles.img}>

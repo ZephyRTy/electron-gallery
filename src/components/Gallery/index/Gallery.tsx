@@ -16,7 +16,6 @@ export const Gallery = () => {
 	const [total, setTotal] = useState(0);
 	const [packs, setPacks] = useState([] as BasicData[] | Bookmark[]);
 	const [refresh, setRefresh] = useState(false);
-	let search = searchParam.get('search');
 	const page = parseInt(
 		searchParam.get('page') ? (searchParam.get('page') as string) : '1',
 		10
@@ -26,9 +25,14 @@ export const Gallery = () => {
 	}, []);
 	useEffect(() => {
 		fileOperator.savePrevPage(window.location.href);
-		let [res, total] = fileOperator.getPacks(page, window.location.href);
-		setPacks(res);
-		setTotal(total);
+		(async () => {
+			let [res, total] = await fileOperator.getPacks(
+				page,
+				window.location.href
+			);
+			setPacks(res);
+			setTotal(total);
+		})();
 	}, [window.location.href, refresh]);
 	return (
 		<div className="gallery">

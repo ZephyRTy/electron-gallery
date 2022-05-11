@@ -23,14 +23,14 @@ export const ImageDir: ImageComponent<BasicData> = (props: {
 	return (
 		<div className={styles.img}>
 			<div className={styles['img-wrapper']}>
-				<a href={`#/gallery?directory=${props.data.index}&page=1`}>
+				<a href={`#/gallery?directory=${props.data.id}&page=1`}>
 					<div className={styles['directory']}>
 						<img alt="" src={props.src}></img>
 					</div>
 				</a>
 			</div>
 			<a
-				href={`#/gallery?directory=${props.data.index}&page=1`}
+				href={`#/gallery?directory=${props.data.id}&page=1`}
 				className={styles['pack-title']}
 			>
 				<span

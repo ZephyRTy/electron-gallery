@@ -1,45 +1,27 @@
+/* eslint-disable camelcase */
 /* eslint-disable new-cap */
 /* eslint-disable no-unused-vars */
-import { Map } from 'immutable';
-import _filter from 'lodash/filter';
+import { fromJS, Map } from 'immutable';
 import React from 'react';
-import {
-	bookmarksPath,
-	catalogPath,
-	defaultCover,
-	directoryPath
-} from '../types/constant';
-import {
-	BasicData,
-	Bookmark,
-	DirectoryInfo,
-	DirectoryList,
-	fileStatus
-} from '../types/global';
+import { defaultCover } from '../types/constant';
+import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
 import { notMoreThanOne, parseUrlQuery } from './functions';
 import { bookmarkModel, selectionAdmin, starAdmin } from './models';
+import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs');
 
-enum Mode {
-	Init = 'INIT',
-	Normal = 'Normal',
-	Search = 'Search',
-	Stared = 'Stared',
-	Bookmark = 'Bookmark',
-	InDir = 'InDir',
-	ShowDir = 'ShowDir',
-	Detail = 'Detail'
-}
-const positive = (n: number) => {
-	return n >= 0 ? n : 0;
-};
+// const positive = (n: number) => {
+// 	return n >= 0 ? n : 0;
+// };
 
 //DONE 增加、搜索、星标、书签
 //TODO 删除、去重、用数据库系统读取文件
 export class FileOperator {
-	private data: BasicData[] = [];
-	private filesNotInDir = [] as BasicData[];
-
+	private directories: BasicData[] = [];
+	private fileCache = {
+		startPage: 0,
+		data: [] as BasicData[]
+	};
 	private prevPage = '';
 	private refreshFn: React.Dispatch<React.SetStateAction<boolean>> = (
 		v: any
@@ -55,11 +37,10 @@ export class FileOperator {
 		return FileOperator.instance;
 	}
 
-	private directories: Map<string, DirectoryInfo>;
-	mode: Mode = Mode.Init;
-
+	private mode: Mode = Mode.Init;
+	private total = 0;
 	private currentPacks = [] as BasicData[];
-
+	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
 	private readonly starModel = starAdmin;
 	private readonly bookmarkModel = bookmarkModel;
 	private selection = selectionAdmin;
@@ -73,62 +54,71 @@ export class FileOperator {
 	};
 
 	private constructor() {
-		this.data = JSON.parse(
-			fs.readFileSync(catalogPath, 'utf-8')
-		) as BasicData[];
-		this.filesNotInDir = this.data.filter((v) => v.status === 0);
-		this.directories = Map(
-			JSON.parse(fs.readFileSync(directoryPath, 'utf-8')) as DirectoryList
-		);
-		this.bookmarkModel.data = JSON.parse(
-			fs.readFileSync(bookmarksPath, 'utf8')
-		) as Bookmark[];
-		this.starModel.data = _filter(
-			this.data,
-			(item) => item.stared
-		).reverse();
+		mysqlOperator.getCount().then((res) => {
+			this.total = res;
+		});
+		mysqlOperator.select([], Mode.Stared).then((res) => {
+			this.starModel.data = res;
+		});
+		mysqlOperator.select([], Mode.Bookmark).then((res) => {
+			this.bookmarkModel.data = res as Bookmark[];
+		});
+		mysqlOperator.select([], Mode.ShowDir).then((res) => {
+			this.directories = res;
+		});
+		mysqlOperator.mapDir().then((res) => {
+			this.dirMap = Map(res);
+		});
 	} //获取图包
-	private getPacksNormally(page: number) {
-		if (this.switchMode(Mode.Normal)) {
-			this.currentPacks = this.filesNotInDir;
+	private async getPacksNormally(page: number) {
+		let res = this.fileCache.data;
+		if (
+			page < this.fileCache.startPage ||
+			page >= this.fileCache.startPage + 10 ||
+			this.fileCache.startPage === 0 ||
+			this.switchMode(Mode.Normal)
+		) {
+			res = await mysqlOperator.select(
+				[
+					(page - 1) * this.countOfSinglePage,
+					10 * this.countOfSinglePage
+				],
+				Mode.Normal
+			);
+			this.fileCache.data = res;
+			this.fileCache.startPage = page;
 		}
-		return this.currentPacks
-			.slice(
-				positive(
-					this.filesNotInDir.length - page * this.countOfSinglePage
-				),
-				positive(
-					this.filesNotInDir.length -
-						(page - 1) * this.countOfSinglePage
-				)
-			)
-			.reverse();
+		this.currentPacks = this.fileCache.data;
+		return this.currentPacks.slice(
+			(page - this.fileCache.startPage) * this.countOfSinglePage,
+			(page - this.fileCache.startPage) * this.countOfSinglePage + 20
+		);
 	}
 
 	//搜索图包
-	private searchPacks(key: string, page: number, mode: Mode) {
+	private async searchPacks(key: string, page: number, mode: Mode) {
 		if (
 			this.searchParams.key === key &&
 			this.searchParams.mode === mode &&
 			mode !== Mode.Search
 		) {
 			this.switchMode(Mode.Search);
-			this.currentPacks = this.searchParams.res;
-			return this.currentPacks.slice(
+			return this.searchParams.res.slice(
 				(page - 1) * this.countOfSinglePage,
 				page * this.countOfSinglePage
 			);
 		}
 		this.searchParams.key = key;
 		this.searchParams.res = [];
-		this.searchParams.mode =
-			mode === Mode.Search ? Mode.Search : Mode.Normal;
+		this.searchParams.mode = mode;
 		this.switchMode(Mode.Search);
-		let result = _filter(
-			mode === Mode.Normal || Mode.Search ? this.data : this.currentPacks,
-			(item) =>
-				item.title.toLocaleLowerCase().includes(key.toLocaleLowerCase())
-		).reverse();
+		let result = [] as BasicData[];
+		if (mode === Mode.InDir) {
+			result = this.currentPacks.filter((v) => v.title.includes(key));
+		} else {
+			result = await mysqlOperator.search(key, mode);
+		}
+
 		this.searchParams.res = result;
 		this.searchParams.total = result.length;
 		this.currentPacks = result;
@@ -140,30 +130,17 @@ export class FileOperator {
 
 	//获取星标图包
 	private getStared(page: number) {
-		if (this.switchMode(Mode.Stared)) {
-			this.currentPacks = this.starModel.data;
-		}
+		this.switchMode(Mode.Stared);
+		this.currentPacks = this.starModel.data;
 		return this.currentPacks.slice(
 			(page - 1) * this.countOfSinglePage,
 			page * this.countOfSinglePage
 		);
 	}
 
-	//模式切换
-	private switchMode(mode: Mode) {
-		this.starModel.writeBack();
-		this.setTitle(this.modeType(mode));
-		if (mode === this.mode) {
-			return false;
-		}
-		this.mode = mode;
-		return true;
-	}
-
 	private getBookmarks(page: number): [BasicData[], number] {
-		if (this.switchMode(Mode.Bookmark)) {
-			this.currentPacks = this.bookmarks;
-		}
+		this.switchMode(Mode.Bookmark);
+		this.currentPacks = this.bookmarkModel.data;
 		return [
 			this.currentPacks.slice(
 				(page - 1) * this.countOfSinglePage,
@@ -172,15 +149,22 @@ export class FileOperator {
 			this.bookmarks.length
 		];
 	}
+	//模式切换
+	private switchMode(mode: Mode) {
+		this.setTitle(this.modeType(mode));
+		if (mode === this.mode) {
+			return false;
+		}
+		this.mode = mode;
+		return true;
+	}
 
-	private getDirectory(index: number, page: number): [BasicData[], number] {
+	private async getDirContent(
+		index: number,
+		page: number
+	): Promise<[BasicData[], number]> {
 		if (this.switchMode(Mode.InDir)) {
-			const directoryInfo: number[] = this.directories!.get(
-				index.toString()
-			)!.content;
-			this.currentPacks = _filter(this.data, (v) =>
-				directoryInfo.includes(v.index)
-			);
+			this.currentPacks = await mysqlOperator.select([], Mode.InDir);
 		}
 		return [
 			this.currentPacks.slice(
@@ -206,94 +190,45 @@ export class FileOperator {
 			this.setTitleFn = fn;
 		}
 	}
-	writeBack(...args: string[]) {
-		if (this.data.length === 0) {
-			return;
-		}
-		if (
-			args.includes('data') ||
-			args.includes('dir') ||
-			this.starModel.dirty
-		) {
-			fs.writeFile(
-				catalogPath,
-				JSON.stringify(this.data),
-				'utf-8',
-				(err: any) => {
-					if (err) {
-						console.log(err);
-					}
-				}
-			);
-		}
-		if (this.bookmarkModel.dirty) {
-			fs.writeFile(
-				bookmarksPath,
-				JSON.stringify(this.bookmarks),
-				'utf-8',
-				(err: any) => {
-					if (err) {
-						console.error(err);
-					}
-				}
-			);
-			this.bookmarkModel.dirty = false;
-		}
-		if (args.includes('dir')) {
-			fs.writeFile(
-				directoryPath,
-				JSON.stringify(this.directories.toJS()),
-				'utf-8',
-				(err: any) => {
-					if (err) {
-						console.error(err);
-					}
-				}
-			);
-		}
-		this.starModel.dirty = false;
-	}
 
-	addNewPack(data: { path: string; cover: string; title: string }) {
+	async addNewPack(data: { path: string; cover: string; title: string }) {
 		if (!data.path || !data.cover || !data.title) {
 			return;
 		}
-		let index = this.data.length;
-		let newPack: BasicData = {
+		let newPack = {
 			path: data.path,
 			cover: '\\' + data.cover,
 			title: data.title,
 			stared: false,
-			index,
 			status: 0
 		};
-		this.data = [...this.data, newPack];
-		this.filesNotInDir = [...this.filesNotInDir, newPack];
+		await mysqlOperator.insertPack(newPack);
 		this.switchMode(Mode.Init);
-		this.writeBack('data');
 		this.refresh();
 	}
 
 	staredUpdate(newStar: BasicData) {
 		this.starModel.update(newStar);
-		this.starModel.dirty = true;
 	}
-	showDirs(page: number): [BasicData[], number] {
-		if (this.switchMode(Mode.ShowDir)) {
-			this.currentPacks = this.directories
-				.keySeq()
-				.toArray()
-				.map((e) => this.data[parseInt(e)]);
-		}
+	async showDirs(page: number): Promise<[BasicData[], number]> {
+		this.switchMode(Mode.ShowDir);
+		let res = await mysqlOperator.select([], Mode.ShowDir);
 		return [
-			this.currentPacks.slice(
+			res.slice(
 				(page - 1) * this.countOfSinglePage,
 				page * this.countOfSinglePage
 			),
-			this.currentPacks.length
+			res.length
 		];
+		// return [
+		// 	this.currentPacks.slice(
+		// 		(page - 1) * this.countOfSinglePage,
+		// 		page * this.countOfSinglePage
+		// 	),
+		// 	this.currentPacks.length
+		// ];
 	}
-	getPacks(page: number, url: string): [BasicData[], number] {
+	async getPacks(page: number, url: string): Promise<[BasicData[], number]> {
 		let query: {
 			search?: string;
 			directory?: string;
@@ -315,19 +250,22 @@ export class FileOperator {
 		}
 		if (query.search) {
 			return [
-				this.searchPacks(query.search, page, this.mode),
+				await this.searchPacks(query.search, page, this.mode),
 				this.searchParams.total
 			];
 		} else if (query.directory) {
-			return this.getDirectory(parseInt(query.directory), page);
+			return await this.getDirContent(parseInt(query.directory), page);
 		} else if (query.stared) {
 			return [this.getStared(page), this.starModel.data.length];
 		} else if (query.bookmark) {
 			return this.getBookmarks(page);
 		} else if (query.show_dir) {
-			return this.showDirs(page);
+			return await this.showDirs(page);
 		}
-		return [this.getPacksNormally(page), this.filesNotInDir.length];
+		return [
+			await this.getPacksNormally(page),
+			this.total || (await this.getTotal())
+		];
 	}
 
 	setTitle(title: string) {
@@ -353,90 +291,89 @@ export class FileOperator {
 		if (this.mode === Mode.Bookmark) {
 			return this.bookmarks.find((v) => v.title === pack);
 		}
-		return (
-			this.currentPacks.find((v) => v.title === pack) ??
-			this.data.find((v) => v.title === pack)
-		);
+		return this.currentPacks.find((v) => v.title === pack);
 	}
 
 	bookmarksUpdate(newBookmark: Bookmark, marked: boolean = true) {
 		this.bookmarkModel.update(newBookmark, marked);
-		this.writeBack();
 	}
 
 	selectionUpdate(newSelection: number, selected: boolean) {
 		this.selection.update(newSelection, selected);
 	}
-	submitSelection(dirIndex: number) {
+
+	addFileToDir(dirIndex: number) {
 		if (this.selection.selected.size === 0) {
 			return;
 		}
-		const directoryInfo: number[] = this.directories!.get(
-			dirIndex.toString()
-		)!.content;
-		directoryInfo.push(...this.selection.selected);
-		directoryInfo.forEach((v) => {
-			this.data[v].status = 1;
-		});
-		let firstPack = this.data[directoryInfo[directoryInfo.length - 1]];
-		this.data[dirIndex].cover = firstPack.path + firstPack.cover;
-		this.filesNotInDir = this.data.filter((v) => v.status === 0);
-		this.selection.selected.clear();
-		this.writeBack('dir');
-		this.switchMode(Mode.Init);
+		let selection = Array.from(this.selection.selected);
+		let cover = '';
+		for (let i = 0; i < selection.length; i++) {
+			const e = selection[i];
+			if (i === 0) {
+				let o = this.currentPacks.find((v) => v.id === e)!;
+				cover = o.path + o.cover;
+			}
+			mysqlOperator
+				.updateDir(dirIndex, e, 1, !i ? cover : '')
+				.then(() => {
+					if (i === selection.length - 1) {
+						this.dirMap.get(dirIndex.toString())!.count +=
+							selection.length;
+						this.selection.selected.clear();
+						this.switchMode(Mode.Init);
+						this.refresh();
+					}
+				});
+		}
 	}
 
 	addNewDir(dirName: string) {
 		let newDirectory = {
-			title: dirName,
-			stared: false,
-			index: this.data.length,
-			cover: defaultCover,
-			path: '',
-			status: 2 as fileStatus
+			dir_title: dirName,
+			dir_stared: 0,
+			dir_id: this.directories.length,
+			dir_cover: defaultCover
 		};
-		this.data = [...this.data, newDirectory];
-		this.directories = this.directories.set(newDirectory.index.toString(), {
+		mysqlOperator.insertDir(newDirectory);
+		this.dirMap = this.dirMap.set(newDirectory.dir_id.toString(), {
 			title: dirName,
-			content: []
-		})!;
-		this.switchMode(Mode.Init);
-		return newDirectory.index;
-	}
-	removeFileFromDir(fileIndex: number, dirIndex: number) {
-		let directoryInfo = this.directories!.get(dirIndex.toString())!;
-		let index = directoryInfo.content.indexOf(fileIndex);
-		if (index === -1) {
-			return;
-		}
-		directoryInfo.content.splice(index, 1);
-		this.data[fileIndex].status = 0;
-		let i = directoryInfo.content[directoryInfo.content.length - 1];
-		this.data[dirIndex].cover =
-			i >= 0
-				? this.data[i].path + this.data[i].cover
-				: 'D:\\webDemo\\desktop-reader\\public\\blank.jpg';
-		this.filesNotInDir = this.data.filter((v) => v.status === 0);
-		this.writeBack('dir');
-		this.switchMode(Mode.Init);
-	}
-	removeDir(dirIndex: number) {
-		let directoryInfo = this.directories!.get(dirIndex.toString());
-		if (!directoryInfo) {
-			return;
-		}
-		directoryInfo.content.forEach((v) => {
-			this.data[v].status = 0;
+			count: 0
 		});
-		this.directories = this.directories?.delete(dirIndex.toString());
-		this.filesNotInDir = this.data.filter((v) => v.status === 0);
-		this.writeBack('dir');
+		this.switchMode(Mode.Init);
+		return newDirectory.dir_id;
+	}
+	removeFileFromDir(packId: number, dirId: number) {
+		mysqlOperator
+			.updateDir(
+				dirId,
+				packId,
+				0,
+				this.currentPacks.find((e) => e.id !== packId)?.cover ??
+					defaultCover
+			)
+			.then((e) => {
+				this.dirMap.get(dirId.toString())!.count--;
+				this.currentPacks = this.currentPacks.filter(
+					(v) => v.id !== packId
+				);
+				this.refresh();
+			});
 		this.switchMode(Mode.Init);
 	}
+	// removeDir(dirIndex: number) {
+	// 	let directoryInfo = this.directories!.get(dirIndex.toString());
+	// 	if (!directoryInfo) {
+	// 		return;
+	// 	}
+	// 	directoryInfo.content.forEach((v) => {
+	// 		this.data[v].status = 0;
+	// 	});
+	// 	this.directories = this.directories?.delete(dirIndex.toString());
+	// 	this.filesNotInDir = this.data.filter((v) => v.status === 0);
+	// 	this.switchMode(Mode.Init);
+	// }
 
-	get directoryList() {
-		return this.directories;
-	}
 	modeType(mode: Mode) {
 		switch (mode) {
 			case Mode.Init:
@@ -453,12 +390,16 @@ export class FileOperator {
 				return 'Stared';
 			case Mode.InDir:
 				return (
-					this.directories!.get(
+					this.dirMap!.get(
 						window.location.href.match(/directory=([0-9]+)/)![1]
 					)?.title ?? 'Directories'
 				);
 			default:
 				return 'Porn Gallery';
 		}
+	}
+
+	async getTotal() {
+		return mysqlOperator.getCount();
 	}
 }

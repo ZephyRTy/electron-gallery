@@ -1,25 +1,14 @@
-import { BasicData, Bookmark, Model } from '../types/global';
+import { BasicData, Bookmark, Mode, Model } from '../types/global';
+import { mysqlOperator } from './mysqlOperator';
 
 export const starAdmin: Model<BasicData> = {
 	dirty: false,
 	data: [] as BasicData[],
 	dataToUpdate: [] as BasicData[],
-	update(newStar: BasicData) {
+	async update(newStar: BasicData) {
 		this.dirty = true;
-		this.dataToUpdate.push(newStar);
-	},
-	writeBack() {
-		if (this.dataToUpdate.length === 0) {
-			return;
-		}
-		this.dataToUpdate.forEach((item) => {
-			if (item.stared) {
-				this.data.unshift(item);
-			} else {
-				this.data = this.data.filter((v) => v.index !== item.index);
-			}
-		});
-		this.dataToUpdate = [];
+		await mysqlOperator.updateStar(newStar);
+		this.data = await mysqlOperator.select([], Mode.Stared);
 	}
 };
 
@@ -27,25 +16,17 @@ export const bookmarkModel: Model<Bookmark> = {
 	dirty: false,
 	data: [] as Bookmark[],
 	dataToUpdate: [] as Bookmark[],
-	update(newData: Bookmark, marked: boolean = true) {
-		this.dirty = true;
-		if (marked) {
-			let index = this.data.findIndex((v) => v.title === newData.title);
-			if (index !== -1) {
-				this.data[index] = newData;
-				return;
-			}
-			this.data.push(newData);
+	async update(newData: Bookmark, marked: boolean = true) {
+		if (this.data.find((item) => item.id === newData.id)) {
+			await mysqlOperator.updateBookmark(newData, marked, 'update');
 		} else {
-			this.data = this.data.filter((v) => {
-				if (v.title !== newData.title) {
-					return true;
-				}
-				return false;
-			});
+			await mysqlOperator.updateBookmark(newData, marked, 'insert');
 		}
-	},
-	writeBack() {}
+		this.data = (await mysqlOperator.select(
+			[],
+			Mode.Bookmark
+		)) as Bookmark[];
+	}
 };
 
 export const selectionAdmin = {

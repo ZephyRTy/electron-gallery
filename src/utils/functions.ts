@@ -37,7 +37,7 @@ export const notMoreThanOne = (...arr: any[]) => {
 };
 
 export const isBookmark = (data: Bookmark | BasicData): data is Bookmark => {
-	return Boolean((data as Bookmark).timeStamp);
+	return Boolean((data as Bookmark).url);
 };
 export const parseUrlQuery = (url: string) => {
 	const query = decodeURIComponent(url.split('?')[1]);

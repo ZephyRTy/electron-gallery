@@ -76,7 +76,7 @@
 		"electron-start": "electron .",
 		"build": "node scripts/build.js",
 		"test": "node scripts/test.js",
-		"package": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite --ignore=node_modules"
+		"package": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite"
 	},
 	"eslintConfig": {
 		"extends": [

@@ -81,7 +81,7 @@ export const ImgContainer = (props: {
 			props.packs.forEach((v) => {
 				let img = new Image();
 				let imgPath = v.path + v.cover;
-				img.src = imgPath;
+				img.src = String.raw`${imgPath}`;
 				img.onload = () => {
 					img.onload = null;
 					let min = minIndex(heights);
@@ -101,7 +101,7 @@ export const ImgContainer = (props: {
 						setImages([...buffer]);
 					}
 					let err = new Error(
-						`${v.title} with index ${v.index} get wrong`
+						`${v.title} with index ${v.id} get wrong`
 					);
 					console.error(err);
 					console.log(imgPath);
@@ -137,11 +137,12 @@ export const ImgContainer = (props: {
 								let Component: ImageComponent<any>;
 								if (isBookmark(ele.data)) {
 									Component = BookmarkItem;
-								} else if (ele.data.status >= 2) {
+								} else if (!ele.data.path) {
 									Component = ImageDir;
 								} else {
 									Component = NormalImg;
 								}
+
 								return (
 									<Component
 										key={index++}
