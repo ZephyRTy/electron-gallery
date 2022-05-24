@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as Console } from '../../icon/console.svg';
 import { FileOperator } from '../../utils/fileOperator';
+import { mysqlOperator } from '../../utils/mysqlOperator';
 import { WindowSearch } from './Search';
 import styles from './style/header.module.scss';
 const { ipcRenderer } = window.require('electron');
@@ -25,14 +26,14 @@ const WindowButtons = () => {
 				<button
 					id={styles['maximize']}
 					onClick={() => {
-						ipcRenderer.send('max');
+						ipcRenderer.send('hide');
 					}}
 				></button>
 				<button
 					id={styles['close']}
 					onClick={() => {
-						FileOperator.getInstance().writeBack();
 						ipcRenderer.send('close');
+						mysqlOperator.end();
 					}}
 				></button>
 			</div>
@@ -40,7 +41,7 @@ const WindowButtons = () => {
 	);
 };
 export const Header = () => {
-	const [title, setTitle] = useState('');
+	const [title, setTitle] = useState('Porn Gallery');
 	const fileOperator = useRef(FileOperator.getInstance()).current;
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
 		if (e.ctrlKey) {
@@ -59,6 +60,11 @@ export const Header = () => {
 						'page=' + (page - 1)
 					);
 				}
+			} else if (e.key === 'a') {
+				document
+					// eslint-disable-next-line quotes
+					.querySelectorAll('input.img__checkbox')
+					.forEach((e: any) => e.click());
 			}
 		}
 	}, []);
@@ -74,9 +80,7 @@ export const Header = () => {
 	return (
 		<header className={styles['header']} id="header">
 			<WindowButtons />
-			<span className={styles['app-title']}>
-				{title.length > 0 ? title : 'Interesting gallery'}
-			</span>
+			<span className={styles['app-title']}>{title}</span>
 			<WindowSearch />
 		</header>
 	);

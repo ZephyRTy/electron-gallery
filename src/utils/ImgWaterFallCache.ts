@@ -46,11 +46,11 @@ export class ImgWaterfallCache {
 		} else if (
 			this.data
 				.flat()
-				.map((e) => e.data.index)
+				.map((e) => e.data.id)
 				.sort()
 				.join(',') !==
 			sample
-				.map((e) => e.index)
+				.map((e) => e.id)
 				.sort()
 				.join(',')
 		) {
@@ -61,5 +61,15 @@ export class ImgWaterfallCache {
 
 	get count() {
 		return this.data.reduce((a, b) => a + b.length, 0);
+	}
+
+	updateCover(data: BasicData) {
+		this.data.forEach((e) => {
+			let index = e.findIndex((e) => e.data.id === data.id);
+			if (index !== -1) {
+				e[index].data.cover = data.cover;
+				e[index].img.src = data.path + data.cover;
+			}
+		});
 	}
 }

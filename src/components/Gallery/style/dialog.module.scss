@@ -5,96 +5,28 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: center;
 	width: 400px;
-	height: 600px;
-	&-list {
-		transform: translateZ(0);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		width: 90%;
-		height: 85%;
-		overflow-y: auto;
-		padding: {
-			left: 10px;
-			right: 10px;
+	height: fit-content;
+	max-height: 600px;
+	min-height: 150px;
+	border-radius: 20px;
+	&-button {
+		&-contain {
+			display: flex;
+			justify-content: center;
 		}
-		&-item {
-			width: 90%;
-			margin-bottom: 10px;
-			list-style: none;
-			border-bottom: 1px solid rgb(154, 154, 154);
-			&-content {
-				background-color: #c4c2c2;
-				margin-bottom: 10px;
-				border-radius: 5px;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				height: 41px;
-				&::before {
-					content: ' ';
-					left: -3px;
-					position: relative;
-					background-color: #3c9ad8;
-					width: 10px;
-					height: 100%;
-					display: inline-block;
-					border-radius: 2px 0 0 2px;
-				}
-				span {
-					display: inline-block;
-					width: 90%;
-					margin: {
-						top: 10px;
-						bottom: 10px;
-						left: 15px;
-					}
-				}
-			}
-			input {
-				display: none;
-				&:checked + label {
-					.dialog-list-item-content::before {
-						background-color: #f89155;
-					}
-				}
-			}
-			&:last-child {
-				border: none;
-				margin-bottom: 10px;
-			}
+		width: 80px;
+		height: 30px;
+		margin: {
+			bottom: 20px;
+			left: 30px;
+			right: 30px;
 		}
-		&::-webkit-scrollbar {
-			width: 6px;
-			border-radius: 3px;
-			background-color: rgb(158, 188, 242);
+		border: none {
+			radius: 4px;
 		}
-		&::-webkit-scrollbar-thumb {
-			background-color: cornflowerblue;
-			border-radius: 3px;
-		}
-	}
-	&-input {
-		width: 70%;
-		height: 25px;
-		margin-bottom: 10px;
-		&:focus-visible {
-			outline: none;
-		}
-	}
-	&-buttons {
-		display: flex;
-		justify-content: center;
-		button {
-			width: 80px;
-			height: 30px;
-			margin-bottom: 20px;
-			border: none {
-				radius: 4px;
-			}
-		}
-		&-confirm {
+		&__confirm {
 			margin-left: 30px;
 			color: white;
 			background-color: rgb(64, 202, 244);
@@ -102,7 +34,7 @@
 				background-color: rgb(40, 168, 207);
 			}
 		}
-		&-back {
+		&__back {
 			color: white;
 			background-color: rgb(244, 190, 64);
 			&:hover {
@@ -120,6 +52,116 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+}
+
+.dir-map {
+	&-list {
+		transform: translateZ(0);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 90%;
+		height: 85%;
+		overflow-y: auto;
+		padding: {
+			left: 10px;
+			right: 10px;
+		}
+
+		&::-webkit-scrollbar {
+			width: 6px;
+			border-radius: 3px;
+			background-color: rgb(158, 188, 242);
+		}
+		&::-webkit-scrollbar-thumb {
+			background-color: cornflowerblue;
+			border-radius: 3px;
+		}
+	}
+	&-item {
+		width: 90%;
+		margin-bottom: 10px;
+		list-style: none;
+		border-bottom: 1px solid rgb(154, 154, 154);
+		&-content {
+			background-color: #c4c2c2;
+			margin-bottom: 10px;
+			border-radius: 5px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 41px;
+			&::before {
+				content: ' ';
+				position: relative;
+				background-color: #3c9ad8;
+				width: 10px;
+				height: 100%;
+				display: inline-block;
+				border-radius: 2px 0 0 2px;
+			}
+			span {
+				display: inline-block;
+				width: 90%;
+				margin: {
+					top: 10px;
+					bottom: 10px;
+					left: 15px;
+				}
+			}
+		}
+		&-count {
+			position: relative;
+			text-align: right;
+			right: 9px;
+			font-family: Harrington, fantasy;
+			color: white;
+			font-size: x-large;
+		}
+		&:last-child {
+			border: none;
+			margin-bottom: 10px;
+		}
+	}
+	&-checkbox {
+		display: none;
+		&:checked + label {
+			.dir-map-item-content::before {
+				background-color: #f89155;
+			}
+		}
+	}
+	&-input {
+		width: 70%;
+		height: 25px;
+		margin-bottom: 10px;
+		&:focus-visible {
+			outline: none;
+		}
+		&--error {
+			color: red;
+		}
+	}
+}
+
+.rename {
+	&-contain {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		margin-top: 30px;
+	}
+	&-input {
+		width: 70%;
+		height: 20px;
+		margin-bottom: 20px;
+		&:focus-visible {
+			outline: none;
+		}
 	}
 }
 .hidden.dialog-cover {

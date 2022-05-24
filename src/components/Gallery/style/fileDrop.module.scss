@@ -1,0 +1,60 @@
+.file-drop {
+	display: none;
+	width: 600px;
+	height: fit-content;
+	min-height: 400px;
+	position: absolute;
+	background-color: white;
+	left: 20%;
+	top: 23%;
+	justify-content: center;
+	align-items: center;
+	border-radius: 15px;
+	display: flex;
+	&__content {
+		width: 80%;
+		height: fit-content;
+		min-height: 330px;
+		margin: 20px auto;
+		border: 1px dashed rgba(37, 188, 248, 0.744);
+		border-radius: 15px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	&__span {
+		color: #8d9292;
+		font-size: 15px;
+	}
+}
+.cover {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: none;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 999;
+	&.visible {
+		display: initial;
+	}
+}
+.error-info {
+	margin: 10px;
+	display: flex;
+	&--title {
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+		width: 370px;
+	}
+	&__type {
+		&--error {
+			color: #f44336;
+		}
+		&--success {
+			color: #4caf50;
+		}
+	}
+}

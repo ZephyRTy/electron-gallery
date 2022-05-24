@@ -1,7 +1,9 @@
+/* eslint-disable no-undefined */
 import { useCallback, useRef, useState } from 'react';
 import { ReactComponent as Cross } from '../../../icon/cross.svg';
+import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
 import { ReactComponent as Star } from '../../../icon/star.svg';
-import { BasicData, ImageComponent } from '../../../types/global';
+import { BasicData, ImageComponent, Mode } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
 import styles from '../style/img.module.scss';
 export const minIndex = (arr: number[]) => {
@@ -17,57 +19,69 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 	src: string;
 	data: BasicData;
 	util: FileOperator;
-	inSelect?: boolean;
+	inSelect?: number;
 	setInSelect?: any;
+	renameCallback?: any;
 }) => {
 	const [stared, setStared] = useState(props.data.stared);
 	const flag = useRef({ id: null as any, isDown: false, holding: false });
-	const up = useCallback(() => {
-		flag.current.isDown = false;
-		clearTimeout(flag.current.id);
-		if (!flag.current.holding && !props.inSelect) {
-			window.location.href =
-				'#/gallery/pack/' + props.data.title + '?page=1';
-		}
-	}, [props.data.title, props.inSelect]);
+	const up = useCallback(
+		(e: any) => {
+			flag.current.isDown = false;
+			clearTimeout(flag.current.id);
+			if (!flag.current.holding && !props.inSelect && e.button === 0) {
+				window.location.href =
+					'#/gallery/pack/' + props.data.id + '?page=1';
+			}
+		},
+		[props.data.id, props.inSelect]
+	);
 	const down = useCallback(() => {
+		if (props.util.getMode() === Mode.InDir) {
+			return;
+		}
 		flag.current.isDown = true;
 		flag.current.holding = false;
 		flag.current.id = setTimeout(() => {
 			if (flag.current.isDown && !props.inSelect) {
-				props.setInSelect(true);
+				props.setInSelect(1);
 				flag.current.holding = true;
 			}
 		}, 700);
 	}, [props]);
-	const clickHandler = useCallback(() => {
+	const staredClick = useCallback(() => {
 		props.data.stared = !stared;
 		setStared((v) => !v);
 		props.util.staredUpdate(props.data);
 	}, [props.data, props.util, stared]);
 	const removePack = useCallback(() => {
 		props.util.removeFileFromDir(
-			props.data.index,
+			props.data.id,
 			parseInt(/directory=(\d+)/.exec(window.location.hash)![1])
 		);
-		props.util.refresh();
 		return;
-	}, [props.data.index, props.util]);
+	}, [props.data.id, props.util]);
+	const selectHandler = useCallback(
+		(e: any) => {
+			props.util.selectionUpdate(props.data.id, e.target.checked);
+		},
+		[props.data.id, props.util]
+	);
 	return (
 		<div className={styles.img}>
 			<input
 				type="checkbox"
-				className={styles['check-box']}
-				disabled={props.data.status % 2 === 1}
+				className={styles['check-box'] + ' img__checkbox'}
+				disabled={Boolean(props.data.parent) || !props.inSelect}
+				title={
+					Boolean(props.data.parent) || !props.inSelect
+						? props.util.searchParentName(props.data.parent)
+						: undefined
+				}
 				style={{
 					display: props.inSelect ? 'initial' : 'none'
 				}}
-				onChange={(e) => {
-					props.util.selectionUpdate(
-						props.data.index,
-						e.target.checked
-					);
-				}}
+				onChange={selectHandler}
 			/>
 			<div
 				className={
@@ -80,7 +94,7 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 				<img alt="" src={props.src}></img>
 			</div>
 			<a
-				href={'#/gallery/pack/' + props.data.title + '?page=1'}
+				href={'#/gallery/pack/' + props.data.id + '?page=1'}
 				className={styles['pack-title']}
 			>
 				<span
@@ -92,10 +106,23 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 			</a>
 			<span className={styles['icon-span']}>
 				<Star
-					className={stared ? styles['stared'] + ' ' : ''}
-					onClick={clickHandler}
+					className={
+						(stared ? styles['stared--true'] + ' ' : '') +
+						styles['icon--stared']
+					}
+					onClick={staredClick}
 				/>
-				{window.location.href.includes('directory=') ? (
+				<RenameIcon
+					className={styles['icon--rename']}
+					onClick={() => {
+						props.renameCallback.current(true);
+						props.util.renameId = {
+							id: props.data.id,
+							oldTitle: props.data.title
+						};
+					}}
+				/>
+				{props.util.inDir || props.util.modeOfSearch === Mode.InDir ? (
 					<Cross className={styles['cross']} onClick={removePack} />
 				) : null}
 			</span>

@@ -80,12 +80,32 @@ $height: 60%;
 	&-refresh {
 		width: 43px;
 	}
-	&-newDir {
+	&-newDir,
+	&-rename,
+	&-crawler {
 		width: 38px;
+	}
+	&-crawler {
+		margin-top: 7px;
+	}
+	&-showDir {
+		position: relative;
+		width: 38px;
+		left: 1px;
 	}
 }
 #file-input {
 	display: none;
+}
+.crawler {
+	&--active {
+		fill: rgb(42, 163, 233);
+		color: white;
+	}
+	&--error {
+		fill: red;
+		color: white;
+	}
 }
 svg {
 	width: 100%;
@@ -110,7 +130,7 @@ svg {
 	height: 96vh;
 	display: flex;
 	background-color: #f89155;
-	z-index: 5000;
+	z-index: 2000;
 	svg {
 		fill: rgb(255, 255, 255);
 	}

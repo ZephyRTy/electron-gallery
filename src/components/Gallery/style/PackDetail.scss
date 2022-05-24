@@ -16,7 +16,19 @@
 		height: 26px;
 	}
 }
-
+.set-cover {
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	opacity: 0;
+	cursor: initial;
+	right: 244px;
+	margin-top: 10px;
+	&:hover {
+		opacity: 1;
+		cursor: pointer;
+	}
+}
 .add-bookmark {
 	position: relative;
 }
