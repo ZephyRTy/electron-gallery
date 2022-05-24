@@ -8,7 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as AddBookmark } from '../../../icon/addBookmark.svg';
 import { ReactComponent as Back } from '../../../icon/back.svg';
 import { ReactComponent as HomePage } from '../../../icon/homepage.svg';
-import { imgCountInOnePage } from '../../../types/constant';
+import { imageCountOfSinglePage } from '../../../types/constant';
 import { BasicData } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
 import { formatDate } from '../../../utils/functions';
@@ -22,6 +22,8 @@ const path = window.require('path');
 const parseToInt = (str: string) => {
 	return Number(/[0-9]+/.exec(str)?.[0]) ?? NaN;
 };
+//const a = Stream;
+
 export const PackDetail = () => {
 	const { pack } = useParams();
 	const fileOperator = useRef(FileOperator.getInstance()).current;
@@ -33,7 +35,7 @@ export const PackDetail = () => {
 	const imgList = useRef([] as { src: string; index: number }[]);
 	const length = useRef({ value: 0 }).current;
 	const [total, setTotal] = useState(0);
-	const toastHandler = useRef((arg: boolean) => {});
+	const bookmarkToast = useRef((arg: boolean) => {});
 	useEffect(() => {
 		(document.scrollingElement as any).scrollTop = 0;
 	}, [images]);
@@ -42,7 +44,7 @@ export const PackDetail = () => {
 			imgList.current = [];
 			return;
 		}
-		let filePath = fileOperator.current(pack)?.path;
+		let filePath = fileOperator.current(parseInt(pack))?.path;
 		if (!filePath) {
 			return;
 		}
@@ -64,8 +66,8 @@ export const PackDetail = () => {
 	}, []);
 	useEffect(() => {
 		let currentList = imgList.current.slice(
-			imgCountInOnePage * (page - 1),
-			imgCountInOnePage * page
+			imageCountOfSinglePage * (page - 1),
+			imageCountOfSinglePage * page
 		);
 		length.value = currentList.length;
 		let cache = [] as { index: number; img: HTMLImageElement }[];
@@ -169,21 +171,20 @@ export const PackDetail = () => {
 						let imgSrc =
 							'\\' + elements[imgIndex].src.split('/').pop();
 						let data = fileOperator.current(
-							pack as any
+							parseInt(pack!),
+							false
 						) as BasicData;
 						let url = '';
 
 						// 记录当前图片的位置
-						if (window.location.href.includes('&scroll')) {
-							url = `#${window.location.href
+						let href = window.location.href;
+						if (href.includes('&scroll')) {
+							url = `#${href
 								.split('#')
 								.pop()
 								?.replace(/scroll=[0-9]+/, '&scroll=' + top)}`;
 						} else {
-							url =
-								`#${window.location.href.split('#')[1]}` +
-								'&scroll=' +
-								top;
+							url = `#${href.split('#')[1]}&scroll=` + top;
 						}
 						fileOperator.bookmarksUpdate({
 							...data,
@@ -191,25 +192,25 @@ export const PackDetail = () => {
 							url,
 							timeStamp: formatDate(new Date())
 						});
-						toastHandler.current(true);
+						bookmarkToast.current(true);
 
 						(e.target as HTMLButtonElement).disabled = true;
 						setTimeout(() => {
 							(e.target as HTMLButtonElement).disabled = false;
-							toastHandler.current(false);
+							bookmarkToast.current(false);
 						}, 1000);
 					}}
 				>
 					<AddBookmark />
 				</button>
 			</Menu>
-			<Toast message="成功添加书签！" handler={toastHandler} />
+			<Toast message="添加书签成功！" handler={bookmarkToast} />
 			<DetailContainer
 				images={images}
-				total={Math.ceil(total / imgCountInOnePage)}
+				total={Math.ceil(total / imageCountOfSinglePage)}
 			/>
 			<PageNav
-				total={Math.ceil(total / imgCountInOnePage)}
+				total={Math.ceil(total / imageCountOfSinglePage)}
 				current={page}
 				pack={pack}
 			/>

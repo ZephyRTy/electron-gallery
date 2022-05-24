@@ -3,19 +3,21 @@
 /* eslint-disable no-unused-vars */
 import { fromJS, Map } from 'immutable';
 import React from 'react';
-import { defaultCover } from '../types/constant';
+import { defaultCover, packCountOfSinglePage } from '../types/constant';
 import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
-import { notMoreThanOne, parseUrlQuery } from './functions';
+import {
+	convertJsRegToMysqlReg,
+	endsWith,
+	notMoreThanOne,
+	parseUrlQuery
+} from './functions';
+import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { bookmarkModel, selectionAdmin, starAdmin } from './models';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs');
-
 // const positive = (n: number) => {
 // 	return n >= 0 ? n : 0;
 // };
-
-//DONE 增加、搜索、星标、书签
-//TODO 删除、去重、用数据库系统读取文件
 export class FileOperator {
 	private directories: BasicData[] = [];
 	private fileCache = {
@@ -44,13 +46,13 @@ export class FileOperator {
 	private readonly starModel = starAdmin;
 	private readonly bookmarkModel = bookmarkModel;
 	private selection = selectionAdmin;
-	private countOfSinglePage = 20;
 
 	private searchParams = {
 		key: '',
 		mode: Mode.Normal,
 		res: [] as BasicData[],
-		total: 0
+		total: 0,
+		reg: false
 	};
 
 	private constructor() {
@@ -73,15 +75,15 @@ export class FileOperator {
 	private async getPacksNormally(page: number) {
 		let res = this.fileCache.data;
 		if (
+			this.switchMode(Mode.Normal) ||
 			page < this.fileCache.startPage ||
 			page >= this.fileCache.startPage + 10 ||
-			this.fileCache.startPage === 0 ||
-			this.switchMode(Mode.Normal)
+			this.fileCache.startPage === 0
 		) {
 			res = await mysqlOperator.select(
 				[
-					(page - 1) * this.countOfSinglePage,
-					10 * this.countOfSinglePage
+					(page - 1) * packCountOfSinglePage,
+					10 * packCountOfSinglePage
 				],
 				Mode.Normal
 			);
@@ -90,8 +92,8 @@ export class FileOperator {
 		}
 		this.currentPacks = this.fileCache.data;
 		return this.currentPacks.slice(
-			(page - this.fileCache.startPage) * this.countOfSinglePage,
-			(page - this.fileCache.startPage) * this.countOfSinglePage + 20
+			(page - this.fileCache.startPage) * packCountOfSinglePage,
+			(page - this.fileCache.startPage + 1) * packCountOfSinglePage
 		);
 	}
 
@@ -104,27 +106,33 @@ export class FileOperator {
 		) {
 			this.switchMode(Mode.Search);
 			return this.searchParams.res.slice(
-				(page - 1) * this.countOfSinglePage,
-				page * this.countOfSinglePage
+				(page - 1) * packCountOfSinglePage,
+				page * packCountOfSinglePage
 			);
 		}
 		this.searchParams.key = key;
 		this.searchParams.res = [];
-		this.searchParams.mode = mode;
+		if (mode !== Mode.Search) {
+			this.searchParams.mode = mode;
+		}
 		this.switchMode(Mode.Search);
 		let result = [] as BasicData[];
 		if (mode === Mode.InDir) {
 			result = this.currentPacks.filter((v) => v.title.includes(key));
 		} else {
-			result = await mysqlOperator.search(key, mode);
+			result = await mysqlOperator.search(
+				this.searchParams.reg ? convertJsRegToMysqlReg(key) : key,
+				this.searchParams.mode,
+				this.searchParams.reg
+			);
 		}
 
 		this.searchParams.res = result;
 		this.searchParams.total = result.length;
 		this.currentPacks = result;
 		return this.currentPacks.slice(
-			(page - 1) * this.countOfSinglePage,
-			page * this.countOfSinglePage
+			(page - 1) * packCountOfSinglePage,
+			page * packCountOfSinglePage
 		);
 	}
 
@@ -133,8 +141,8 @@ export class FileOperator {
 		this.switchMode(Mode.Stared);
 		this.currentPacks = this.starModel.data;
 		return this.currentPacks.slice(
-			(page - 1) * this.countOfSinglePage,
-			page * this.countOfSinglePage
+			(page - 1) * packCountOfSinglePage,
+			page * packCountOfSinglePage
 		);
 	}
 
@@ -143,15 +151,18 @@ export class FileOperator {
 		this.currentPacks = this.bookmarkModel.data;
 		return [
 			this.currentPacks.slice(
-				(page - 1) * this.countOfSinglePage,
-				page * this.countOfSinglePage
+				(page - 1) * packCountOfSinglePage,
+				page * packCountOfSinglePage
 			),
 			this.bookmarks.length
 		];
 	}
 	//模式切换
 	private switchMode(mode: Mode) {
-		this.setTitle(this.modeType(mode));
+		if (mode !== Mode.Detail) {
+			this.setTitle(this.modeType(mode));
+		}
+
 		if (mode === this.mode) {
 			return false;
 		}
@@ -168,8 +179,8 @@ export class FileOperator {
 		}
 		return [
 			this.currentPacks.slice(
-				(page - 1) * this.countOfSinglePage,
-				page * this.countOfSinglePage
+				(page - 1) * packCountOfSinglePage,
+				page * packCountOfSinglePage
 			),
 			this.currentPacks.length
 		];
@@ -190,40 +201,102 @@ export class FileOperator {
 			this.setTitleFn = fn;
 		}
 	}
-
-	async addNewPack(data: { path: string; cover: string; title: string }) {
-		if (!data.path || !data.cover || !data.title) {
-			return;
+	//TODO 删除status
+	async addNewPack(
+		data:
+			| { path: string; cover?: string; title: string }
+			| { path: string; cover?: string; title: string }[]
+	) {
+		if (!Array.isArray(data)) {
+			if (!data.path || !data.title) {
+				return;
+			}
+			let cover =
+				data.cover ||
+				fs
+					.readdirSync(data.path)
+					.find((v: string) =>
+						endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
+					);
+			if (!cover) {
+				console.warn(data.title, 'no image found');
+				return;
+			}
+			let newPack = {
+				path: data.path,
+				cover: '\\' + cover,
+				title: data.title,
+				stared: 0 as 0
+			};
+			await mysqlOperator.insertPack(newPack);
+			this.switchMode(Mode.Init);
+			this.refresh();
+			return true;
 		}
-		let newPack = {
-			path: data.path,
-			cover: '\\' + data.cover,
-			title: data.title,
-			stared: false,
-			status: 0
-		};
-		await mysqlOperator.insertPack(newPack);
-		this.switchMode(Mode.Init);
-		this.refresh();
+		let result = [] as string[];
+		let successCount = 0;
+		let success = [] as Promise<any>[];
+		data.forEach((e, i) => {
+			if (!e.path || !e.title) {
+				return;
+			}
+			let cover =
+				e.cover ||
+				fs
+					.readdirSync(e.path)
+					.find((v: string) =>
+						endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
+					);
+			if (!cover) {
+				console.warn(e.title, 'no image found');
+				result.push(`${e.title}:::未找到图片`);
+				return;
+			}
+			let newPack = {
+				path: e.path,
+				cover: '\\' + cover,
+				title: e.title,
+				stared: 0 as 0
+			};
+			success.push(
+				mysqlOperator.insertPack(newPack).then((res) => {
+					if (!res) {
+						result.push(`${e.title}:::重复`);
+					} else {
+						successCount++;
+						result.push(`${e.title}:::成功`);
+					}
+
+					if (i === data.length - 1 && successCount) {
+						this.switchMode(Mode.Init);
+						this.refresh();
+					}
+				})
+			);
+		});
+		return Promise.all(success).then(() => {
+			return result;
+		});
 	}
 
 	staredUpdate(newStar: BasicData) {
 		this.starModel.update(newStar);
 	}
-	async showDirs(page: number): Promise<[BasicData[], number]> {
+	async showDir(page: number): Promise<[BasicData[], number]> {
 		this.switchMode(Mode.ShowDir);
 		let res = await mysqlOperator.select([], Mode.ShowDir);
+		this.currentPacks = res;
 		return [
 			res.slice(
-				(page - 1) * this.countOfSinglePage,
-				page * this.countOfSinglePage
+				(page - 1) * packCountOfSinglePage,
+				page * packCountOfSinglePage
 			),
 			res.length
 		];
 		// return [
 		// 	this.currentPacks.slice(
-		// 		(page - 1) * this.countOfSinglePage,
-		// 		page * this.countOfSinglePage
+		// 		(page - 1) * countOfSinglePage,
+		// 		page * countOfSinglePage
 		// 	),
 		// 	this.currentPacks.length
 		// ];
@@ -260,7 +333,7 @@ export class FileOperator {
 		} else if (query.bookmark) {
 			return this.getBookmarks(page);
 		} else if (query.show_dir) {
-			return await this.showDirs(page);
+			return await this.showDir(page);
 		}
 		return [
 			await this.getPacksNormally(page),
@@ -273,6 +346,7 @@ export class FileOperator {
 	}
 	//刷新
 	refresh() {
+		this.switchMode(Mode.Init);
 		this.refreshFn((v) => !v);
 	}
 
@@ -285,13 +359,18 @@ export class FileOperator {
 		return url;
 	}
 
-	current(pack: string) {
+	current(packId: number, change: boolean = true) {
 		this.switchMode(Mode.Detail);
-		this.setTitle(pack);
+		let res: BasicData = null as any;
 		if (this.mode === Mode.Bookmark) {
-			return this.bookmarks.find((v) => v.title === pack);
+			res = this.bookmarks.find((v) => v.id === packId)!;
+		} else {
+			res = this.currentPacks.find((v) => v.id === packId)!;
 		}
-		return this.currentPacks.find((v) => v.title === pack);
+		if (change) {
+			this.setTitle(res.title);
+		}
+		return res;
 	}
 
 	bookmarksUpdate(newBookmark: Bookmark, marked: boolean = true) {
@@ -306,52 +385,78 @@ export class FileOperator {
 		if (this.selection.selected.size === 0) {
 			return;
 		}
-		let selection = Array.from(this.selection.selected);
 		let cover = '';
-		for (let i = 0; i < selection.length; i++) {
-			const e = selection[i];
-			if (i === 0) {
-				let o = this.currentPacks.find((v) => v.id === e)!;
-				cover = o.path + o.cover;
+		let count = 0;
+		this.currentPacks.forEach((e, i) => {
+			if (this.selection.selected.has(e.id)) {
+				if (count === 0) {
+					cover = e.path + e.cover;
+				}
+				++count;
+				e.parent = dirIndex;
+				mysqlOperator
+					.updateDir(dirIndex, e.id, 1, count === 1 ? cover : '')
+					.then(() => {
+						if (count === this.selection.selected.size) {
+							this.dirMap.get(dirIndex.toString())!.count +=
+								this.selection.selected.size;
+							this.selection.selected.clear();
+							if (this.mode === Mode.Normal) {
+								this.refresh();
+							}
+							this.switchMode(Mode.Init);
+						}
+					});
 			}
-			mysqlOperator
-				.updateDir(dirIndex, e, 1, !i ? cover : '')
-				.then(() => {
-					if (i === selection.length - 1) {
-						this.dirMap.get(dirIndex.toString())!.count +=
-							selection.length;
-						this.selection.selected.clear();
-						this.switchMode(Mode.Init);
-						this.refresh();
-					}
-				});
-		}
+		});
+		// for (let i = 0; i < selection.length; i++) {
+		// 	const e = selection[i];
+		// 	if (i === 0) {
+		// 		let o = this.currentPacks.find((v) => v.id === e)!;
+		// 		cover = o.path + o.cover;
+		// 	}
+		// 	mysqlOperator
+		// 		.updateDir(dirIndex, e, 1, !i ? cover : '')
+		// 		.then(() => {
+		// 			if (i === selection.length - 1) {
+		// 				this.dirMap.get(dirIndex.toString())!.count +=
+		// 					selection.length;
+		// 				this.selection.selected.clear();
+		// 				if (this.mode === Mode.Normal) {
+		// 					this.refresh();
+		// 				}
+
+		// 				this.switchMode(Mode.Init);
+		// 			}
+		// 		});
+		// }
 	}
 
-	addNewDir(dirName: string) {
+	//TODO 删除文件夹星标功能：删除dir_star字段
+	async addNewDir(dirName: string) {
+		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
+			return -1;
+		}
 		let newDirectory = {
 			dir_title: dirName,
-			dir_stared: 0,
-			dir_id: this.directories.length,
 			dir_cover: defaultCover
 		};
-		mysqlOperator.insertDir(newDirectory);
-		this.dirMap = this.dirMap.set(newDirectory.dir_id.toString(), {
-			title: dirName,
-			count: 0
-		});
-		this.switchMode(Mode.Init);
-		return newDirectory.dir_id;
+		let res = await mysqlOperator.insertDir(newDirectory);
+		if (res) {
+			this.dirMap = Map(await mysqlOperator.mapDir());
+			this.switchMode(Mode.Init);
+			return res;
+		}
+		return -1;
+		// this.dirMap = this.dirMap.set(newDirectory.dir_id.toString(), {
+		// 	title: dirName,
+		// 	count: 0
+		// });
 	}
 	removeFileFromDir(packId: number, dirId: number) {
+		let e = this.currentPacks.find((e) => e.id !== packId);
 		mysqlOperator
-			.updateDir(
-				dirId,
-				packId,
-				0,
-				this.currentPacks.find((e) => e.id !== packId)?.cover ??
-					defaultCover
-			)
+			.updateDir(dirId, packId, 0, e ? e.path + e.cover : defaultCover)
 			.then((e) => {
 				this.dirMap.get(dirId.toString())!.count--;
 				this.currentPacks = this.currentPacks.filter(
@@ -361,6 +466,7 @@ export class FileOperator {
 			});
 		this.switchMode(Mode.Init);
 	}
+
 	// removeDir(dirIndex: number) {
 	// 	let directoryInfo = this.directories!.get(dirIndex.toString());
 	// 	if (!directoryInfo) {
@@ -399,7 +505,92 @@ export class FileOperator {
 		}
 	}
 
+	private renameTarget = { id: -1, oldTitle: '' };
+	private async renamePack(title: string) {
+		try {
+			await mysqlOperator.renamePack(this.renameTarget.id, title);
+			let target = this.currentPacks.find(
+				(e) => e.id === this.renameTarget.id
+			)!;
+			target.title = title;
+			if (target.stared) {
+				this.starModel.update();
+			}
+			this.refresh();
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	set renameId(data: { id: number; oldTitle: string }) {
+		if (data) {
+			this.renameTarget = data;
+		} else {
+			this.renameTarget = { id: -1, oldTitle: '' };
+		}
+	}
+	get oldTitle() {
+		return this.renameTarget.oldTitle;
+	}
+	private async renameDir(title: string) {
+		try {
+			await mysqlOperator.renameDir(this.renameTarget.id, title);
+			this.dirMap.get(this.renameTarget.id.toString())!.title = title;
+			let target = this.currentPacks.find(
+				(e) => e.id === this.renameTarget.id
+			)!;
+			target.title = title;
+			this.refresh();
+			return true;
+		} catch (err) {
+			console.error(err);
+			return false;
+		}
+	}
+
+	rename(newTitle: string) {
+		if (
+			this.mode === Mode.ShowDir ||
+			(this.mode === Mode.Search &&
+				this.searchParams.mode === Mode.ShowDir)
+		) {
+			return this.renameDir(newTitle);
+		}
+		return this.renamePack(newTitle);
+	}
 	async getTotal() {
 		return mysqlOperator.getCount();
+	}
+
+	async changePackCover(packId: string, cover: string) {
+		let e = this.currentPacks.find((e) => e.id === parseInt(packId))!;
+		await mysqlOperator.changePackCover(e?.id, cover);
+		e.cover = cover;
+		if (e.stared) {
+			this.starModel.update();
+		}
+		ImgWaterfallCache.getInstance().updateCover(e);
+	}
+	get modeOfSearch() {
+		return this.searchParams.mode;
+	}
+
+	get inDir() {
+		return this.mode === Mode.InDir;
+	}
+
+	searchParentName(parentID: number | undefined) {
+		if (!parentID) {
+			return 'Directories';
+		}
+		return this.dirMap?.get(parentID.toString())?.title ?? 'Directories';
+	}
+
+	set reg(v: boolean) {
+		this.searchParams.reg = v;
+	}
+	getMode() {
+		return this.mode;
 	}
 }

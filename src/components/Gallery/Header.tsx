@@ -26,7 +26,7 @@ const WindowButtons = () => {
 				<button
 					id={styles['maximize']}
 					onClick={() => {
-						ipcRenderer.send('max');
+						ipcRenderer.send('hide');
 					}}
 				></button>
 				<button
@@ -41,7 +41,7 @@ const WindowButtons = () => {
 	);
 };
 export const Header = () => {
-	const [title, setTitle] = useState('');
+	const [title, setTitle] = useState('Porn Gallery');
 	const fileOperator = useRef(FileOperator.getInstance()).current;
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
 		if (e.ctrlKey) {
@@ -63,7 +63,7 @@ export const Header = () => {
 			} else if (e.key === 'a') {
 				document
 					// eslint-disable-next-line quotes
-					.querySelectorAll("input[type='checkbox']")
+					.querySelectorAll('input.img__checkbox')
 					.forEach((e: any) => e.click());
 			}
 		}

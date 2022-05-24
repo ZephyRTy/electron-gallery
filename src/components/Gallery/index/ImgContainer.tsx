@@ -1,19 +1,27 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BasicData, Bookmark, ImageComponent } from '../../../types/global';
+import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
+import {
+	BasicData,
+	Bookmark,
+	ImageComponent,
+	Mode
+} from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
-import { isBookmark } from '../../../utils/functions';
+import { isBookmark, isDirData } from '../../../utils/functions';
 import { ImgWaterfallCache } from '../../../utils/ImgWaterFallCache';
 import {
 	Add,
 	Back,
 	BookmarkBtn,
+	CrawlerBtn,
 	HomePage,
 	Refresh,
 	SelectPacks,
 	ShowDir,
 	Stared
 } from '../Buttons';
-import { Dialog } from '../Dialog';
+import { DirMap, Rename } from '../Dialog';
 import BookmarkItem from '../ImgComponent/Bookmarks';
 import ImageDir from '../ImgComponent/Directory';
 import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
@@ -33,9 +41,9 @@ export const ImgContainer = (props: {
 	}[][]);
 	const length = useRef({ value: 0, loaded: 0 }).current;
 	const waterfallCache = useRef(ImgWaterfallCache.getInstance()).current;
-	const [inSelect, setInSelect] = useState(false);
-	// eslint-disable-next-line no-unused-vars
-	const handleDialog = useRef((_v: boolean) => {});
+	const [inSelect, setInSelect] = useState(0);
+	const handleDirMap = useRef((_v: boolean) => {});
+	const handleRename = useRef((_v: boolean) => {});
 	const menu = useMemo(() => {
 		return (
 			<Menu>
@@ -46,10 +54,11 @@ export const ImgContainer = (props: {
 				<ShowDir />
 				<Refresh util={props.util} />
 				<Add util={props.util} />
+				<CrawlerBtn />
 				<SelectPacks
 					inSelect={inSelect}
 					handleClick={() => {
-						handleDialog.current(true);
+						handleDirMap.current(true);
 					}}
 				/>
 			</Menu>
@@ -61,7 +70,16 @@ export const ImgContainer = (props: {
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
-	useEffect(() => {
+	const dirMap = useMemo(() => {
+		return (
+			<DirMap
+				util={props.util}
+				handleVisible={handleDirMap}
+				setInSelect={setInSelect}
+			/>
+		);
+	}, [props.util]);
+	useEffectOnChange(() => {
 		if (props.packs.length === 0) {
 			return;
 		}
@@ -85,10 +103,12 @@ export const ImgContainer = (props: {
 				img.onload = () => {
 					img.onload = null;
 					let min = minIndex(heights);
-					heights[min] +=
-						Math.ceil(
-							180 * (img.naturalHeight / img.naturalWidth)
-						) + buffer[min].push({ img, data: v });
+					let height = isDirData(v)
+						? 100
+						: Math.ceil(
+								180 * (img.naturalHeight / img.naturalWidth)
+						  );
+					heights[min] += height + buffer[min].push({ img, data: v });
 					length.loaded++;
 					if (length.loaded >= length.value) {
 						setImages([...buffer]);
@@ -115,22 +135,25 @@ export const ImgContainer = (props: {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [props.packs]);
 	useEffect(() => {
+		if (
+			props.util.getMode() === Mode.ShowDir ||
+			props.util.getMode() === Mode.InDir
+		) {
+			setInSelect(0);
+		}
 		(document.scrollingElement as any).scrollTop = 0;
 		if (images[0].length === 0) {
 			return;
 		}
 		waterfallCache.saveTemp([...images]);
-	}, [images, waterfallCache]);
+	}, [images, props.util, waterfallCache]);
 	return (
 		<>
 			{menu}
-			<Dialog
-				util={props.util}
-				handleVisible={handleDialog}
-				setInSelect={setInSelect}
-			/>
+			{dirMap}
+			<Rename util={props.util} handleVisible={handleRename} />
 			<main className={styles['img-main-content']}>
-				{images?.map((v) => {
+				{images.map((v) => {
 					return (
 						<div key={index++} className={styles['img-pack']}>
 							{v.map((ele) => {
@@ -151,6 +174,7 @@ export const ImgContainer = (props: {
 										util={props.util}
 										setInSelect={setInSelect}
 										inSelect={inSelect}
+										renameCallback={handleRename}
 									></Component>
 								);
 							})}

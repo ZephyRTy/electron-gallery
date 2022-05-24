@@ -62,4 +62,14 @@ export class ImgWaterfallCache {
 	get count() {
 		return this.data.reduce((a, b) => a + b.length, 0);
 	}
+
+	updateCover(data: BasicData) {
+		this.data.forEach((e) => {
+			let index = e.findIndex((e) => e.data.id === data.id);
+			if (index !== -1) {
+				e[index].data.cover = data.cover;
+				e[index].img.src = data.path + data.cover;
+			}
+		});
+	}
 }

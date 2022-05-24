@@ -1,62 +1,14 @@
-/* eslint-disable camelcase */
-const fs = require('fs');
-const mysql = require('mysql');
-let txt: Bookmark[] = JSON.parse(
-	fs.readFileSync(
-		'D:\\webDemo\\desktop-reader\\json\\bookmarks.json',
-		'utf-8'
-	)
-);
-
-const connection = mysql.createConnection({
-	host: 'localhost',
-	user: 'root',
-	password: '123456',
-	database: 'GALLERY',
-	port: 3306,
-	connectionLimit: 10
+import fs from 'fs';
+let list = `4（群交，自慰，手交），11（足交），19（正常性爱），35（百合），43（百合），44（自慰），52（3p，破处，自慰），62（手交，腋交，发交），78.（自慰，泌乳），79（伪3P，乳交）83（强奸，群交）91（扶她，破处，3p）97（增加人物设定）99（百合，群交，触手）107（正常性爱）118（小孩开大车，群交）121（足交）124（轻微调教，正常性爱）127（强奸，破处，群交）129（3p）136（足交，榨精）141（正常性爱）152（口交，乳交）158（百合）160（女斗）162（口交，乳交）173（正常性爱）175（口交）176（正常性爱）182（小孩开大车，正常性爱）188（正常性爱）194（百合，冰恋警告）195（肛交）203（百合）211（桌下口交）212（扶她）217（破处）220（肛交）228（SM）232（群交，冰恋警告）236（正常性爱）238（足交，正常性爱）242（3p）249（轮奸）255（触手，百合）261（正常性爱，泌乳）276（正常性爱，破处）284（肛交）298（3p）302（正常性爱）304（手交，口交）306（正常性爱，捆绑）311（大车碾小孩，榨精）315（口交）321（正常性爱）328（自慰，射鞋）342（百合）348（百合，3p）358（足交）359（正常性爱）363（扶她，3p）369（百合）373（绿帽，3p）382（3p）383（轮奸）385（榨精）392（足交，正常性爱）406（3p，放尿）408（手交）411（正常性爱）420（百合，群交）
+434（足交）442（群交）453（正常性爱，捆绑）458（调教，SM）468（正常性爱）477（正常性爱）484（群交，轮奸）492（夜袭，女推男）494（3p）511（正常性爱）515（群交）531（百合）532（群交）538（口交）540（破处）541（调教）558（群交）562（口交）575（正常性爱）581（百合，群交，触手）596（百合，群交）605（3p）`;
+let chapter = list.match(/\d+（/g)?.map((e) => {
+	let index = e.slice(0, -1);
+	let zero = '0'.repeat(4 - index.length);
+	return zero + index;
 });
-connection.connect();
-let value = txt.map((v: Bookmark) => {
-	return [v.index, v.cover, decodeURIComponent(v.url), v.timeStamp];
+let path = String.raw`D:\小说\女巫 第六版（1-605).txt`;
+let txt = fs.readFileSync(path, 'utf-8');
+chapter!.forEach((e) => {
+	txt = txt.replace(new RegExp(e + '章', 'g'), `${e}章 （加料）`);
 });
-
-(async () => {
-	await connection.query(
-		'insert into bookmark (b_id, b_cover, b_url, b_timeStamp) values ? ',
-		[value],
-		(err: any, result: any) => {
-			if (err) {
-				console.log('INSERT ERROR - ', err.message);
-				return;
-			}
-			console.log(result);
-			connection.end();
-		}
-	);
-})();
-// connection.query('select * from directory limit ?', (err: any, res: any) => {
-// 	if (err) {
-// 		console.log('INSERT ERROR - ', err.message);
-// 		return;
-// 	}
-// 	console.log(res);
-// 	connection.end();
-// });
-interface BasicData {
-	title: string;
-	stared: boolean;
-	index: number;
-	cover: string;
-	path: string;
-	status: number;
-	parent?: number;
-}
-export interface Bookmark extends BasicData {
-	timeStamp: string;
-	url: string;
-}
-//0: not a directory and not in a directory
-//1: not a directory and in a directory
-//2: a directory and not in a directory
-//3: a directory and in a directory
+fs.writeFileSync(path, txt);

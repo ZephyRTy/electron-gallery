@@ -5,9 +5,11 @@ export const starAdmin: Model<BasicData> = {
 	dirty: false,
 	data: [] as BasicData[],
 	dataToUpdate: [] as BasicData[],
-	async update(newStar: BasicData) {
+	async update(newStar?: BasicData) {
 		this.dirty = true;
-		await mysqlOperator.updateStar(newStar);
+		if (newStar) {
+			await mysqlOperator.updateStar(newStar);
+		}
 		this.data = await mysqlOperator.select([], Mode.Stared);
 	}
 };

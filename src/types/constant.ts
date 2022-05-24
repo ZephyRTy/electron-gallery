@@ -1,5 +1,19 @@
-export const imgCountInOnePage = 20;
-export const catalogPath = String.raw`D:\webDemo\desktop-reader\json\catalog.json`;
-export const bookmarksPath = String.raw`D:\webDemo\desktop-reader\json\bookmarks.json`;
-export const directoryPath = String.raw`D:\webDemo\desktop-reader\json\directories.json`;
+const fs = window.require('fs');
+const {
+	imageCountOfSinglePage,
+	packCountOfSinglePage,
+	downloadPath,
+	otherPath
+} = JSON.parse(
+	fs.readFileSync(
+		'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
+		'utf-8'
+	)
+);
 export const defaultCover = 'D:\\webDemo\\desktop-reader\\public\\blank.jpg';
+export {
+	imageCountOfSinglePage,
+	packCountOfSinglePage,
+	downloadPath,
+	otherPath
+};

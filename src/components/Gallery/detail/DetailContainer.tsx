@@ -7,24 +7,48 @@ import React, {
 	useState
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { imgCountInOnePage } from '../../../types/constant';
+import { ReactComponent as SetCover } from '../../../icon/cover.svg';
+import { imageCountOfSinglePage } from '../../../types/constant';
+import { FileOperator } from '../../../utils/fileOperator';
+import { Toast } from '../Toast';
 import { ImageZoomIn } from './ZoomIn';
-
 const ImgDetail = (props: {
 	src: string;
 	setCurrent: React.Dispatch<React.SetStateAction<number>>;
 	index: number;
+	renameToastHandler: { current: any };
 }) => {
 	let clickHandler = useCallback(() => {
 		props.setCurrent(props.index);
 	}, [props]);
 	return (
-		<img
-			alt=""
-			src={props.src}
-			className="pack-detail"
-			onClick={clickHandler}
-		></img>
+		<div className="pack-detail-wrapper">
+			<img
+				alt=""
+				src={props.src}
+				className="pack-detail"
+				onClick={clickHandler}
+			></img>
+			<SetCover
+				className="set-cover"
+				onClick={() => {
+					FileOperator.getInstance()
+						.changePackCover(
+							window.location.href
+								.split('?')[0]
+								.split('/')
+								.pop() as any,
+							('\\' + props.src.split('/').pop()) as any
+						)
+						.then(() => {
+							props.renameToastHandler.current(true);
+							setTimeout(() => {
+								props.renameToastHandler.current(false);
+							}, 1000);
+						});
+				}}
+			/>
+		</div>
 	);
 };
 
@@ -38,6 +62,8 @@ export const DetailContainer = (props: {
 	let page = Number(searchParams.get('page') || '1');
 	let scroll = Number(searchParams.get('scroll') || '0');
 	const scrollingElement = useRef(null);
+	// eslint-disable-next-line no-unused-vars
+	const renameToast = useRef((_arg: boolean) => {});
 	const prev = useCallback(() => {
 		if (current <= 0) {
 			if (page > 1) {
@@ -60,7 +86,7 @@ export const DetailContainer = (props: {
 		if (current > 0) {
 			setCurrent(0);
 		} else if (current === 0) {
-			setCurrent(imgCountInOnePage - 1);
+			setCurrent(imageCountOfSinglePage - 1);
 		}
 	}, [page]);
 	useLayoutEffect(() => {
@@ -87,6 +113,7 @@ export const DetailContainer = (props: {
 	}, [scroll]);
 	return (
 		<>
+			<Toast message="更改封面成功！" handler={renameToast} />
 			<main className="pack-detail-list" ref={scrollingElement}>
 				{props.images.map((v, i) => {
 					return (
@@ -95,6 +122,7 @@ export const DetailContainer = (props: {
 							key={i + v.src.slice(0, 5) + i}
 							setCurrent={setCurrent}
 							index={i}
+							renameToastHandler={renameToast}
 						/>
 					);
 				})}

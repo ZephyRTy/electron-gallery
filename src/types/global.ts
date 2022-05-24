@@ -19,14 +19,12 @@ export interface BasicData {
 	id: number;
 	cover: string;
 	path: string;
-	status: fileStatus;
 	parent?: number;
 }
 
 export interface DirData {
+	id: number;
 	title: string;
-	stared: boolean;
-	index: number;
 	cover: string;
 }
 export interface Bookmark extends BasicData {
@@ -46,9 +44,10 @@ export interface ImageComponent<T extends BasicData> {
 		src: string;
 		data: T;
 		util: FileOperator;
-		inSelect?: boolean;
+		inSelect?: number;
 		setInSelect?: any;
 		submit?: boolean;
+		renameCallback?: any;
 	}): JSX.Element;
 }
 
@@ -56,7 +55,7 @@ export interface Model<T> {
 	dirty: boolean;
 	data: T[];
 	dataToUpdate: T[];
-	update(newData: T, ...args: any[]): void;
+	update(newData?: T, ...args: any[]): void;
 }
 export interface HttpImagePack {
 	[index: number]: { title: string; mgSrcList: string[] };

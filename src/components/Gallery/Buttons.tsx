@@ -1,15 +1,20 @@
 /* eslint-disable no-unused-vars */
-import { useLayoutEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useController } from 'syill';
+import { getImgFrom24fa } from '../../crawler/fa24';
 import { ReactComponent as AddIcon } from '../../icon/add.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as BookmarkIcon } from '../../icon/bookmark.svg';
+import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
+import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
 import { FileOperator } from '../../utils/fileOperator';
+import { visibleStore } from '../../utils/store';
 export const HomePage = () => {
 	return (
 		<button
@@ -24,8 +29,8 @@ export const HomePage = () => {
 };
 
 export const Back = (props: {
-	inSelect: boolean;
-	setInSelect: (v: boolean) => void;
+	inSelect: number;
+	setInSelect: (v: number) => void;
 }) => {
 	const navigate = useNavigate();
 	return (
@@ -33,7 +38,7 @@ export const Back = (props: {
 			className="btn-back icon"
 			onClick={() => {
 				if (props.inSelect) {
-					props.setInSelect(false);
+					props.setInSelect(0);
 					return;
 				}
 				navigate(-1);
@@ -58,14 +63,14 @@ export const Stared = () => {
 };
 
 export const Add = (props: { util: FileOperator }) => {
-	const fileInput = useRef(null);
-	useLayoutEffect(() => {
-		(fileInput.current as any).setAttribute('webkitdirectory', '');
-		(fileInput.current as any).setAttribute('directory', '');
-	}, []);
+	const [visible, setVisible] = useController(visibleStore);
+	// useLayoutEffect(() => {
+	// 	(fileInput.current as any).setAttribute('webkitdirectory', '');
+	// 	(fileInput.current as any).setAttribute('directory', '');
+	// }, []);
 	return (
 		<>
-			<input
+			{/* <input
 				id="file-input"
 				type={'file'}
 				onChange={(e) => {
@@ -78,12 +83,14 @@ export const Add = (props: { util: FileOperator }) => {
 					props.util.addNewPack({ path, cover, title });
 				}}
 				ref={fileInput}
-			/>
-
-			<button className="btn-add icon">
-				<label htmlFor="file-input">
-					<AddIcon />
-				</label>
+			/> */}
+			<button
+				className="btn-add icon"
+				onClick={() => {
+					setVisible((v) => !v);
+				}}
+			>
+				<AddIcon />
 			</button>
 		</>
 	);
@@ -115,7 +122,7 @@ export const Refresh = (props: { util: FileOperator }) => {
 };
 
 export const SelectPacks = (props: {
-	inSelect: boolean;
+	inSelect: number;
 	handleClick: () => void;
 }) => {
 	return (
@@ -138,6 +145,52 @@ export const ShowDir = (props: {}) => {
 			}}
 		>
 			<ShowDirs />
+		</button>
+	);
+};
+
+export const RenameBtn = (props: {
+	handleClick: () => void;
+	inRename: boolean;
+}) => {
+	return (
+		<button
+			className="btn-rename icon"
+			style={{ display: props.inRename ? 'initial' : 'none' }}
+			onClick={props.handleClick}
+		>
+			<RenameIcon />
+		</button>
+	);
+};
+
+export const CrawlerBtn = (props: {}) => {
+	const [active, setActive] = useState(false);
+	const [err, setErr] = useState(false);
+	return (
+		<button
+			className={'btn-crawler icon'}
+			onClick={() => {
+				setActive(true);
+				getImgFrom24fa()
+					.then((res) => {
+						setActive(false);
+						setErr(false);
+					})
+					.catch((err) => {
+						setActive(false);
+						setErr(true);
+						setTimeout(() => {
+							setErr(false);
+						}, 3000);
+					});
+			}}
+		>
+			<Crawler
+				className={`${active ? 'crawler--active' : ''} ${
+					err ? 'crawler--error' : ''
+				}`}
+			/>
 		</button>
 	);
 };

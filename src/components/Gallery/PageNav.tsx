@@ -11,7 +11,7 @@ export const range = (start: number, end: number) => {
 	if (start === end) {
 		return [start];
 	}
-	let arr = [];
+	let arr: number[] = [];
 	for (let i = start; i <= end; i++) {
 		arr.push(i);
 	}

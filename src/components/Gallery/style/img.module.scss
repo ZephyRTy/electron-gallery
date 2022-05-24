@@ -111,8 +111,21 @@ $radius: 15px;
 		fill: rgb(26, 99, 138);
 	}
 }
-svg.stared {
-	fill: #f9cc4b;
+svg.stared--true {
+	fill: #f6b061;
+}
+svg.icon--stared {
+	cursor: pointer;
+	&:not(.stared--true):hover {
+		fill: #ffd562;
+	}
+}
+svg.icon--rename {
+	cursor: pointer;
+	transition: all 0.2s;
+	&:hover {
+		fill: #2578b5;
+	}
 }
 svg.cross {
 	fill: #ff4d4d;
@@ -129,6 +142,12 @@ svg.cross {
 	height: 800px;
 	position: absolute;
 	background-color: #e0e0e000;
+}
+.loading {
+	width: 500px;
+	height: 500px;
+	font-size: xx-large;
+	text-align: center;
 }
 @keyframes border-light {
 	0% {

@@ -1,25 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ReactComponent as Star } from '../../../icon/star.svg';
-import { BasicData, ImageComponent } from '../../../types/global';
+import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
+import { BasicData, DirData, ImageComponent } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
 import styles from '../style/img.module.scss';
 export const ImageDir: ImageComponent<BasicData> = (props: {
 	src: string;
-	data: BasicData;
+	data: DirData;
 	util: FileOperator;
+	renameCallback?: any;
 }) => {
-	const [stared, setStared] = useState(props.data.stared);
-	useEffect(() => {
-		if (stared === props.data.stared) {
-			return;
-		}
-		props.data.stared = stared;
-		props.util.staredUpdate(props.data);
-	}, [props.data, props.util, stared]);
-	const clickHandler = useCallback(() => {
-		setStared((v) => !v);
-	}, []);
-
 	return (
 		<div className={styles.img}>
 			<div className={styles['img-wrapper']}>
@@ -41,9 +29,14 @@ export const ImageDir: ImageComponent<BasicData> = (props: {
 				</span>
 			</a>
 			<span className={styles['icon-span']}>
-				<Star
-					className={stared ? styles['stared'] + ' ' : ''}
-					onClick={clickHandler}
+				<RenameIcon
+					onClick={() => {
+						props.renameCallback.current(true);
+						props.util.renameId = {
+							id: props.data.id,
+							oldTitle: props.data.title
+						};
+					}}
 				/>
 			</span>
 		</div>

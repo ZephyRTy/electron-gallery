@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BasicData, Bookmark } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
+import { FileDrop } from '../FileDrop';
 import { PageNav } from '../PageNav';
 import '../style/gallery.scss';
 import { ImgContainer } from './ImgContainer';
@@ -25,23 +26,21 @@ export const Gallery = () => {
 	}, []);
 	useEffect(() => {
 		fileOperator.savePrevPage(window.location.href);
-		(async () => {
-			let [res, total] = await fileOperator.getPacks(
-				page,
-				window.location.href
-			);
-			setPacks(res);
-			setTotal(total);
-		})();
+		fileOperator.getPacks(page, window.location.href).then((res) => {
+			setPacks(res[0]);
+			setTotal(res[1]);
+		});
 	}, [window.location.href, refresh]);
 	return (
 		<div className="gallery">
+			<FileDrop util={fileOperator} />
 			<ImgContainer
 				packs={packs}
 				util={fileOperator}
 				refresh={setRefresh}
 				inDir={window.location.href.includes('/directory/')}
 			/>
+
 			<PageNav total={Math.ceil(total / 20)} current={page} />
 		</div>
 	);

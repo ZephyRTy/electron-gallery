@@ -1,4 +1,4 @@
-import { BasicData, Bookmark } from '../types/global';
+import { BasicData, Bookmark, DirData } from '../types/global';
 
 export function formatDate(
 	time: string | number | Date,
@@ -39,6 +39,9 @@ export const notMoreThanOne = (...arr: any[]) => {
 export const isBookmark = (data: Bookmark | BasicData): data is Bookmark => {
 	return Boolean((data as Bookmark).url);
 };
+export const isDirData = (data: any): data is DirData => {
+	return !data.path && !data.url;
+};
 export const parseUrlQuery = (url: string) => {
 	const query = decodeURIComponent(url.split('?')[1]);
 	if (query) {
@@ -51,4 +54,25 @@ export const parseUrlQuery = (url: string) => {
 		return queryObj;
 	}
 	return {};
+};
+export const convertJsRegToMysqlReg = (reg: string) => {
+	let newReg = '';
+	newReg = String.raw`${reg}`
+		.replace('\\d', '[0-9]')
+		.replace('\\w', '[a-zA-Z]')
+		.replace(/\[.*(\[0-9\]).*\]/, (match, p1) => {
+			return match.replace(p1, '0-9');
+		})
+		.replace(/\[.*(\[a-zA-Z\]).*\]/, (match, p1) => {
+			return match.replace(p1, 'a-zA-Z');
+		});
+	return String.raw`${newReg}`;
+};
+export const endsWith = (str: string, ...args: string[]) => {
+	for (let i = 0; i < args.length; i++) {
+		if (str.endsWith(args[i])) {
+			return true;
+		}
+	}
+	return false;
 };
