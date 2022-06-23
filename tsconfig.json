@@ -13,7 +13,7 @@
 		"module": "CommonJS",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
-		"isolatedModules": false,
+		"isolatedModules": true,
 		"jsx": "react-jsx",
 		"plugins": [{ "name": "typescript-plugin-css-modules" }],
 		"typeRoots": ["node_modules/@types", "src/types"],

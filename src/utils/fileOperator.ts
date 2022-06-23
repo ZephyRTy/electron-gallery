@@ -201,7 +201,7 @@ export class FileOperator {
 			this.setTitleFn = fn;
 		}
 	}
-	//TODO 删除status
+
 	async addNewPack(
 		data:
 			| { path: string; cover?: string; title: string }
@@ -432,7 +432,6 @@ export class FileOperator {
 		// }
 	}
 
-	//TODO 删除文件夹星标功能：删除dir_star字段
 	async addNewDir(dirName: string) {
 		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
 			return -1;
