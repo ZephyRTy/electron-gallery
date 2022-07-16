@@ -9,6 +9,5 @@ export const useEffectOnChange = (callback: () => any, dependencies: any[]) => {
 			return;
 		}
 		return callback();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, dependencies);
 };

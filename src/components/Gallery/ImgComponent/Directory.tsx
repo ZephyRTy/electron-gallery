@@ -18,12 +18,12 @@ export const ImageDir: ImageComponent<BasicData> = (props: {
 				</a>
 			</div>
 			<a
-				href={`#/gallery?directory=${props.data.id}&page=1`}
 				className={styles['pack-title']}
+				href={`#/gallery?directory=${props.data.id}&page=1`}
 			>
 				<span
-					title={props.data.title}
 					className={styles['pack-title-name']}
+					title={props.data.title}
 				>
 					{props.data.title}
 				</span>

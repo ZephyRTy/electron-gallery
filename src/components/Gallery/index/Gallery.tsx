@@ -1,5 +1,3 @@
-/* eslint-disable no-extend-native */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BasicData, Bookmark } from '../../../types/global';
@@ -35,13 +33,13 @@ export const Gallery = () => {
 		<div className="gallery">
 			<FileDrop util={fileOperator} />
 			<ImgContainer
-				packs={packs}
-				util={fileOperator}
-				refresh={setRefresh}
 				inDir={window.location.href.includes('/directory/')}
+				packs={packs}
+				refresh={setRefresh}
+				util={fileOperator}
 			/>
 
-			<PageNav total={Math.ceil(total / 20)} current={page} />
+			<PageNav current={page} total={Math.ceil(total / 20)} />
 		</div>
 	);
 };

@@ -1,7 +1,7 @@
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
 import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
-import { formatDate, getAllDrive } from './functions';
+import { formatDate, hasExternalDriver } from './functions';
 
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');
@@ -12,7 +12,7 @@ export class MysqlOperator {
 	private _pool: any;
 	private _config: any;
 	private _searchRes = { param: '', result: [] as string[] };
-	private hasExternalDriver: boolean = false;
+	private hasExternalDriver: boolean = hasExternalDriver;
 	private init = false;
 	count: number = 0;
 	private constructor() {
@@ -40,14 +40,6 @@ export class MysqlOperator {
 	): Promise<BasicData[] | Bookmark[]> {
 		if (mode === Mode.Normal && sqlParam.length !== 2) {
 			throw new Error('sqlParam is not correct');
-		}
-		if (!this.init) {
-			this.hasExternalDriver = Boolean(
-				(await getAllDrive()).find(
-					(e) => e.name === 'BigHouse' && e.drive === 'E'
-				)
-			);
-			this.init = true;
 		}
 		let sql = `select * from pack_list where ${
 			this.hasExternalDriver ? '' : "path not like 'E%' and"

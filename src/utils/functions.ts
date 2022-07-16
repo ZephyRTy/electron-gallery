@@ -122,7 +122,7 @@ export async function getAllDrive(): Promise<
 			// 获取所有盘符的所有名称
 			res.forEach((v: string) => {
 				promiseArr.push(
-					new Promise((resolve, reject) => {
+					new Promise((resolve) => {
 						process.exec(
 							cmdOrder.getOneDriveName(v),
 							(error: any, stdout: any) => {
@@ -132,7 +132,7 @@ export async function getAllDrive(): Promise<
 								}
 								let stdoutArr = [...stdout];
 								let res: string[] = [];
-								stdoutArr.forEach((v: string, i: number) => {
+								stdoutArr.forEach((v: string) => {
 									if (v !== ' ' && v !== '\n' && v !== '\r') {
 										res.push(v);
 									}
@@ -148,7 +148,7 @@ export async function getAllDrive(): Promise<
 					})
 				);
 			});
-			Promise.all(promiseArr).then((res) => {
+			Promise.all(promiseArr).then(() => {
 				resolve(resList);
 			});
 		});
@@ -160,3 +160,7 @@ export async function getAllDrive(): Promise<
 
 	return result;
 }
+
+export const hasExternalDriver = Boolean(
+	(await getAllDrive()).find((e) => e.name === 'BigHouse' && e.drive === 'E')
+);

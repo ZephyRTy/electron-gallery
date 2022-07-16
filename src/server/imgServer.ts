@@ -1,5 +1,5 @@
 import { getImg } from '../crawler/utils/getImg';
-import { downloadPath } from '../types/constant';
+import { downloadPath, otherPath } from '../types/constant';
 import { mysqlOperator } from '../utils/mysqlOperator';
 const fs = window.require('fs');
 const http = window.require('http');
@@ -89,7 +89,7 @@ export class ImgServer {
 		let srcList = imgList;
 		let index = 0;
 		let i = 1;
-		let path = downloadPath + '\\' + dirTitle;
+		let path = downloadPath + '/' + dirTitle;
 		let interval = 0;
 		let o: {
 			title: string;
@@ -100,14 +100,17 @@ export class ImgServer {
 			title: dirTitle,
 			stared: 0,
 			path, //文件夹完整路径
-			cover: '\\1.jpg'
+			cover: '/1.jpg'
 		};
 
 		try {
 			if (target) {
-				i = fs.readdirSync(downloadPath + '\\' + dirTitle).length + 1;
+				i = (fs.readdirSync(otherPath + '/' + target)?.length ?? 0) + 1;
+				o.path = otherPath + '/' + target;
 			}
-		} catch (e) {}
+		} catch (e) {
+			i = 1;
+		}
 		let id = setInterval(() => {
 			if (interval >= 15) {
 				interval = 0;
@@ -119,7 +122,8 @@ export class ImgServer {
 			getImg({
 				src: srcList[index++],
 				title: dirTitle, // 文件夹名
-				id: i++
+				id: i++,
+				path: target ? otherPath : downloadPath
 			});
 			if (index >= srcList.length) {
 				// fs.writeFileSync(

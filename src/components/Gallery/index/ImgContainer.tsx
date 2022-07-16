@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
+import { defaultCover } from '../../../types/constant';
 import {
 	BasicData,
 	Bookmark,
@@ -8,7 +9,11 @@ import {
 	Mode
 } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
-import { isBookmark, isDirData } from '../../../utils/functions';
+import {
+	hasExternalDriver,
+	isBookmark,
+	isDirData
+} from '../../../utils/functions';
 import { ImgWaterfallCache } from '../../../utils/ImgWaterFallCache';
 import {
 	Add,
@@ -49,7 +54,7 @@ export const ImgContainer = (props: {
 			//TODO 增加文件夹中文件flat功能
 			<Menu>
 				<HomePage />
-				<Back setInSelect={setInSelect} inSelect={inSelect} />
+				<Back inSelect={inSelect} setInSelect={setInSelect} />
 				<Stared />
 				<BookmarkBtn />
 				<ShowDir />
@@ -57,10 +62,10 @@ export const ImgContainer = (props: {
 				<Add util={props.util} />
 				<CrawlerBtn />
 				<SelectPacks
-					inSelect={inSelect}
 					handleClick={() => {
 						handleDirMap.current(true);
 					}}
+					inSelect={inSelect}
 				/>
 			</Menu>
 		);
@@ -69,14 +74,13 @@ export const ImgContainer = (props: {
 		return () => {
 			waterfallCache.save();
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 	const dirMap = useMemo(() => {
 		return (
 			<DirMap
-				util={props.util}
 				handleVisible={handleDirMap}
 				setInSelect={setInSelect}
+				util={props.util}
 			/>
 		);
 	}, [props.util]);
@@ -99,7 +103,10 @@ export const ImgContainer = (props: {
 			//NOTE 预渲染图像
 			props.packs.forEach((v) => {
 				let img = new Image();
-				let imgPath = v.path + v.cover;
+				let imgPath =
+					!hasExternalDriver && v.cover.startsWith('E')
+						? defaultCover
+						: v.path + v.cover;
 				img.src = String.raw`${imgPath}`;
 				img.onload = () => {
 					img.onload = null;
@@ -133,7 +140,6 @@ export const ImgContainer = (props: {
 			setImages([[], [], [], []]);
 			length.loaded = 0;
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [props.packs]);
 	useEffect(() => {
 		if (
@@ -152,11 +158,11 @@ export const ImgContainer = (props: {
 		<>
 			{menu}
 			{dirMap}
-			<Rename util={props.util} handleVisible={handleRename} />
+			<Rename handleVisible={handleRename} util={props.util} />
 			<main className={styles['img-main-content']}>
 				{images.map((v) => {
 					return (
-						<div key={index++} className={styles['img-pack']}>
+						<div className={styles['img-pack']} key={index++}>
 							{v.map((ele) => {
 								let Component: ImageComponent<any>;
 								if (isBookmark(ele.data)) {
@@ -169,13 +175,13 @@ export const ImgContainer = (props: {
 
 								return (
 									<Component
-										key={index++}
 										data={ele.data}
+										inSelect={inSelect}
+										key={index++}
+										renameCallback={handleRename}
+										setInSelect={setInSelect}
 										src={ele.img.src}
 										util={props.util}
-										setInSelect={setInSelect}
-										inSelect={inSelect}
-										renameCallback={handleRename}
 									></Component>
 								);
 							})}

@@ -224,7 +224,7 @@ export class FileOperator {
 			}
 			let newPack = {
 				path: data.path,
-				cover: '\\' + cover,
+				cover: '/' + cover,
 				title: data.title,
 				stared: 0 as 0
 			};
@@ -254,7 +254,7 @@ export class FileOperator {
 			}
 			let newPack = {
 				path: e.path,
-				cover: '\\' + cover,
+				cover: '/' + cover,
 				title: e.title,
 				stared: 0 as 0
 			};
@@ -293,13 +293,6 @@ export class FileOperator {
 			),
 			res.length
 		];
-		// return [
-		// 	this.currentPacks.slice(
-		// 		(page - 1) * countOfSinglePage,
-		// 		page * countOfSinglePage
-		// 	),
-		// 	this.currentPacks.length
-		// ];
 	}
 	async getPacks(page: number, url: string): Promise<[BasicData[], number]> {
 		let query: {
@@ -409,27 +402,6 @@ export class FileOperator {
 					});
 			}
 		});
-		// for (let i = 0; i < selection.length; i++) {
-		// 	const e = selection[i];
-		// 	if (i === 0) {
-		// 		let o = this.currentPacks.find((v) => v.id === e)!;
-		// 		cover = o.path + o.cover;
-		// 	}
-		// 	mysqlOperator
-		// 		.updateDir(dirIndex, e, 1, !i ? cover : '')
-		// 		.then(() => {
-		// 			if (i === selection.length - 1) {
-		// 				this.dirMap.get(dirIndex.toString())!.count +=
-		// 					selection.length;
-		// 				this.selection.selected.clear();
-		// 				if (this.mode === Mode.Normal) {
-		// 					this.refresh();
-		// 				}
-
-		// 				this.switchMode(Mode.Init);
-		// 			}
-		// 		});
-		// }
 	}
 
 	async addNewDir(dirName: string) {
@@ -447,10 +419,6 @@ export class FileOperator {
 			return res;
 		}
 		return -1;
-		// this.dirMap = this.dirMap.set(newDirectory.dir_id.toString(), {
-		// 	title: dirName,
-		// 	count: 0
-		// });
 	}
 	removeFileFromDir(packId: number, dirId: number) {
 		let e = this.currentPacks.find((e) => e.id !== packId);
@@ -465,19 +433,6 @@ export class FileOperator {
 			});
 		this.switchMode(Mode.Init);
 	}
-
-	// removeDir(dirIndex: number) {
-	// 	let directoryInfo = this.directories!.get(dirIndex.toString());
-	// 	if (!directoryInfo) {
-	// 		return;
-	// 	}
-	// 	directoryInfo.content.forEach((v) => {
-	// 		this.data[v].status = 0;
-	// 	});
-	// 	this.directories = this.directories?.delete(dirIndex.toString());
-	// 	this.filesNotInDir = this.data.filter((v) => v.status === 0);
-	// 	this.switchMode(Mode.Init);
-	// }
 
 	modeType(mode: Mode) {
 		switch (mode) {

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-undefined */
 /* eslint-disable camelcase */
 const fs = require('fs');
@@ -84,7 +85,6 @@ const hasJsxRuntime = (() => {
 		return false;
 	}
 })();
-
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
 module.exports = function (webpackEnv) {
@@ -191,6 +191,9 @@ module.exports = function (webpackEnv) {
 	};
 
 	return {
+		experiments: {
+			topLevelAwait: true
+		},
 		target: ['browserslist'],
 		mode: isEnvProduction
 			? 'production'
@@ -447,6 +450,9 @@ module.exports = function (webpackEnv) {
 								],
 
 								plugins: [
+									require.resolve(
+										'@babel/plugin-syntax-top-level-await'
+									),
 									isEnvDevelopment &&
 										shouldUseReactRefresh &&
 										require.resolve('react-refresh/babel')

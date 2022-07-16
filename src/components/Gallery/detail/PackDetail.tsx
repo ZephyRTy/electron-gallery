@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
@@ -23,7 +21,14 @@ const parseToInt = (str: string) => {
 	return Number(/[0-9]+/.exec(str)?.[0]) ?? NaN;
 };
 //const a = Stream;
-
+const endsWith = (str: string, ...arg: string[]) => {
+	for (let i of arg) {
+		if (str.endsWith(i)) {
+			return true;
+		}
+	}
+	return false;
+};
 export const PackDetail = () => {
 	const { pack } = useParams();
 	const fileOperator = useRef(FileOperator.getInstance()).current;
@@ -74,10 +79,13 @@ export const PackDetail = () => {
 		currentList.forEach((v, i) => {
 			let src = v.src.toLocaleLowerCase();
 			if (
-				!(
-					src.endsWith('.jpg') ||
-					src.endsWith('.png') ||
-					src.endsWith('.gif')
+				!endsWith(
+					src.toLocaleLowerCase(),
+					'jpg',
+					'jpeg',
+					'png',
+					'gif',
+					'bmp'
 				)
 			) {
 				--length.value;
@@ -204,15 +212,15 @@ export const PackDetail = () => {
 					<AddBookmark />
 				</button>
 			</Menu>
-			<Toast message="添加书签成功！" handler={bookmarkToast} />
+			<Toast handler={bookmarkToast} message="添加书签成功！" />
 			<DetailContainer
 				images={images}
 				total={Math.ceil(total / imageCountOfSinglePage)}
 			/>
 			<PageNav
-				total={Math.ceil(total / imageCountOfSinglePage)}
 				current={page}
 				pack={pack}
+				total={Math.ceil(total / imageCountOfSinglePage)}
 			/>
 		</div>
 	);

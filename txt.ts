@@ -74,7 +74,7 @@ function replaceOutConversation(
 	return res.join(split);
 }
 
-fs.writeFileSync(
-	String.raw`C:\Users\Yang\Desktop\新建 文本文档.txt`,
-	replaceInConversation(txt, '仙子', '方总')
-);
+// fs.writeFileSync(
+// 	String.raw`C:\Users\Yang\Desktop\新建 文本文档.txt`,
+// 	replaceInConversation(txt, '仙子', '方总')
+// );
