@@ -211,13 +211,17 @@ export class FileOperator {
 			if (!data.path || !data.title) {
 				return;
 			}
-			let cover =
-				data.cover ||
-				fs
+			let cover = data.cover;
+			if (
+				!cover ||
+				!endsWith(cover.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
+			) {
+				cover = fs
 					.readdirSync(data.path)
 					.find((v: string) =>
 						endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
 					);
+			}
 			if (!cover) {
 				console.warn(data.title, 'no image found');
 				return;
