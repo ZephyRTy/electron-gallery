@@ -116,7 +116,7 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 					className={styles['icon--rename']}
 					onClick={() => {
 						props.renameCallback.current(true);
-						props.util.renameId = {
+						props.util.packToBeRenamed = {
 							id: props.data.id,
 							oldTitle: props.data.title
 						};

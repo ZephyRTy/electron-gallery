@@ -32,7 +32,7 @@ export const ImageDir: ImageComponent<BasicData> = (props: {
 				<RenameIcon
 					onClick={() => {
 						props.renameCallback.current(true);
-						props.util.renameId = {
+						props.util.packToBeRenamed = {
 							id: props.data.id,
 							oldTitle: props.data.title
 						};

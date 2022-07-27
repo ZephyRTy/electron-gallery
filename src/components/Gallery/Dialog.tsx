@@ -231,7 +231,7 @@ export const RenameContent = (props: {
 					}
 					onClick={() => {
 						props.setVisible(false);
-						props.util.renameId = { id: -1, oldTitle: '' };
+						props.util.packToBeRenamed = { id: -1, oldTitle: '' };
 					}}
 				>
 					返回

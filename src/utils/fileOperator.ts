@@ -12,7 +12,7 @@ import {
 	parseUrlQuery
 } from './functions';
 import { ImgWaterfallCache } from './ImgWaterFallCache';
-import { bookmarkModel, selectionAdmin, starAdmin } from './models';
+import { bookmarkModel, selectionModel, starModel } from './models';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs');
 
@@ -42,9 +42,9 @@ export class FileOperator {
 	private total = 0;
 	private currentPacks = [] as BasicData[];
 	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
-	private readonly starModel = starAdmin;
+	private readonly starModel = starModel;
 	private readonly bookmarkModel = bookmarkModel;
-	private selection = selectionAdmin;
+	private selection = selectionModel;
 
 	private searchParams = {
 		key: '',
@@ -443,7 +443,7 @@ export class FileOperator {
 	modeType(mode: Mode) {
 		switch (mode) {
 			case Mode.Init:
-				return 'Porn Gallery';
+				return 'Gallery';
 			case Mode.Detail:
 				return 'Detail';
 			case Mode.Search:
@@ -461,7 +461,7 @@ export class FileOperator {
 					)?.title ?? 'Directories'
 				);
 			default:
-				return 'Porn Gallery';
+				return 'Gallery';
 		}
 	}
 
@@ -483,7 +483,7 @@ export class FileOperator {
 		}
 	}
 
-	set renameId(data: { id: number; oldTitle: string }) {
+	set packToBeRenamed(data: { id: number; oldTitle: string }) {
 		if (data) {
 			this.renameTarget = data;
 		} else {
