@@ -128,8 +128,8 @@ export const SelectPacks = (props: {
 	return (
 		<button
 			className="btn-newDir icon"
-			style={{ display: props.inSelect ? 'initial' : 'none' }}
 			onClick={props.handleClick}
+			style={{ display: props.inSelect ? 'initial' : 'none' }}
 		>
 			<SelectPacksIcon />
 		</button>
@@ -156,8 +156,8 @@ export const RenameBtn = (props: {
 	return (
 		<button
 			className="btn-rename icon"
-			style={{ display: props.inRename ? 'initial' : 'none' }}
 			onClick={props.handleClick}
+			style={{ display: props.inRename ? 'initial' : 'none' }}
 		>
 			<RenameIcon />
 		</button>

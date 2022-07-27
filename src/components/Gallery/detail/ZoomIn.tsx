@@ -16,7 +16,6 @@ export const ImageZoomIn = (props: {
 				<LastPage />
 			</button>
 			<img
-				src={props.src}
 				alt=""
 				onClick={() => {
 					props.setCurrent(-1);
@@ -28,6 +27,7 @@ export const ImageZoomIn = (props: {
 						props.prev();
 					}
 				}}
+				src={props.src}
 			/>
 			<button className="zoom-next zoom-page" onClick={props.next}>
 				<NextPage />

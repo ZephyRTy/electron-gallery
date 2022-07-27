@@ -112,13 +112,11 @@ export const DirMapContent = (props: {
 				{dirs.map((dir: [string, DirectoryInfo], v) => {
 					const dirIndex = dir[0];
 					return (
-						<li key={dirIndex} className={styles['dir-map-item']}>
+						<li className={styles['dir-map-item']} key={dirIndex}>
 							<input
-								type={'checkbox'}
+								checked={checked === dirIndex}
 								className={styles['dir-map-checkbox']}
 								id={'checkbox-' + dirIndex}
-								checked={checked === dirIndex}
-								readOnly
 								onClick={() => {
 									if (checked === dirIndex) {
 										setChecked('');
@@ -128,6 +126,8 @@ export const DirMapContent = (props: {
 									setChecked(dirIndex);
 									setDestination(dirIndex);
 								}}
+								readOnly
+								type={'checkbox'}
 							/>
 							<label htmlFor={'checkbox-' + dirIndex}>
 								<div className={styles['dir-map-item-content']}>
@@ -144,10 +144,14 @@ export const DirMapContent = (props: {
 				})}
 			</ul>
 			<input
-				type={'text'}
 				className={`${styles['dir-map-input']} ${
 					err ? styles['dir-map-input--error'] : ''
 				}`}
+				onChange={(e) => {
+					if (err) {
+						setErr(false);
+					}
+				}}
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {
 						props.util
@@ -163,11 +167,7 @@ export const DirMapContent = (props: {
 							});
 					}
 				}}
-				onChange={(e) => {
-					if (err) {
-						setErr(false);
-					}
-				}}
+				type={'text'}
 			/>
 			<div className={styles['dialog-button-contain']}>
 				<button
@@ -217,10 +217,10 @@ export const RenameContent = (props: {
 		<div className={styles['rename-contain']}>
 			<input
 				className={styles['rename-input']}
-				value={newTitle}
 				onChange={(e) => {
 					setNewTitle((e.target as HTMLInputElement).value);
 				}}
+				value={newTitle}
 			/>
 			<div className={styles['dialog-button-contain']}>
 				<button

@@ -47,17 +47,17 @@ export const PageSpan = (props: {
 			className={'page-span' + (props.special ? ' ' + props.special : '')}
 		>
 			<a
-				onClick={(e) => {
-					if (props.disable) {
-						e.preventDefault();
-					}
-				}}
-				href={parseQueryString(window.location.href, props.page)}
 				className={
 					(props.currentPage === props.page ? 'active' : '') +
 					' page-link' +
 					(props.disable ? ' disable' : '')
 				}
+				href={parseQueryString(window.location.href, props.page)}
+				onClick={(e) => {
+					if (props.disable) {
+						e.preventDefault();
+					}
+				}}
 			>
 				{props.icon ? props.icon : props.page}
 			</a>
@@ -85,51 +85,51 @@ export const PageNav = (props: {
 		<nav>
 			<ul className="page-nav">
 				<PageSpan
-					icon={<LeftDoubleArrow />}
-					params={{ search, stared, pack: props.pack }}
-					page={1}
 					currentPage={props.current}
+					icon={<LeftDoubleArrow />}
+					page={1}
+					params={{ search, stared, pack: props.pack }}
 					special="first"
 				/>
 
 				<PageSpan
-					icon={<LeftArrow />}
-					params={{ search, stared, pack: props.pack }}
-					page={props.current - 1}
 					currentPage={props.current}
-					special="prev"
 					disable={props.current === 1}
+					icon={<LeftArrow />}
+					page={props.current - 1}
+					params={{ search, stared, pack: props.pack }}
+					special="prev"
 				/>
 				{pages.map((v, i) => {
 					return (
 						<PageSpan
 							currentPage={props.current}
-							page={v}
 							key={i}
+							page={v}
 							params={{ search, stared, pack: props.pack }}
 						/>
 					);
 				})}
 				<span>...</span>
 				<PageSpan
-					params={{ search, stared, pack: props.pack }}
-					page={props.total}
 					currentPage={props.current}
+					page={props.total}
+					params={{ search, stared, pack: props.pack }}
 					special="total"
 				/>
 				<PageSpan
-					icon={<RightArrow />}
-					params={{ search, stared, pack: props.pack }}
-					page={props.current + 1}
 					currentPage={props.current}
-					special="next"
 					disable={props.current === props.total}
+					icon={<RightArrow />}
+					page={props.current + 1}
+					params={{ search, stared, pack: props.pack }}
+					special="next"
 				/>
 				<PageSpan
-					icon={<RightDoubleArrow />}
-					params={{ search, stared, pack: props.pack }}
-					page={props.total}
 					currentPage={props.current}
+					icon={<RightDoubleArrow />}
+					page={props.total}
+					params={{ search, stared, pack: props.pack }}
 					special="last"
 				/>
 				<li className="page-span jump">
