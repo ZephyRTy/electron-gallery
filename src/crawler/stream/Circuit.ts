@@ -2,7 +2,7 @@
 import { HasProperty } from '../types/types';
 import { Req } from './req';
 import { Stream } from './stream';
-
+// 对当前页面循环爬取
 export class Circuit<IN, MID, OUT> extends Stream<IN, MID, OUT> {
 	private urlPool: string[] = [];
 	private urlParser: (body: unknown) => string[] | string;

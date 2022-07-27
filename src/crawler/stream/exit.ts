@@ -1,6 +1,6 @@
 import { StreamEntry } from '../types/StreamEntry';
 
-export {};
+// 流水线出口
 export { Exit };
 class Exit<IN> extends StreamEntry<IN, any, any> {
 	private endProcessor: (data: IN) => void;

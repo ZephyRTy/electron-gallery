@@ -1,12 +1,14 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-dupe-class-members */
+
+/**
+ * 自行实现的一个爬虫库，支持流水线式爬虫
+ */
 import { Pipe } from '../types/pipe';
 import { StreamEntry } from '../types/StreamEntry';
 import { HasProperty, midType } from '../types/types';
 import { Exit } from './exit';
 import { Req } from './req';
-
-export {};
 export { Stream };
 type Status = {
 	open: boolean;

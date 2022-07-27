@@ -7,6 +7,7 @@ const titles = new Set();
 const replaceInvalidDirName = (str: string) => {
 	return str.replace(/[\\/:*?"<>|]/g, '_');
 };
+// 配合浏览器插件使用，从网页上下载图片
 export class ImgServer {
 	private readonly server;
 	private static instance: ImgServer;

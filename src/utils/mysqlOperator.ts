@@ -5,7 +5,7 @@ import { formatDate, hasExternalDriver } from './functions';
 
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');
-
+// 封装数据库操作
 export class MysqlOperator {
 	private static _instance: MysqlOperator;
 	private id = null as any;

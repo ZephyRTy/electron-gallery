@@ -15,9 +15,8 @@ import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { bookmarkModel, selectionAdmin, starAdmin } from './models';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs');
-// const positive = (n: number) => {
-// 	return n >= 0 ? n : 0;
-// };
+
+// 对文件进行操作，可与数据进行交互
 export class FileOperator {
 	private directories: BasicData[] = [];
 	private fileCache = {
@@ -190,7 +189,6 @@ export class FileOperator {
 		return this.bookmarkModel.data;
 	}
 
-	//NOTE public methods
 	register(
 		fn: React.Dispatch<React.SetStateAction<any>>,
 		flag: boolean = false
@@ -337,16 +335,18 @@ export class FileOperator {
 			this.total || (await this.getTotal())
 		];
 	}
-
+	//修改窗口标题
 	setTitle(title: string) {
 		this.setTitleFn(title);
 	}
+
 	//刷新
 	refresh() {
 		this.switchMode(Mode.Init);
 		this.refreshFn((v) => !v);
 	}
 
+	//保存前一页面
 	savePrevPage(url: string) {
 		this.prevPage = url;
 	}
@@ -356,6 +356,7 @@ export class FileOperator {
 		return url;
 	}
 
+	//获取当前要打开的页面
 	current(packId: number, change: boolean = true) {
 		this.switchMode(Mode.Detail);
 		let res: BasicData = null as any;
@@ -374,6 +375,7 @@ export class FileOperator {
 		this.bookmarkModel.update(newBookmark, marked);
 	}
 
+	//更新选区
 	selectionUpdate(newSelection: number, selected: boolean) {
 		this.selection.update(newSelection, selected);
 	}

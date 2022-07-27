@@ -29,6 +29,7 @@ const endsWith = (str: string, ...arg: string[]) => {
 	}
 	return false;
 };
+// 图包详情页面外层组件
 export const PackDetail = () => {
 	const { pack } = useParams();
 	const fileOperator = useRef(FileOperator.getInstance()).current;
