@@ -4,7 +4,8 @@ const fs = window.require('fs');
 const request = window.require('request');
 export function getImg(
 	img: { src: string; id: number; title: string; path?: string },
-	proxy?: string
+	proxy?: string,
+	deep = 0
 ) {
 	let filePath = '';
 	if (img.path) {
@@ -25,8 +26,12 @@ export function getImg(
 			}
 		})
 			.on('error', (err: any) => {
-				console.error(err);
-				console.log(img.title);
+				if (deep >= 2) {
+					console.error(err);
+					console.log(img.title);
+				} else {
+					getImg(img, proxy, deep + 1);
+				}
 			})
 			.pipe(
 				fs

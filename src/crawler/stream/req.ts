@@ -1,7 +1,7 @@
 import { midType } from '../types/types';
 
 const request = window.require('request');
-
+// 对request进行封装
 export type body<T> = T & {
 	body: unknown;
 };

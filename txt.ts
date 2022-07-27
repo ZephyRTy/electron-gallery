@@ -1,14 +1,80 @@
 import fs from 'fs';
-let list = `4（群交，自慰，手交），11（足交），19（正常性爱），35（百合），43（百合），44（自慰），52（3p，破处，自慰），62（手交，腋交，发交），78.（自慰，泌乳），79（伪3P，乳交）83（强奸，群交）91（扶她，破处，3p）97（增加人物设定）99（百合，群交，触手）107（正常性爱）118（小孩开大车，群交）121（足交）124（轻微调教，正常性爱）127（强奸，破处，群交）129（3p）136（足交，榨精）141（正常性爱）152（口交，乳交）158（百合）160（女斗）162（口交，乳交）173（正常性爱）175（口交）176（正常性爱）182（小孩开大车，正常性爱）188（正常性爱）194（百合，冰恋警告）195（肛交）203（百合）211（桌下口交）212（扶她）217（破处）220（肛交）228（SM）232（群交，冰恋警告）236（正常性爱）238（足交，正常性爱）242（3p）249（轮奸）255（触手，百合）261（正常性爱，泌乳）276（正常性爱，破处）284（肛交）298（3p）302（正常性爱）304（手交，口交）306（正常性爱，捆绑）311（大车碾小孩，榨精）315（口交）321（正常性爱）328（自慰，射鞋）342（百合）348（百合，3p）358（足交）359（正常性爱）363（扶她，3p）369（百合）373（绿帽，3p）382（3p）383（轮奸）385（榨精）392（足交，正常性爱）406（3p，放尿）408（手交）411（正常性爱）420（百合，群交）
-434（足交）442（群交）453（正常性爱，捆绑）458（调教，SM）468（正常性爱）477（正常性爱）484（群交，轮奸）492（夜袭，女推男）494（3p）511（正常性爱）515（群交）531（百合）532（群交）538（口交）540（破处）541（调教）558（群交）562（口交）575（正常性爱）581（百合，群交，触手）596（百合，群交）605（3p）`;
-let chapter = list.match(/\d+（/g)?.map((e) => {
-	let index = e.slice(0, -1);
-	let zero = '0'.repeat(4 - index.length);
-	return zero + index;
-});
-let path = String.raw`D:\小说\女巫 第六版（1-605).txt`;
+let path = String.raw`C:\Users\Yang\Desktop\新建 文本文档.txt`;
 let txt = fs.readFileSync(path, 'utf-8');
-chapter!.forEach((e) => {
-	txt = txt.replace(new RegExp(e + '章', 'g'), `${e}章 （加料）`);
-});
-fs.writeFileSync(path, txt);
+const includes = (str: string, ...args: string[]) => {
+	for (let i of args) {
+		if (str.includes(i)) {
+			return true;
+		}
+	}
+	return false;
+};
+function replaceInConversation(
+	txt: string,
+	old: string,
+	newV: string,
+	split = '“'
+) {
+	let opp = '”';
+	switch (split) {
+		case '[':
+			opp = ']';
+			break;
+		case '【':
+			opp = '】';
+			break;
+		case '「':
+			opp = '」';
+			break;
+		default:
+			opp = '”';
+	}
+	let conv1 = txt.split(split);
+	let res: string[] = [];
+	conv1.forEach((e) => {
+		if (e.includes(opp)) {
+			let conv2 = e.split(opp);
+			conv2[0] = conv2[0].replace(new RegExp(`${old}`, 'g'), newV);
+			res.push(conv2.join(opp));
+		} else {
+			res.push(e);
+		}
+	});
+	return res.join(split);
+}
+function replaceOutConversation(
+	txt: string,
+	old: string,
+	newV: string,
+	person: string,
+	split = '“'
+) {
+	let opp = '”';
+	let conv1 = txt
+		.replace(/\[|【|「|『/g, '“')
+		.replace(/\]|】|」|』/g, '”')
+		.split(split);
+	let res: string[] = [];
+	conv1.forEach((e) => {
+		let conv2 = e.split(opp);
+		let index = conv2.length === 1 ? 0 : 1;
+		conv2[index] = conv2[index]
+			.split(/(!+)|(。)|(？)|(…)/)
+			.map((e) => {
+				if (e) {
+					return e
+						.replace(new RegExp(`${old}`), newV)
+						.replace(new RegExp(`${old}`, 'g'), person);
+				}
+				return e;
+			})
+			.join('');
+		res.push(conv2.join(opp));
+	});
+	return res.join(split);
+}
+
+// fs.writeFileSync(
+// 	String.raw`C:\Users\Yang\Desktop\新建 文本文档.txt`,
+// 	replaceInConversation(txt, '仙子', '方总')
+// );

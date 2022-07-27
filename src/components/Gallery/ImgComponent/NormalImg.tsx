@@ -70,18 +70,18 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 	return (
 		<div className={styles.img}>
 			<input
-				type="checkbox"
 				className={styles['check-box'] + ' img__checkbox'}
 				disabled={Boolean(props.data.parent) || !props.inSelect}
+				onChange={selectHandler}
+				style={{
+					display: props.inSelect ? 'initial' : 'none'
+				}}
 				title={
 					Boolean(props.data.parent) || !props.inSelect
 						? props.util.searchParentName(props.data.parent)
 						: undefined
 				}
-				style={{
-					display: props.inSelect ? 'initial' : 'none'
-				}}
-				onChange={selectHandler}
+				type="checkbox"
 			/>
 			<div
 				className={
@@ -94,12 +94,12 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 				<img alt="" src={props.src}></img>
 			</div>
 			<a
-				href={'#/gallery/pack/' + props.data.id + '?page=1'}
 				className={styles['pack-title']}
+				href={'#/gallery/pack/' + props.data.id + '?page=1'}
 			>
 				<span
-					title={props.data.title}
 					className={styles['pack-title-name']}
+					title={props.data.title}
 				>
 					{props.data.title}
 				</span>

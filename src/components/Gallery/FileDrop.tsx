@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useModel } from 'syill';
 import { FileOperator } from '../../utils/fileOperator';
 import { visibleStore } from '../../utils/store';
 import styles from './style/fileDrop.module.scss';
+// eslint-disable-next-line no-unused-vars
+const _ = React;
 export const FileDrop = (props: { util: FileOperator }) => {
 	const visible = useModel(visibleStore);
 	const [result, setResult] = useState([] as string[]);
@@ -24,11 +26,11 @@ export const FileDrop = (props: { util: FileOperator }) => {
 						e.preventDefault();
 						e.stopPropagation();
 					}}
-					onDragOver={(e) => {
+					onDragLeave={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 					}}
-					onDragLeave={(e) => {
+					onDragOver={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 					}}
@@ -40,7 +42,10 @@ export const FileDrop = (props: { util: FileOperator }) => {
 							props.util
 								.addNewPack(
 									files.map((e) => {
-										return { title: e.name, path: e.path };
+										return {
+											title: e.name,
+											path: e.path.replace(/\\/g, '/')
+										};
 									})
 								)
 								.then((res) => {

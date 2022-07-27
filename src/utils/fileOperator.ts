@@ -15,9 +15,8 @@ import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { bookmarkModel, selectionAdmin, starAdmin } from './models';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs');
-// const positive = (n: number) => {
-// 	return n >= 0 ? n : 0;
-// };
+
+// 对文件进行操作，可与数据进行交互
 export class FileOperator {
 	private directories: BasicData[] = [];
 	private fileCache = {
@@ -190,7 +189,6 @@ export class FileOperator {
 		return this.bookmarkModel.data;
 	}
 
-	//NOTE public methods
 	register(
 		fn: React.Dispatch<React.SetStateAction<any>>,
 		flag: boolean = false
@@ -201,7 +199,7 @@ export class FileOperator {
 			this.setTitleFn = fn;
 		}
 	}
-	//TODO 删除status
+
 	async addNewPack(
 		data:
 			| { path: string; cover?: string; title: string }
@@ -211,20 +209,24 @@ export class FileOperator {
 			if (!data.path || !data.title) {
 				return;
 			}
-			let cover =
-				data.cover ||
-				fs
+			let cover = data.cover;
+			if (
+				!cover ||
+				!endsWith(cover.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
+			) {
+				cover = fs
 					.readdirSync(data.path)
 					.find((v: string) =>
 						endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
 					);
+			}
 			if (!cover) {
 				console.warn(data.title, 'no image found');
 				return;
 			}
 			let newPack = {
 				path: data.path,
-				cover: '\\' + cover,
+				cover: '/' + cover,
 				title: data.title,
 				stared: 0 as 0
 			};
@@ -254,7 +256,7 @@ export class FileOperator {
 			}
 			let newPack = {
 				path: e.path,
-				cover: '\\' + cover,
+				cover: '/' + cover,
 				title: e.title,
 				stared: 0 as 0
 			};
@@ -293,13 +295,6 @@ export class FileOperator {
 			),
 			res.length
 		];
-		// return [
-		// 	this.currentPacks.slice(
-		// 		(page - 1) * countOfSinglePage,
-		// 		page * countOfSinglePage
-		// 	),
-		// 	this.currentPacks.length
-		// ];
 	}
 	async getPacks(page: number, url: string): Promise<[BasicData[], number]> {
 		let query: {
@@ -340,16 +335,18 @@ export class FileOperator {
 			this.total || (await this.getTotal())
 		];
 	}
-
+	//修改窗口标题
 	setTitle(title: string) {
 		this.setTitleFn(title);
 	}
+
 	//刷新
 	refresh() {
 		this.switchMode(Mode.Init);
 		this.refreshFn((v) => !v);
 	}
 
+	//保存前一页面
 	savePrevPage(url: string) {
 		this.prevPage = url;
 	}
@@ -359,6 +356,7 @@ export class FileOperator {
 		return url;
 	}
 
+	//获取当前要打开的页面
 	current(packId: number, change: boolean = true) {
 		this.switchMode(Mode.Detail);
 		let res: BasicData = null as any;
@@ -377,6 +375,7 @@ export class FileOperator {
 		this.bookmarkModel.update(newBookmark, marked);
 	}
 
+	//更新选区
 	selectionUpdate(newSelection: number, selected: boolean) {
 		this.selection.update(newSelection, selected);
 	}
@@ -409,30 +408,8 @@ export class FileOperator {
 					});
 			}
 		});
-		// for (let i = 0; i < selection.length; i++) {
-		// 	const e = selection[i];
-		// 	if (i === 0) {
-		// 		let o = this.currentPacks.find((v) => v.id === e)!;
-		// 		cover = o.path + o.cover;
-		// 	}
-		// 	mysqlOperator
-		// 		.updateDir(dirIndex, e, 1, !i ? cover : '')
-		// 		.then(() => {
-		// 			if (i === selection.length - 1) {
-		// 				this.dirMap.get(dirIndex.toString())!.count +=
-		// 					selection.length;
-		// 				this.selection.selected.clear();
-		// 				if (this.mode === Mode.Normal) {
-		// 					this.refresh();
-		// 				}
-
-		// 				this.switchMode(Mode.Init);
-		// 			}
-		// 		});
-		// }
 	}
 
-	//TODO 删除文件夹星标功能：删除dir_star字段
 	async addNewDir(dirName: string) {
 		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
 			return -1;
@@ -448,10 +425,6 @@ export class FileOperator {
 			return res;
 		}
 		return -1;
-		// this.dirMap = this.dirMap.set(newDirectory.dir_id.toString(), {
-		// 	title: dirName,
-		// 	count: 0
-		// });
 	}
 	removeFileFromDir(packId: number, dirId: number) {
 		let e = this.currentPacks.find((e) => e.id !== packId);
@@ -466,19 +439,6 @@ export class FileOperator {
 			});
 		this.switchMode(Mode.Init);
 	}
-
-	// removeDir(dirIndex: number) {
-	// 	let directoryInfo = this.directories!.get(dirIndex.toString());
-	// 	if (!directoryInfo) {
-	// 		return;
-	// 	}
-	// 	directoryInfo.content.forEach((v) => {
-	// 		this.data[v].status = 0;
-	// 	});
-	// 	this.directories = this.directories?.delete(dirIndex.toString());
-	// 	this.filesNotInDir = this.data.filter((v) => v.status === 0);
-	// 	this.switchMode(Mode.Init);
-	// }
 
 	modeType(mode: Mode) {
 		switch (mode) {

@@ -1,16 +1,19 @@
+/* eslint-disable quotes */
 /* eslint-disable camelcase */
 import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
-import { formatDate } from './functions';
+import { formatDate, hasExternalDriver } from './functions';
 
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');
-//TODO 图包/文件夹重命名
+// 封装数据库操作
 export class MysqlOperator {
 	private static _instance: MysqlOperator;
 	private id = null as any;
 	private _pool: any;
 	private _config: any;
 	private _searchRes = { param: '', result: [] as string[] };
+	private hasExternalDriver: boolean = hasExternalDriver;
+	private init = false;
 	count: number = 0;
 	private constructor() {
 		this._config = {
@@ -38,33 +41,41 @@ export class MysqlOperator {
 		if (mode === Mode.Normal && sqlParam.length !== 2) {
 			throw new Error('sqlParam is not correct');
 		}
-		let sql =
-			'select * from pack_list where parent is null order by id desc limit ? ,?';
+		let sql = `select * from pack_list where ${
+			this.hasExternalDriver ? '' : "path not like 'E%' and"
+		} parent is null order by id desc limit ? ,?`;
 		let dirId = '';
 		switch (mode) {
 			case Mode.Normal:
-				sql =
-					'select * from pack_list where parent is null order by id desc limit ? ,?';
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} parent is null order by id desc limit ? ,?`;
 				break;
 			case Mode.Stared:
-				sql =
-					'select * from pack_list where stared = 1 order by id desc';
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} stared = 1 order by id desc`;
 				break;
 			case Mode.InDir:
 				dirId = window.location.href.match(/directory=([0-9]+)/)![1];
-				sql = `select * from pack_list where parent = ${dirId} order by id desc`;
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} parent = ${dirId} order by id desc`;
 				break;
 			case Mode.ShowDir:
-				sql = 'select * from directory order by update_time desc';
+				sql = `select * from directory order by update_time desc`;
 				break;
 			case Mode.Bookmark:
 				sql = `select id, title,path, b_cover as cover, b_url as url,
 				 b_timeStamp as timeStamp, stared from bookmark, pack_list 
-				 where bookmark.b_id = pack_list.id order by b_timeStamp desc`;
+				 where ${
+						this.hasExternalDriver ? '' : "path not like 'E%' and"
+					} bookmark.b_id = pack_list.id order by b_timeStamp desc`;
 				break;
 			default:
-				sql =
-					'select * from pack_list where parent is not null order by id desc limit ? ,?';
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} parent is not null order by id desc limit ? ,?`;
 		}
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
@@ -112,8 +123,9 @@ export class MysqlOperator {
 		});
 	}
 	getCount(): Promise<number> {
-		let sql =
-			'select count(*) as count from pack_list where parent is null';
+		let sql = `select count(*) as count from pack_list where ${
+			this.hasExternalDriver ? '' : "path not like 'E%' and"
+		} parent is null`;
 		return new Promise((resolve, reject) => {
 			if (this.count !== 0) {
 				resolve(this.count);
@@ -145,23 +157,35 @@ export class MysqlOperator {
 		let key = reg ? `regexp '${sqlParam}' ` : `like '%${sqlParam}%'`;
 		switch (mode) {
 			case Mode.Normal:
-				sql = `select * from pack_list where title ${key}`;
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} title ${key} order by id desc`;
 				break;
 			case Mode.Stared:
-				sql = `select * from pack_list where stared = 1 and title ${key}`;
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} stared = 1 and title ${key} order by id desc`;
 				break;
 			case Mode.InDir:
 				dirId = window.location.href.match(/directory=([0-9]+)/)![1];
-				sql = `select * from pack_list where parent = ${dirId} and title ${key}`;
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} parent = ${dirId} and title ${key} order by id desc`;
 				break;
 			case Mode.ShowDir:
-				sql = `select * from directory where dir_title ${key} order by update_time desc`;
+				sql = `select * from directory where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} dir_title ${key} order by update_time desc`;
 				break;
 			case Mode.Bookmark:
-				sql = `select * from bookmark where title ${key} order by b_timeStamp desc`;
+				sql = `select * from bookmark where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} title ${key} order by b_timeStamp desc`;
 				break;
 			default:
-				sql = `select * from pack_list where title ${key}`;
+				sql = `select * from pack_list where ${
+					this.hasExternalDriver ? '' : "path not like 'E%' and"
+				} title ${key} order by id desc`;
 		}
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
@@ -218,7 +242,7 @@ export class MysqlOperator {
 			if (cover) {
 				this._pool.getConnection((err: any, connection: any) => {
 					connection.query(
-						'update directory set dir_cover = ? where dir_id = ?',
+						'update directory set dir_cover = ? where  dir_id = ?',
 						[cover, dirId],
 						(err: any) => {
 							connection.release();
@@ -263,7 +287,7 @@ export class MysqlOperator {
 			});
 		});
 	}
-	//TODO 修改文件夹数据表结构：删除stared
+
 	insertDir(newDir: any): Promise<number | null> {
 		let sql = 'insert into directory set ?';
 		return new Promise((resolve, reject) => {

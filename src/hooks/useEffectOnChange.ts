@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useRef } from 'react';
 
+//防止useEffect重复执行
 export const useEffectOnChange = (callback: () => any, dependencies: any[]) => {
 	const initial = useRef(true);
 	useEffect(() => {
@@ -9,6 +10,5 @@ export const useEffectOnChange = (callback: () => any, dependencies: any[]) => {
 			return;
 		}
 		return callback();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, dependencies);
 };

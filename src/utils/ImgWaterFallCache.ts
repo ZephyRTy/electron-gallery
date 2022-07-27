@@ -1,6 +1,7 @@
 import { BasicData, Bookmark } from '../types/global';
 import { isBookmark } from './functions';
 
+// 缓存进入图片时的页面，保证前后页面排列的一致性
 export class ImgWaterfallCache {
 	private static instance: ImgWaterfallCache;
 	private temp: { img: HTMLImageElement; data: BasicData }[][] = [

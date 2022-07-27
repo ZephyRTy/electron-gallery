@@ -72,7 +72,7 @@ export const getImgFrom24fa = async () => {
 		);
 	});
 	connection.end();
-	let recentCatalog = catalog.map((e) => e.path.split('\\').pop()!);
+	let recentCatalog = catalog.map((e) => e.path.split('/').pop()!);
 	let newPacks: {
 		title: string;
 		stared: 0 | 1;
@@ -119,14 +119,14 @@ export const getImgFrom24fa = async () => {
 					newPacks.push({
 						title,
 						stared: 0,
-						path: downloadPath + '\\' + title,
-						cover: '\\1.jpg'
+						path: downloadPath + '/' + title,
+						cover: '/1.jpg'
 					});
 					console.log(title);
 				}
 
 				try {
-					fs.mkdirSync(downloadPath + '\\' + title);
+					fs.mkdirSync(downloadPath + '/' + title);
 				} catch (e) {}
 				let href = $(ele).attr('href');
 				if (!href) {

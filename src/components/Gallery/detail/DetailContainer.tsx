@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {
 	useCallback,
 	useEffect,
@@ -25,9 +24,9 @@ const ImgDetail = (props: {
 		<div className="pack-detail-wrapper">
 			<img
 				alt=""
-				src={props.src}
 				className="pack-detail"
 				onClick={clickHandler}
+				src={props.src}
 			></img>
 			<SetCover
 				className="set-cover"
@@ -113,25 +112,25 @@ export const DetailContainer = (props: {
 	}, [scroll]);
 	return (
 		<>
-			<Toast message="更改封面成功！" handler={renameToast} />
+			<Toast handler={renameToast} message="更改封面成功！" />
 			<main className="pack-detail-list" ref={scrollingElement}>
 				{props.images.map((v, i) => {
 					return (
 						<ImgDetail
-							src={v.src}
-							key={i + v.src.slice(0, 5) + i}
-							setCurrent={setCurrent}
 							index={i}
+							key={i + v.src.slice(0, 5) + i}
 							renameToastHandler={renameToast}
+							setCurrent={setCurrent}
+							src={v.src}
 						/>
 					);
 				})}
 			</main>
 			<ImageZoomIn
-				src={current >= 0 ? props.images[current]?.src : ''}
-				setCurrent={setCurrent}
-				prev={prev}
 				next={next}
+				prev={prev}
+				setCurrent={setCurrent}
+				src={current >= 0 ? props.images[current]?.src : ''}
 			/>
 		</>
 	);
