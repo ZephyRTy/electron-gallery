@@ -26,26 +26,26 @@ export const BookmarkItem: ImageComponent<Bookmark> = (props: {
 					<img alt="" src={props.src}></img>
 				</a>
 			</div>
-			<a href={props.data.url} className={styles['pack-title']}>
+			<a className={styles['pack-title']} href={props.data.url}>
 				<span
-					title={props.data.title}
 					className={styles['pack-title-name']}
+					title={props.data.title}
 				>
 					{props.data.title}
 				</span>
 				<span
-					title={props.data.title}
 					className={styles['pack-title-timestamp']}
+					title={props.data.title}
 				>
 					{props.data.timeStamp}
 				</span>
 			</a>
 			<span
-				onClick={clickHandler}
 				className={
 					styles['bookmark-span'] +
 					(marked ? ' ' + styles['marked'] : '')
 				}
+				onClick={clickHandler}
 			>
 				<BookmarkIcon />
 			</span>

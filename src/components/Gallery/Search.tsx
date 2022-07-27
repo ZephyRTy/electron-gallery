@@ -25,13 +25,13 @@ export const WindowSearch = () => {
 				}}
 			/>
 			<input
-				type="checkbox"
-				id={'regexp'}
 				className={styles['header__input--regexp']}
+				id={'regexp'}
+				type="checkbox"
 			/>
 			<label
-				htmlFor={'regexp'}
 				className={styles['header__label--regexp']}
+				htmlFor={'regexp'}
 			>
 				<span className={styles['header__span--regexp']}>
 					<RegExpIcon

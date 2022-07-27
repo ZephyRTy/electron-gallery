@@ -1,7 +1,7 @@
 import { BasicData, Bookmark, Mode, Model } from '../types/global';
 import { mysqlOperator } from './mysqlOperator';
 
-export const starAdmin: Model<BasicData> = {
+export const starModel: Model<BasicData> = {
 	dirty: false,
 	data: [] as BasicData[],
 	dataToUpdate: [] as BasicData[],
@@ -31,7 +31,7 @@ export const bookmarkModel: Model<Bookmark> = {
 	}
 };
 
-export const selectionAdmin = {
+export const selectionModel = {
 	selected: new Set<number>(),
 	update(index: number, selected: boolean) {
 		if (selected) {

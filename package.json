@@ -3,7 +3,6 @@
 	"version": "0.1.0",
 	"main": "main.js",
 	"homepage": ".",
-	"type": "module",
 	"private": true,
 	"dependencies": {
 		"@electron/remote": "^2.0.7",
