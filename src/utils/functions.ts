@@ -99,7 +99,7 @@ export async function getAllDrive(): Promise<
 		drive: string;
 		name: string;
 	}[] = [];
-	let promise = new Promise((resolve, reject) => {
+	let promise = new Promise((resolve) => {
 		// 获取电脑中所有盘符
 		process.exec(cmdOrder.getAllDrive(), (error: any, stdout: any) => {
 			if (error !== null) {

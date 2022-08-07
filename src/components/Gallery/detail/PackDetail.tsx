@@ -3,17 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
-import { ReactComponent as AddBookmark } from '../../../icon/addBookmark.svg';
 import { ReactComponent as Back } from '../../../icon/back.svg';
 import { ReactComponent as HomePage } from '../../../icon/homepage.svg';
 import { imageCountOfSinglePage } from '../../../types/constant';
-import { BasicData } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
-import { formatDate } from '../../../utils/functions';
 import { Menu } from '../Menu';
 import { PageNav } from '../PageNav';
 import '../style/PackDetail.scss';
 import { Toast } from '../Toast';
+import { AddBookmark } from './AddBookmark';
 import { DetailContainer } from './DetailContainer';
 const fs = window.require('fs');
 const path = window.require('path');
@@ -146,72 +144,11 @@ export const PackDetail = () => {
 				>
 					<Back />
 				</button>
-				<button
-					className="add-bookmark detail-icon"
-					onClick={(e) => {
-						let top = Math.round(
-							document.getElementsByClassName(
-								'pack-detail-list'
-							)[0].scrollTop
-						);
-						let elements = Array.from(
-							document.getElementsByClassName('pack-detail')
-						) as HTMLImageElement[];
-						let imgIndex = 0;
-						for (let i = 0; i < elements.length - 1; i++) {
-							if (
-								elements[i].offsetTop > top &&
-								top < elements[i + 1].offsetTop
-							) {
-								if (
-									elements[i].offsetTop - top <
-									elements[i + 1].offsetTop - top
-								) {
-									imgIndex = i;
-								} else {
-									imgIndex = i + 1;
-								}
-								break;
-							}
-						}
-						if (imgIndex < 0) {
-							imgIndex = 0;
-						}
-						let imgSrc =
-							'\\' + elements[imgIndex].src.split('/').pop();
-						let data = fileOperator.current(
-							parseInt(pack!),
-							false
-						) as BasicData;
-						let url = '';
-
-						// 记录当前图片的位置
-						let href = window.location.href;
-						if (href.includes('&scroll')) {
-							url = `#${href
-								.split('#')
-								.pop()
-								?.replace(/scroll=[0-9]+/, '&scroll=' + top)}`;
-						} else {
-							url = `#${href.split('#')[1]}&scroll=` + top;
-						}
-						fileOperator.bookmarksUpdate({
-							...data,
-							cover: imgSrc,
-							url,
-							timeStamp: formatDate(new Date())
-						});
-						bookmarkToast.current(true);
-
-						(e.target as HTMLButtonElement).disabled = true;
-						setTimeout(() => {
-							(e.target as HTMLButtonElement).disabled = false;
-							bookmarkToast.current(false);
-						}, 1000);
-					}}
-				>
-					<AddBookmark />
-				</button>
+				<AddBookmark
+					bookmarkToast={bookmarkToast}
+					fileOperator={fileOperator}
+					pack={pack}
+				/>
 			</Menu>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
 			<DetailContainer
