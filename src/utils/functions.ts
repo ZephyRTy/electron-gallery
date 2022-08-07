@@ -164,3 +164,13 @@ export async function getAllDrive(): Promise<
 export const hasExternalDriver = Boolean(
 	(await getAllDrive()).find((e) => e.name === 'BigHouse' && e.drive === 'E')
 );
+
+export const setSearchParams = (head: string, params: any) => {
+	let search = '';
+	for (let key in params) {
+		if (params[key]) {
+			search += `${key}=${params[key]}&`;
+		}
+	}
+	return `${head}?${search}`;
+};

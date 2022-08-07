@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
 import { ReactComponent as SearchIcon } from '../../icon/search.svg';
 import { FileOperator } from '../../utils/fileOperator';
+import { setSearchParams } from '../../utils/functions';
 import styles from './style/header.module.scss';
 
 export const WindowSearch = () => {
@@ -16,10 +17,11 @@ export const WindowSearch = () => {
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {
 						FileOperator.getInstance().reg = reg;
-						window.location.href =
-							'#/gallery?search=' +
-							(e.target as HTMLInputElement).value +
-							`${reg ? '&regexp=true' : ''}`;
+						window.location.href = setSearchParams('#/gallery', {
+							search: (e.target as HTMLInputElement).value,
+							regexp: reg ? 'true' : '',
+							mode: FileOperator.getInstance().getMode()
+						});
 						(e.target as HTMLInputElement).value = '';
 					}
 				}}

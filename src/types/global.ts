@@ -63,10 +63,9 @@ export interface HttpImagePack {
 export enum Mode {
 	Init = 'INIT',
 	Normal = 'Normal',
-	Search = 'Search',
 	Stared = 'Stared',
 	Bookmark = 'Bookmark',
-	InDir = 'InDir',
+	InDir = 'InDir', //文件夹内部
 	ShowDir = 'ShowDir',
 	Detail = 'Detail'
 }

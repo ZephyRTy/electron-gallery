@@ -178,7 +178,7 @@ export class MysqlOperator {
 				} dir_title ${key} order by update_time desc`;
 				break;
 			case Mode.Bookmark:
-				sql = `select * from bookmark where ${
+				sql = `select * from bookmark, pack_list where b_id = id and ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} title ${key} order by b_timeStamp desc`;
 				break;

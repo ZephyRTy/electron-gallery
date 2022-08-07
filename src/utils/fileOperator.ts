@@ -46,12 +46,13 @@ export class FileOperator {
 	private readonly bookmarkModel = bookmarkModel;
 	private selection = selectionModel;
 
-	private searchParams = {
+	private searchCache = {
 		key: '',
 		mode: Mode.Normal,
 		res: [] as BasicData[],
 		total: 0,
-		reg: false
+		reg: false,
+		valid: false
 	};
 
 	private constructor() {
@@ -97,37 +98,30 @@ export class FileOperator {
 	}
 
 	//搜索图包
-	private async searchPacks(key: string, page: number, mode: Mode) {
-		if (
-			this.searchParams.key === key &&
-			this.searchParams.mode === mode &&
-			mode !== Mode.Search
-		) {
-			this.switchMode(Mode.Search);
-			return this.searchParams.res.slice(
+	private async searchPacks(key: string, page: number) {
+		this.setTitle('Search=' + this.searchCache.key);
+		if (this.searchCache.key === key && this.searchCache.valid) {
+			return this.searchCache.res.slice(
 				(page - 1) * packCountOfSinglePage,
 				page * packCountOfSinglePage
 			);
 		}
-		this.searchParams.key = key;
-		this.searchParams.res = [];
-		if (mode !== Mode.Search) {
-			this.searchParams.mode = mode;
-		}
-		this.switchMode(Mode.Search);
+		this.searchCache.valid = true;
+		this.searchCache.key = key;
+		this.searchCache.res = [];
 		let result = [] as BasicData[];
-		if (mode === Mode.InDir) {
+		if (this.mode === Mode.InDir) {
 			result = this.currentPacks.filter((v) => v.title.includes(key));
 		} else {
 			result = await mysqlOperator.search(
-				this.searchParams.reg ? convertJsRegToMysqlReg(key) : key,
-				this.searchParams.mode,
-				this.searchParams.reg
+				this.searchCache.reg ? convertJsRegToMysqlReg(key) : key,
+				this.mode,
+				this.searchCache.reg
 			);
 		}
 
-		this.searchParams.res = result;
-		this.searchParams.total = result.length;
+		this.searchCache.res = result;
+		this.searchCache.total = result.length;
 		this.currentPacks = result;
 		return this.currentPacks.slice(
 			(page - 1) * packCountOfSinglePage,
@@ -165,6 +159,7 @@ export class FileOperator {
 		if (mode === this.mode) {
 			return false;
 		}
+		this.searchCache.valid = false;
 		this.mode = mode;
 		return true;
 	}
@@ -318,8 +313,8 @@ export class FileOperator {
 		}
 		if (query.search) {
 			return [
-				await this.searchPacks(query.search, page, this.mode),
-				this.searchParams.total
+				await this.searchPacks(query.search, page),
+				this.searchCache.total
 			];
 		} else if (query.directory) {
 			return await this.getDirContent(parseInt(query.directory), page);
@@ -446,8 +441,6 @@ export class FileOperator {
 				return 'Gallery';
 			case Mode.Detail:
 				return 'Detail';
-			case Mode.Search:
-				return 'Search = ' + this.searchParams.key;
 			case Mode.Bookmark:
 				return 'Bookmark';
 			case Mode.ShowDir:
@@ -510,11 +503,7 @@ export class FileOperator {
 	}
 
 	rename(newTitle: string) {
-		if (
-			this.mode === Mode.ShowDir ||
-			(this.mode === Mode.Search &&
-				this.searchParams.mode === Mode.ShowDir)
-		) {
+		if (this.mode === Mode.ShowDir) {
 			return this.renameDir(newTitle);
 		}
 		return this.renamePack(newTitle);
@@ -532,8 +521,9 @@ export class FileOperator {
 		}
 		ImgWaterfallCache.getInstance().updateCover(e);
 	}
+
 	get modeOfSearch() {
-		return this.searchParams.mode;
+		return this.searchCache.mode;
 	}
 
 	get inDir() {
@@ -548,7 +538,7 @@ export class FileOperator {
 	}
 
 	set reg(v: boolean) {
-		this.searchParams.reg = v;
+		this.searchCache.reg = v;
 	}
 	getMode() {
 		return this.mode;
