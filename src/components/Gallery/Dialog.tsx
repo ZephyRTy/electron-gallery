@@ -4,6 +4,7 @@
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
 import { useEffect, useRef, useState } from 'react';
+import globalConfig from '../../types/constant';
 import { DirectoryInfo } from '../../types/global';
 import { FileOperator } from '../../utils/fileOperator';
 import styles from './style/dialog.module.scss';
@@ -55,14 +56,6 @@ const sortCNAndEN = (
 	x: [string, DirectoryInfo],
 	y: [string, DirectoryInfo]
 ) => {
-	// let a = x[1].title[0];
-	// let b = y[1].title[0];
-	// let cReg =
-	// 	/^[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/;
-	// if (!cReg.test(a) || !cReg.test(b)) {
-	// 	return a.localeCompare(b);
-	// }
-	// return a.localeCompare(b, 'zh');
 	return sort(
 		x[1].title.toLocaleLowerCase(),
 		y[1].title.toLocaleLowerCase(),
@@ -189,7 +182,7 @@ export const DirMapContent = (props: {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
-						if (destination.length === 0) {
+						if (destination.length === 0 || !globalConfig.r18) {
 							return;
 						} else if (isNaN(parseInt(destination))) {
 							throw new Error('Wrong destination directory');
@@ -243,6 +236,10 @@ export const RenameContent = (props: {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
+						if (!globalConfig.r18) {
+							props.setVisible(false);
+							return;
+						}
 						props.util.rename(newTitle).then((res) => {
 							if (res) {
 								props.setVisible(false);

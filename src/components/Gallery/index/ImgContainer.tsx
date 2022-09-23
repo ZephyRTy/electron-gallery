@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
-import { defaultCover } from '../../../types/constant';
+import globalConfig, { defaultCover } from '../../../types/constant';
 import {
 	BasicData,
 	Bookmark,
@@ -104,7 +104,8 @@ export const ImgContainer = (props: {
 			props.packs.forEach((v) => {
 				let img = new Image();
 				let imgPath =
-					!hasExternalDriver && v.cover.startsWith('E')
+					(!hasExternalDriver && v.cover.startsWith('E')) ||
+					!globalConfig.r18
 						? defaultCover
 						: v.path + v.cover;
 				img.src = String.raw`${imgPath}`;
@@ -164,6 +165,10 @@ export const ImgContainer = (props: {
 					return (
 						<div className={styles['img-pack']} key={index++}>
 							{v.map((ele) => {
+								if (!globalConfig.r18) {
+									ele.data.title =
+										'图包' + ele.data.id.toString();
+								}
 								let Component: ImageComponent<any>;
 								if (isBookmark(ele.data)) {
 									Component = BookmarkItem;

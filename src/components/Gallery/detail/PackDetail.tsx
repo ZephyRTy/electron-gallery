@@ -5,7 +5,10 @@ import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Back } from '../../../icon/back.svg';
 import { ReactComponent as HomePage } from '../../../icon/homepage.svg';
-import { imageCountOfSinglePage } from '../../../types/constant';
+import globalConfig, {
+	defaultCover,
+	imageCountOfSinglePage
+} from '../../../types/constant';
 import { FileOperator } from '../../../utils/fileOperator';
 import { Menu } from '../Menu';
 import { PageNav } from '../PageNav';
@@ -52,15 +55,34 @@ export const PackDetail = () => {
 		if (!filePath) {
 			return;
 		}
-		imgList.current = fs
-			.readdirSync(filePath)
-			.map((v: any, i: any) => {
-				return { src: path.join(filePath, v), index: parseToInt(v) };
-			})
-			.sort(
-				(a: { index: number }, b: { index: number }) =>
-					a.index - b.index
-			);
+		const fileList: string[] = fs.readdirSync(filePath);
+		if (!globalConfig.r18) {
+			imgList.current = fileList.map((v, i) => ({
+				src: defaultCover,
+				index: i
+			}));
+		} else {
+			imgList.current = fileList
+				.map((v: any, i: any) => {
+					return {
+						src: path.join(filePath, v),
+						index: parseToInt(v)
+					};
+				})
+				.sort(
+					(
+						a: { index: number; src: string },
+						b: { index: number; src: string }
+					) => {
+						let formatA = a.src.split('.').at(-1),
+							formatB = b.src.split('.').at(-1);
+						if (formatA !== formatB) {
+							return formatA! > formatB! ? 1 : -1;
+						}
+						return a.index - b.index;
+					}
+				);
+		}
 		if (!total) {
 			setTotal(imgList.current.length);
 		}
@@ -84,7 +106,8 @@ export const PackDetail = () => {
 					'jpeg',
 					'png',
 					'gif',
-					'bmp'
+					'bmp',
+					'webp'
 				)
 			) {
 				--length.value;

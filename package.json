@@ -3,6 +3,7 @@
 	"version": "0.1.0",
 	"main": "main.js",
 	"homepage": ".",
+	"type": "module",
 	"private": true,
 	"dependencies": {
 		"@electron/remote": "^2.0.7",
@@ -116,6 +117,7 @@
 		"@typescript-eslint/eslint-plugin": "^5.30.0",
 		"@typescript-eslint/parser": "^5.30.0",
 		"babel-loader": "^8.2.3",
+		"cellular-automata": "^2.0.1",
 		"chrome-launcher": "^0.15.1",
 		"electron": "^17.1.2",
 		"electron-builder": "^22.14.13",

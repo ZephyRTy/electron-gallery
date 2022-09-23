@@ -1,5 +1,7 @@
 import { getImg } from '../crawler/utils/getImg';
-import { downloadPath, otherPath } from '../types/constant';
+import { proxy } from '../crawler/utils/proxyIP';
+import globalConfig, { downloadPath, otherPath } from '../types/constant';
+import { parseUrlQuery } from '../utils/functions';
 import { mysqlOperator } from '../utils/mysqlOperator';
 const fs = window.require('fs');
 const http = window.require('http');
@@ -44,6 +46,12 @@ export class ImgServer {
 		this.isActive = true;
 		this.server.listen('8081', () => console.log('http://localhost:8081/'));
 		this.server.on('request', (req: any, res: any) => {
+			let data = this.parseRoute(req.url);
+			if (data) {
+				res.end(JSON.stringify(data));
+			} else {
+				res.end('404');
+			}
 			req.on('data', (postData: { toString: () => string }) => {
 				// 注意 postData 是一个Buffer类型的数据，也就是post请求的数据存到了缓冲区
 				let { imgList, title, target } = JSON.parse(
@@ -120,12 +128,15 @@ export class ImgServer {
 				return;
 			}
 			++interval;
-			getImg({
-				src: srcList[index++],
-				title: dirTitle, // 文件夹名
-				id: i++,
-				path: target ? otherPath : downloadPath
-			});
+			getImg(
+				{
+					src: srcList[index++],
+					title: dirTitle, // 文件夹名
+					id: i++,
+					path: target ? otherPath : downloadPath
+				},
+				globalConfig.proxy ? proxy : undefined
+			);
 			if (index >= srcList.length) {
 				// fs.writeFileSync(
 				// 	'D:\\webDemo\\desktop-reader\\json\\catalog.json',
@@ -156,4 +167,25 @@ export class ImgServer {
 		}
 		this.getImgList(task.imgList, task.title, task.target);
 	}
+
+	private parseRoute(url: string) {
+		let [uri] = url.split('?');
+		const query = parseUrlQuery(url);
+		switch (uri) {
+			case '/length':
+				return { length: this.getLength(query.path) };
+			default:
+				return;
+		}
+	}
+
+	private getLength(path) {
+		return fs.readdirSync(path).filter((e) => isImgFile(e)).length;
+	}
 }
+
+const isImgFile = (file: string) =>
+	file.endsWith('.jpg') ||
+	file.endsWith('.png') ||
+	file.endsWith('.gif') ||
+	file.endsWith('.jpeg');

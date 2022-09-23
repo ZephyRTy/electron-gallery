@@ -3753,6 +3753,22 @@
   "resolved" "https://registry.npmmirror.com/caseless/-/caseless-0.12.0.tgz"
   "version" "0.12.0"
 
+"cellular-automata-rule-parser@^3.0.1":
+  "integrity" "sha512-luDYoTsY28apxfp1oZ6ZOYaYqazn49k7lv1+zDpHcmmwGgWBZRW73BNQ6uPer4eujcuYucF72XUwvkOQjqREZA=="
+  "resolved" "https://registry.npmjs.org/cellular-automata-rule-parser/-/cellular-automata-rule-parser-3.0.1.tgz"
+  "version" "3.0.1"
+
+"cellular-automata@^2.0.1":
+  "integrity" "sha512-WtivwZEgqHHrziVvPdQdOtTrPo8NQxxXwAwh5GlZRpTPvJrB4vT5hKGsJj/lfhT85wtMj1bzaBt+YhZVpqcZSA=="
+  "resolved" "https://registry.npmjs.org/cellular-automata/-/cellular-automata-2.0.1.tgz"
+  "version" "2.0.1"
+  dependencies:
+    "cellular-automata-rule-parser" "^3.0.1"
+    "moore" "1.0.0"
+    "ndarray" "^1.0.18"
+    "unconventional-neighbours" "^1.0.0"
+    "von-neumann" "^1.0.1"
+
 "chalk@^2.0.0", "chalk@^2.4.1", "chalk@^2.4.2":
   "integrity" "sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ=="
   "resolved" "https://registry.npmmirror.com/chalk/-/chalk-2.4.2.tgz"
@@ -6877,6 +6893,11 @@
   dependencies:
     "intl-messageformat-parser" "^1.8.1"
 
+"iota-array@^1.0.0":
+  "integrity" "sha512-pZ2xT+LOHckCatGQ3DcG/a+QuEqvoxqkiL7tvE8nn3uuu+f6i1TtpB5/FtWFbxUuVr5PZCx8KskuGatbJDXOWA=="
+  "resolved" "https://registry.npmjs.org/iota-array/-/iota-array-1.0.0.tgz"
+  "version" "1.0.0"
+
 "ip@^1.1.0", "ip@^1.1.5":
   "integrity" "sha512-rBtCAQAJm8A110nbwn6YdveUnuZH3WrC36IwkRXxDnq53JvXA2NVQvB7IHyKomxK1MJ4VDNw3UtFDdXQ+AvLYA=="
   "resolved" "https://registry.npmmirror.com/ip/-/ip-1.1.5.tgz"
@@ -6926,6 +6947,11 @@
   dependencies:
     "call-bind" "^1.0.2"
     "has-tostringtag" "^1.0.0"
+
+"is-buffer@^1.0.2":
+  "integrity" "sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w=="
+  "resolved" "https://registry.npmjs.org/is-buffer/-/is-buffer-1.1.6.tgz"
+  "version" "1.1.6"
 
 "is-builtin-module@^3.1.0":
   "integrity" "sha512-OV7JjAgOTfAFJmHZLvpSTb4qi0nIILDV1gWPYDnDJUTNFM5aGlRAhk4QcT8i7TuAleeEV5Fdkqn3t4mS+Q11fg=="
@@ -8521,6 +8547,11 @@
   "resolved" "https://registry.npmmirror.com/moment/-/moment-2.29.1.tgz"
   "version" "2.29.1"
 
+"moore@1.0.0":
+  "integrity" "sha512-xcsFo/jgtMuVaGePHod5TdSzxnRAQQ4wFpDmFuu34lHvx5sNMsioA84NW7iBWYZ10jHR/nyGaDkhunMJxqAzkw=="
+  "resolved" "https://registry.npmjs.org/moore/-/moore-1.0.0.tgz"
+  "version" "1.0.0"
+
 "mpd-parser@0.21.0":
   "integrity" "sha512-NbpMJ57qQzFmfCiP1pbL7cGMbVTD0X1hqNgL0VYP1wLlZXLf/HtmvQpNkOA1AHkPVeGQng+7/jEtSvNUzV7Gdg=="
   "resolved" "https://registry.npmjs.org/mpd-parser/-/mpd-parser-0.21.0.tgz"
@@ -8591,6 +8622,14 @@
   "integrity" "sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw=="
   "resolved" "https://registry.npmmirror.com/natural-compare/-/natural-compare-1.4.0.tgz"
   "version" "1.4.0"
+
+"ndarray@^1.0.18":
+  "integrity" "sha512-B4JHA4vdyZU30ELBw3g7/p9bZupyew5a7tX1Y/gGeF2hafrPaQZhgrGQfsvgfYbgdFZjYwuEcnaobeM/WMW+HQ=="
+  "resolved" "https://registry.npmjs.org/ndarray/-/ndarray-1.0.19.tgz"
+  "version" "1.0.19"
+  dependencies:
+    "iota-array" "^1.0.0"
+    "is-buffer" "^1.0.2"
 
 "needle@^2.5.2":
   "integrity" "sha512-6R9fqJ5Zcmf+uYaFgdIHmLwNldn5HbK8L5ybn7Uz+ylX/rnOsSp1AHcvQSrCaFN+qNM1wpymHqD7mVasEOlHGQ=="
@@ -12353,6 +12392,11 @@
     "buffer" "^5.2.1"
     "through" "^2.3.8"
 
+"unconventional-neighbours@^1.0.0":
+  "integrity" "sha512-Plau0cvZaMxVM2oK5Udjv+v3gHLDBARQAfdqQgWQJcl0eZdup7odjPTHB442eEt/0RPHygSSXLkh5ASV1lt0Ow=="
+  "resolved" "https://registry.npmjs.org/unconventional-neighbours/-/unconventional-neighbours-1.0.0.tgz"
+  "version" "1.0.0"
+
 "unicode-canonical-property-names-ecmascript@^2.0.0":
   "integrity" "sha512-yY5PpDlfVIU5+y/BSCxAJRBIS1Zc2dDG3Ujq+sR0U+JjUevW2JhocOF+soROYDSaAezOzOKuyyixhD6mBknSmQ=="
   "resolved" "https://registry.npmmirror.com/unicode-canonical-property-names-ecmascript/-/unicode-canonical-property-names-ecmascript-2.0.0.tgz"
@@ -12591,6 +12635,11 @@
   "version" "0.15.3"
   dependencies:
     "global" "^4.3.1"
+
+"von-neumann@^1.0.1":
+  "integrity" "sha512-1+FwvbdqWrRUUanoScRhcQh+52xT9Fj2Ad0xTwZS4El84aDLkyaUeV5cjBCB/DF18Bshc1CZfBsHt5mlYWQ8nQ=="
+  "resolved" "https://registry.npmjs.org/von-neumann/-/von-neumann-1.0.1.tgz"
+  "version" "1.0.1"
 
 "w3c-hr-time@^1.0.2":
   "integrity" "sha512-z8P5DvDNjKDoFIHK7q8r8lackT6l+jo/Ye3HOle7l9nICP9lf1Ci25fy9vHd0JOWewkIFzXIEig3TdKT7JQ5fQ=="

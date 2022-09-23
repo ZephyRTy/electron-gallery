@@ -1,5 +1,6 @@
 import { MutableRefObject, useCallback } from 'react';
 import { ReactComponent as AddBookmarkIcon } from '../../../icon/addBookmark.svg';
+import globalConfig from '../../../types/constant';
 import { BasicData } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
 import { formatDate } from '../../../utils/functions';
@@ -73,7 +74,11 @@ export function AddBookmark(props: {
 		[fileOperator, pack, bookmarkToast]
 	);
 	return (
-		<button className="add-bookmark detail-icon" onClick={handleClick}>
+		<button
+			className="add-bookmark detail-icon"
+			disabled={!globalConfig.r18}
+			onClick={handleClick}
+		>
 			<AddBookmarkIcon />
 		</button>
 	);

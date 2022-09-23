@@ -15,7 +15,8 @@ import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { bookmarkModel, selectionModel, starModel } from './models';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs');
-
+const isImage = (v: string) =>
+	endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg', 'webp');
 // 对文件进行操作，可与数据进行交互
 export class FileOperator {
 	private directories: BasicData[] = [];
@@ -205,15 +206,10 @@ export class FileOperator {
 				return;
 			}
 			let cover = data.cover;
-			if (
-				!cover ||
-				!endsWith(cover.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
-			) {
+			if (!cover || !isImage(cover)) {
 				cover = fs
 					.readdirSync(data.path)
-					.find((v: string) =>
-						endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
-					);
+					.find((v: string) => isImage(v));
 			}
 			if (!cover) {
 				console.warn(data.title, 'no image found');
@@ -239,11 +235,7 @@ export class FileOperator {
 			}
 			let cover =
 				e.cover ||
-				fs
-					.readdirSync(e.path)
-					.find((v: string) =>
-						endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg')
-					);
+				fs.readdirSync(e.path).find((v: string) => isImage(v));
 			if (!cover) {
 				console.warn(e.title, 'no image found');
 				result.push(`${e.title}:::未找到图片`);

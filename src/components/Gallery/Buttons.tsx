@@ -13,6 +13,7 @@ import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
+import globalConfig from '../../types/constant';
 import { FileOperator } from '../../utils/fileOperator';
 import { visibleStore } from '../../utils/store';
 export const HomePage = () => {
@@ -156,6 +157,7 @@ export const RenameBtn = (props: {
 	return (
 		<button
 			className="btn-rename icon"
+			disabled={!globalConfig.r18}
 			onClick={props.handleClick}
 			style={{ display: props.inRename ? 'initial' : 'none' }}
 		>
@@ -170,6 +172,7 @@ export const CrawlerBtn = (props: {}) => {
 	return (
 		<button
 			className={'btn-crawler icon'}
+			disabled={!globalConfig.r18}
 			onClick={() => {
 				setActive(true);
 				getImgFrom24fa()

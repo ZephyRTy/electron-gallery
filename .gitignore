@@ -24,6 +24,7 @@ yarn-error.log*
 txt.js
 /*.json
 /*.ts
+/*.js
 /sql
 /.VSCodeCounter
 txt.ts

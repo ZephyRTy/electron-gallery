@@ -110,7 +110,9 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 						(stared ? styles['stared--true'] + ' ' : '') +
 						styles['icon--stared']
 					}
-					onClick={staredClick}
+					onClick={() => {
+						staredClick();
+					}}
 				/>
 				<RenameIcon
 					className={styles['icon--rename']}
