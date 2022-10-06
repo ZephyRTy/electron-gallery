@@ -1,10 +1,12 @@
 /* eslint-disable no-undefined */
 import { useCallback, useRef, useState } from 'react';
+import { useController } from 'syill';
 import { ReactComponent as Cross } from '../../../icon/cross.svg';
 import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
 import { ReactComponent as Star } from '../../../icon/star.svg';
 import { BasicData, ImageComponent, Mode } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
+import { renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
 export const minIndex = (arr: number[]) => {
 	let min = 0;
@@ -21,9 +23,9 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 	util: FileOperator;
 	inSelect?: number;
 	setInSelect?: any;
-	renameCallback?: any;
 }) => {
 	const [stared, setStared] = useState(props.data.stared);
+	const [, setVis] = useController(renameVisibleStore);
 	const flag = useRef({ id: null as any, isDown: false, holding: false });
 	const up = useCallback(
 		(e: any) => {
@@ -117,7 +119,7 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 				<RenameIcon
 					className={styles['icon--rename']}
 					onClick={() => {
-						props.renameCallback.current(true);
+						setVis(true);
 						props.util.packToBeRenamed = {
 							id: props.data.id,
 							oldTitle: props.data.title

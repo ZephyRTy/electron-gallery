@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useController } from 'syill';
 import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
 import globalConfig, { defaultCover } from '../../../types/constant';
 import {
@@ -10,27 +11,26 @@ import {
 } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
 import {
+	compress,
 	hasExternalDriver,
 	isBookmark,
 	isDirData
 } from '../../../utils/functions';
 import { ImgWaterfallCache } from '../../../utils/ImgWaterFallCache';
+import { dirMapVisibleStore } from '../../../utils/store';
 import {
 	Add,
 	Back,
-	BookmarkBtn,
 	CrawlerBtn,
-	HomePage,
 	Refresh,
 	SelectPacks,
-	ShowDir,
-	Stared
+	SettingBtn
 } from '../Buttons';
 import { DirMap, Rename } from '../Dialog';
 import BookmarkItem from '../ImgComponent/Bookmarks';
 import ImageDir from '../ImgComponent/Directory';
 import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
-import { Menu } from '../Menu';
+import { Menu, Sidebar, SidebarContainer } from '../Menu';
 import styles from '../style/img.module.scss';
 let index = 0;
 export const ImgContainer = (props: {
@@ -47,27 +47,25 @@ export const ImgContainer = (props: {
 	const length = useRef({ value: 0, loaded: 0 }).current;
 	const waterfallCache = useRef(ImgWaterfallCache.getInstance()).current;
 	const [inSelect, setInSelect] = useState(0);
-	const handleDirMap = useRef((_v: boolean) => {});
 	const handleRename = useRef((_v: boolean) => {});
-	const menu = useMemo(() => {
+	const [dirMapVis, setDirMapVis] = useController(dirMapVisibleStore);
+	const [dialogActive, setDialogActive] = useState(false);
+	const topMenu = useMemo(() => {
 		return (
 			//TODO 增加文件夹中文件flat功能
-			<Menu>
-				<HomePage />
+			<Sidebar className="top-menu">
 				<Back inSelect={inSelect} setInSelect={setInSelect} />
-				<Stared />
-				<BookmarkBtn />
-				<ShowDir />
 				<Refresh util={props.util} />
 				<Add util={props.util} />
 				<CrawlerBtn />
+				<SettingBtn />
 				<SelectPacks
 					handleClick={() => {
-						handleDirMap.current(true);
+						setDirMapVis(true);
 					}}
 					inSelect={inSelect}
 				/>
-			</Menu>
+			</Sidebar>
 		);
 	}, [inSelect, props]);
 	useEffect(() => {
@@ -76,13 +74,7 @@ export const ImgContainer = (props: {
 		};
 	}, []);
 	const dirMap = useMemo(() => {
-		return (
-			<DirMap
-				handleVisible={handleDirMap}
-				setInSelect={setInSelect}
-				util={props.util}
-			/>
-		);
+		return <DirMap setInSelect={setInSelect} util={props.util} />;
 	}, [props.util]);
 	useEffectOnChange(() => {
 		if (props.packs.length === 0) {
@@ -107,8 +99,13 @@ export const ImgContainer = (props: {
 					(!hasExternalDriver && v.cover.startsWith('E')) ||
 					!globalConfig.r18
 						? defaultCover
-						: v.path + v.cover;
-				img.src = String.raw`${imgPath}`;
+						: (v.path + v.cover).replace(/\\/g, '/');
+				let thumbPath =
+					imgPath.split('/').slice(0, -1).join('/') + '/thumb.jpg';
+				img.src = String.raw`${thumbPath}`.replace(
+					/\s/g,
+					encodeURIComponent(' ')
+				);
 				img.onload = () => {
 					img.onload = null;
 					let min = minIndex(heights);
@@ -134,6 +131,7 @@ export const ImgContainer = (props: {
 					);
 					console.error(err);
 					console.log(imgPath);
+					compress(v.path + v.cover);
 				};
 			});
 		}
@@ -157,9 +155,12 @@ export const ImgContainer = (props: {
 	}, [images, props.util, waterfallCache]);
 	return (
 		<>
-			{menu}
+			<SidebarContainer>
+				{topMenu}
+				<Menu />
+			</SidebarContainer>
 			{dirMap}
-			<Rename handleVisible={handleRename} util={props.util} />
+			<Rename util={props.util} />
 			<main className={styles['img-main-content']}>
 				{images.map((v) => {
 					return (
@@ -183,7 +184,6 @@ export const ImgContainer = (props: {
 										data={ele.data}
 										inSelect={inSelect}
 										key={index++}
-										renameCallback={handleRename}
 										setInSelect={setInSelect}
 										src={ele.img.src}
 										util={props.util}

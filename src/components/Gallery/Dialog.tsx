@@ -4,16 +4,18 @@
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
 import { useEffect, useRef, useState } from 'react';
+import { Store, useData } from 'syill';
 import globalConfig from '../../types/constant';
 import { DirectoryInfo } from '../../types/global';
 import { FileOperator } from '../../utils/fileOperator';
+import { dirMapVisibleStore, renameVisibleStore } from '../../utils/store';
 import styles from './style/dialog.module.scss';
-function createDialog<T>(Component: (props: T) => JSX.Element) {
-	return (props: Omit<T, 'setVisible'> & { handleVisible: any }) => {
-		const [visible, setVisible] = useState(false);
-		useEffect(() => {
-			props.handleVisible.current = setVisible;
-		}, [props]);
+function createDialog<T>(
+	Component: (props: T) => JSX.Element,
+	store: Store<boolean>
+) {
+	return (props) => {
+		const [visible, setVisible] = useData(store);
 		return (
 			<div
 				className={
@@ -69,7 +71,6 @@ export const DirMapContent = (props: {
 	visible?: boolean;
 }) => {
 	const [checked, setChecked] = useState('');
-	const [refresh, setRefresh] = useState(false);
 	const [err, setErr] = useState(false);
 	const ul = useRef(null);
 	const open = useRef(false);
@@ -256,5 +257,5 @@ export const RenameContent = (props: {
 	);
 };
 
-export const DirMap = createDialog(DirMapContent);
-export const Rename = createDialog(RenameContent);
+export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
+export const Rename = createDialog(RenameContent, renameVisibleStore);

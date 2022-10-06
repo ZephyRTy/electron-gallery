@@ -10,7 +10,7 @@ import globalConfig, {
 	imageCountOfSinglePage
 } from '../../../types/constant';
 import { FileOperator } from '../../../utils/fileOperator';
-import { Menu } from '../Menu';
+import { Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
 import '../style/PackDetail.scss';
 import { Toast } from '../Toast';
@@ -63,6 +63,7 @@ export const PackDetail = () => {
 			}));
 		} else {
 			imgList.current = fileList
+				.filter((e) => e !== 'thumb.jpg')
 				.map((v: any, i: any) => {
 					return {
 						src: path.join(filePath, v),
@@ -150,29 +151,31 @@ export const PackDetail = () => {
 	}, [page]);
 	return (
 		<div className="pack-detail-container">
-			<Menu>
-				<button
-					className="btn-homepage icon"
-					onClick={() => {
-						window.location.href = fileOperator.loadPrevPage();
-					}}
-				>
-					<HomePage />
-				</button>
-				<button
-					className="back detail-icon"
-					onClick={() => {
-						window.history.back();
-					}}
-				>
-					<Back />
-				</button>
-				<AddBookmark
-					bookmarkToast={bookmarkToast}
-					fileOperator={fileOperator}
-					pack={pack}
-				/>
-			</Menu>
+			<SidebarContainer>
+				<Sidebar className="menu">
+					<button
+						className="btn-homepage icon"
+						onClick={() => {
+							window.location.href = fileOperator.loadPrevPage();
+						}}
+					>
+						<HomePage />
+					</button>
+					<button
+						className="back detail-icon"
+						onClick={() => {
+							window.history.back();
+						}}
+					>
+						<Back />
+					</button>
+					<AddBookmark
+						bookmarkToast={bookmarkToast}
+						fileOperator={fileOperator}
+						pack={pack}
+					/>
+				</Sidebar>
+			</SidebarContainer>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
 			<DetailContainer
 				images={images}

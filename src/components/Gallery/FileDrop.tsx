@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useModel } from 'syill';
 import { FileOperator } from '../../utils/fileOperator';
-import { visibleStore } from '../../utils/store';
+import { fileDropVisibleStore } from '../../utils/store';
 import styles from './style/fileDrop.module.scss';
 // eslint-disable-next-line no-unused-vars
 const _ = React;
 export const FileDrop = (props: { util: FileOperator }) => {
-	const visible = useModel(visibleStore);
+	const visible = useModel(fileDropVisibleStore);
 	const [result, setResult] = useState([] as string[]);
 	useEffect(() => {
 		if (!visible) {

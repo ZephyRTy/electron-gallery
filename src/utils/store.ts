@@ -13,4 +13,6 @@ export const ImageStateStore = {
 	}
 };
 
-export const visibleStore = new Store(false);
+export const fileDropVisibleStore = new Store(false);
+export const dirMapVisibleStore = new Store(false);
+export const renameVisibleStore = new Store(false);

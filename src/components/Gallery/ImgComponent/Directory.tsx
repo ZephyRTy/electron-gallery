@@ -1,13 +1,15 @@
+import { useController } from 'syill';
 import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
 import { BasicData, DirData, ImageComponent } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
+import { renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
 export const ImageDir: ImageComponent<BasicData> = (props: {
 	src: string;
 	data: DirData;
 	util: FileOperator;
-	renameCallback?: any;
 }) => {
+	const [, setVis] = useController(renameVisibleStore);
 	return (
 		<div className={styles.img}>
 			<div className={styles['img-wrapper']}>
@@ -31,7 +33,7 @@ export const ImageDir: ImageComponent<BasicData> = (props: {
 			<span className={styles['icon-span']}>
 				<RenameIcon
 					onClick={() => {
-						props.renameCallback.current(true);
+						setVis(true);
 						props.util.packToBeRenamed = {
 							id: props.data.id,
 							oldTitle: props.data.title

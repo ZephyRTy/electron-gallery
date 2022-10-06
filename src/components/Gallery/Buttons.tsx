@@ -12,14 +12,19 @@ import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
+import { ReactComponent as SettingIcon } from '../../icon/setting.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
 import globalConfig from '../../types/constant';
+import { Mode } from '../../types/global';
 import { FileOperator } from '../../utils/fileOperator';
-import { visibleStore } from '../../utils/store';
-export const HomePage = () => {
+import { fileDropVisibleStore } from '../../utils/store';
+export const HomePage = (props: { activeMode: Mode; currentMode: Mode }) => {
 	return (
 		<button
-			className="btn-homepage icon"
+			className={
+				'btn-homepage icon' +
+				(props.activeMode === props.currentMode ? ' activeMode' : '')
+			}
 			onClick={() => {
 				window.location.href = '#/gallery';
 			}}
@@ -50,10 +55,13 @@ export const Back = (props: {
 	);
 };
 
-export const Stared = () => {
+export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
 	return (
 		<button
-			className="btn-stared icon"
+			className={
+				'btn-stared icon' +
+				(props.activeMode === props.currentMode ? ' activeMode' : '')
+			}
 			onClick={() => {
 				window.location.href = '#/gallery?stared=true&page=1';
 			}}
@@ -64,27 +72,9 @@ export const Stared = () => {
 };
 
 export const Add = (props: { util: FileOperator }) => {
-	const [visible, setVisible] = useController(visibleStore);
-	// useLayoutEffect(() => {
-	// 	(fileInput.current as any).setAttribute('webkitdirectory', '');
-	// 	(fileInput.current as any).setAttribute('directory', '');
-	// }, []);
+	const [visible, setVisible] = useController(fileDropVisibleStore);
 	return (
 		<>
-			{/* <input
-				id="file-input"
-				type={'file'}
-				onChange={(e) => {
-					let path = (e.target as any).files[0].path
-						?.split('\\')
-						.slice(0, -1)
-						.join('\\');
-					let cover = (e.target as any).files[0].name;
-					let title = path.split('\\').pop();
-					props.util.addNewPack({ path, cover, title });
-				}}
-				ref={fileInput}
-			/> */}
 			<button
 				className="btn-add icon"
 				onClick={() => {
@@ -97,10 +87,13 @@ export const Add = (props: { util: FileOperator }) => {
 	);
 };
 
-export const BookmarkBtn = () => {
+export const BookmarkBtn = (props: { activeMode: Mode; currentMode: Mode }) => {
 	return (
 		<button
-			className="btn-bookmark icon"
+			className={
+				'btn-bookmark icon' +
+				(props.activeMode === props.currentMode ? ' activeMode' : '')
+			}
 			onClick={() => {
 				window.location.href = '#/gallery?bookmark=true&page=1';
 			}}
@@ -137,10 +130,13 @@ export const SelectPacks = (props: {
 	);
 };
 
-export const ShowDir = (props: {}) => {
+export const ShowDir = (props: { activeMode: Mode; currentMode: Mode }) => {
 	return (
 		<button
-			className="btn-showDir icon"
+			className={
+				'btn-showDir icon' +
+				(props.activeMode === props.currentMode ? ' activeMode' : '')
+			}
 			onClick={() => {
 				window.location.href = '#/gallery?show_dir=true&page=1';
 			}}
@@ -174,6 +170,9 @@ export const CrawlerBtn = (props: {}) => {
 			className={'btn-crawler icon'}
 			disabled={!globalConfig.r18}
 			onClick={() => {
+				if (active) {
+					return;
+				}
 				setActive(true);
 				getImgFrom24fa()
 					.then((res) => {
@@ -194,6 +193,14 @@ export const CrawlerBtn = (props: {}) => {
 					err ? 'crawler--error' : ''
 				}`}
 			/>
+		</button>
+	);
+};
+
+export const SettingBtn = () => {
+	return (
+		<button className={'btn-setting icon'}>
+			<SettingIcon fill="black" />
 		</button>
 	);
 };
