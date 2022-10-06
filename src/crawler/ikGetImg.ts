@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { downloadPath } from '../types/constant';
-import { mysqlOperator } from '../utils/mysqlOperator';
+import { FileOperator } from '../utils/fileOperator';
 import { getImg } from './utils/getImg';
 const fs = window.require('fs');
 // let { imgList, title } = JSON.parse(
@@ -55,7 +55,7 @@ export async function getImgList(
 			// );
 			clearInterval(id);
 			try {
-				mysqlOperator.insertPack(o, true);
+				FileOperator.getInstance().addNewPack(o, true);
 			} catch (e) {
 				if (!target) {
 					console.log(e);

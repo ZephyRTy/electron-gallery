@@ -238,8 +238,8 @@ class Stream<IN, MID, OUT> extends StreamEntry<IN, MID, OUT> {
 				this.status.clear();
 				this.pipe.target?.extract();
 			})
-			.catch((e) => {
-				console.log(e);
+			.catch((e: Error) => {
+				console.log(this.name, e.name);
 			});
 	}
 	protected push(...data: OUT[]) {

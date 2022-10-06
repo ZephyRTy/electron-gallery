@@ -1,5 +1,6 @@
 import { BasicData, Bookmark, DirData } from '../types/global';
-
+const fs = window.require('fs');
+const Buffer = window.require('buffer').Buffer;
 export function formatDate(
 	time: string | number | Date,
 	format = 'YY-MM-DD hh:mm:ss'
@@ -173,4 +174,32 @@ export const setSearchParams = (head: string, params: any) => {
 		}
 	}
 	return `${head}?${search}`;
+};
+let canvas: HTMLCanvasElement = document.createElement('canvas');
+function imageToCanvas(src: string, fn, quality) {
+	let ctx = canvas.getContext('2d');
+	let img = new Image();
+	let dest = src.replace('\\', '/').split('/').slice(0, -1).join('/');
+	img.src = src;
+	img.onload = function () {
+		canvas.width = img.width;
+		canvas.height = img.height;
+		ctx!.drawImage(img, 0, 0);
+		fn(canvas, dest, quality);
+	};
+}
+
+function canvasToDataURL(canvas: HTMLCanvasElement, dest: string, quality) {
+	let data = canvas
+		.toDataURL('image/jpeg', 0.5)
+		.replace(/^data:image\/\w+;base64,/, '');
+	let dataBuffer = Buffer.from(data, 'base64');
+	fs.writeFileSync(dest + '/thumb.jpg', dataBuffer);
+}
+export const compress = (src: string, quality = 0.6) => {
+	imageToCanvas(src, canvasToDataURL, quality);
+};
+
+export const openInExplorer = (path: string) => {
+	window.require('child_process').exec(`start "" "${path}"`);
 };

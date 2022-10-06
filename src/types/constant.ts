@@ -11,7 +11,8 @@ const {
 	downloadPath,
 	otherPath,
 	r18,
-	proxy
+	proxyEnabled,
+	domainOf24fa
 } = globalConfig;
 export const defaultCover = 'D:\\webDemo\\desktop-reader\\public\\blank.jpg';
 export {
@@ -20,7 +21,8 @@ export {
 	downloadPath,
 	otherPath,
 	r18,
-	proxy
+	domainOf24fa,
+	proxyEnabled
 };
 
 export default globalConfig;

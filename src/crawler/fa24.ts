@@ -1,6 +1,10 @@
 import _ from 'lodash';
-import { downloadPath } from '../types/constant';
-import { mysqlOperator } from '../utils/mysqlOperator';
+import globalConfig, {
+	domainOf24fa,
+	downloadPath,
+	proxyEnabled
+} from '../types/constant';
+import { FileOperator } from '../utils/fileOperator';
 import { Circuit } from './stream/Circuit';
 import { Req } from './stream/req';
 import { Stream } from './stream/stream';
@@ -16,7 +20,7 @@ let headers = {
 	'User-Agent':
 		'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.62'
 };
-let domain = 'https://www.112w.cc/';
+let domain = domainOf24fa;
 let mode = 'new';
 let missing: string[] =
 	mode === 'new'
@@ -37,14 +41,13 @@ export const getImgFrom24fa = async () => {
 	connection.connect();
 	let catalog: {
 		title: string;
-		stared: boolean;
 		id: number;
 		path: string;
 		cover: string;
 		status: 0 | 1;
 	}[] = await new Promise((resolve) => {
 		connection.query(
-			'select * from pack_list order by id desc limit 1000',
+			'select * from pack_list order by id desc limit 3000',
 			(err: any, res: any) => {
 				if (err) {
 					console.log(err);
@@ -142,7 +145,10 @@ export const getImgFrom24fa = async () => {
 		},
 		{ max: 1 }
 	);
-	Req.options = { proxy, headers };
+	Req.options = {
+		proxy: proxyEnabled ? globalConfig.proxy : undefined,
+		headers
+	};
 
 	const pages = Stream.create(
 		(body, data: { title: string; current: string }) => {
@@ -200,7 +206,7 @@ export const getImgFrom24fa = async () => {
 	return new Promise((resolve, reject) => {
 		try {
 			getNewPacks
-				.collect('https://www.112w.cc/c49.aspx')
+				.collect(domain + 'c49.aspx')
 				.next(pages)
 				.next(imgs)
 				.output(
@@ -212,17 +218,11 @@ export const getImgFrom24fa = async () => {
 				.close(() => {
 					console.log('end');
 					if (mode === 'new') {
-						newPacks.forEach((e, i) => {
-							if (newPacks.length === 0) {
+						FileOperator.getInstance()
+							.addNewPack(newPacks)
+							.then(() => {
 								resolve(true);
-								return;
-							}
-							mysqlOperator.insertPack(e).then(() => {
-								if (i === newPacks.length - 1) {
-									resolve(true);
-								}
 							});
-						});
 					}
 				});
 		} catch (e) {

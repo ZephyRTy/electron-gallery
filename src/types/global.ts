@@ -47,7 +47,6 @@ export interface ImageComponent<T extends BasicData> {
 		inSelect?: number;
 		setInSelect?: any;
 		submit?: boolean;
-		renameCallback?: any;
 	}): JSX.Element;
 }
 

@@ -1,8 +1,7 @@
 import { getImg } from '../crawler/utils/getImg';
-import { proxy } from '../crawler/utils/proxyIP';
-import globalConfig, { downloadPath, otherPath } from '../types/constant';
+import { downloadPath, otherPath } from '../types/constant';
+import { FileOperator } from '../utils/fileOperator';
 import { parseUrlQuery } from '../utils/functions';
-import { mysqlOperator } from '../utils/mysqlOperator';
 const fs = window.require('fs');
 const http = window.require('http');
 const titles = new Set();
@@ -128,15 +127,12 @@ export class ImgServer {
 				return;
 			}
 			++interval;
-			getImg(
-				{
-					src: srcList[index++],
-					title: dirTitle, // 文件夹名
-					id: i++,
-					path: target ? otherPath : downloadPath
-				},
-				globalConfig.proxy ? proxy : undefined
-			);
+			getImg({
+				src: srcList[index++],
+				title: dirTitle, // 文件夹名
+				id: i++,
+				path: target ? otherPath : downloadPath
+			});
 			if (index >= srcList.length) {
 				// fs.writeFileSync(
 				// 	'D:\\webDemo\\desktop-reader\\json\\catalog.json',
@@ -144,7 +140,7 @@ export class ImgServer {
 				// );
 				clearInterval(id);
 				try {
-					mysqlOperator.insertPack(o, true);
+					FileOperator.getInstance().addNewPack(o, true);
 				} catch (e) {
 					if (!target) {
 						console.log(e);

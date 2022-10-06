@@ -6,6 +6,7 @@ import React from 'react';
 import { defaultCover, packCountOfSinglePage } from '../types/constant';
 import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
 import {
+	compress,
 	convertJsRegToMysqlReg,
 	endsWith,
 	notMoreThanOne,
@@ -17,6 +18,10 @@ import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs');
 const isImage = (v: string) =>
 	endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg', 'webp');
+const checkImageSize = (path: string) => {
+	const size = fs.statSync(path).size;
+	return size;
+};
 // 对文件进行操作，可与数据进行交互
 export class FileOperator {
 	private directories: BasicData[] = [];
@@ -199,7 +204,8 @@ export class FileOperator {
 	async addNewPack(
 		data:
 			| { path: string; cover?: string; title: string }
-			| { path: string; cover?: string; title: string }[]
+			| { path: string; cover?: string; title: string }[],
+		duplicate: boolean = false
 	) {
 		if (!Array.isArray(data)) {
 			if (!data.path || !data.title) {
@@ -221,7 +227,20 @@ export class FileOperator {
 				title: data.title,
 				stared: 0 as 0
 			};
-			await mysqlOperator.insertPack(newPack);
+			await mysqlOperator.insertPack(newPack, duplicate);
+			const img = newPack.path + newPack.cover;
+			let size = checkImageSize(img);
+			let n = 1;
+			if (size >= 1024 * 1024 * 6) {
+				n = 0.15;
+			} else if (size >= 1024 * 1024 * 4) {
+				n = 0.2;
+			} else if (size >= 1024 * 1024 * 2) {
+				n = 0.4;
+			} else if (size >= 1024 * 1024 * 1) {
+				n = 0.8;
+			}
+			compress(img, n);
 			this.switchMode(Mode.Init);
 			this.refresh();
 			return true;
@@ -253,7 +272,9 @@ export class FileOperator {
 						result.push(`${e.title}:::重复`);
 					} else {
 						successCount++;
-						result.push(`${e.title}:::成功`);
+						if (successCount === 1) {
+							result.push('添加成功');
+						}
 					}
 
 					if (i === data.length - 1 && successCount) {
@@ -536,3 +557,5 @@ export class FileOperator {
 		return this.mode;
 	}
 }
+
+export const fileOperator = FileOperator.getInstance();

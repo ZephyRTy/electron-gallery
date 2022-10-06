@@ -1,10 +1,9 @@
-import { downloadPath } from '../../types/constant';
+import globalConfig, { downloadPath, proxyEnabled } from '../../types/constant';
 
 const fs = window.require('fs');
 const request = window.require('request');
 export function getImg(
 	img: { src: string; id: number; title: string; path?: string },
-	proxy?: string,
 	deep = 0
 ) {
 	let filePath = '';
@@ -16,6 +15,7 @@ export function getImg(
 	if (!fs.existsSync(filePath + `\\${img.title}`)) {
 		fs.mkdirSync(filePath + `\\${img.title}`);
 	}
+	const proxy = proxyEnabled ? globalConfig.proxy : undefined;
 	try {
 		request({
 			url: img.src,
@@ -31,7 +31,7 @@ export function getImg(
 					console.error(err);
 					console.log(img.title);
 				} else {
-					getImg(img, proxy, deep + 1);
+					getImg(img, deep + 1);
 				}
 			})
 			.pipe(
