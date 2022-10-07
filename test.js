@@ -1,6 +1,15 @@
-// const filePath = 'D:\\Steam';
-// require('child_process').exec(`start "" "${filePath}"`);
-const fs = require('fs');
-fs.readFileSync(
-	'E:/baiduYun/mxj（cunhua三补）/爆机少女喵小吉 NO.046 小魅魔 [38P 371MB]/DSC08515.jpg'
-);
+const stringfy = (obj) => {
+	let str = '{';
+	for (let key in obj) {
+		if (typeof obj[key] === 'object') {
+			str += `${key}: ${stringfy(obj[key])},`;
+		} else {
+			str += `${key}: ${obj[key]},`;
+		}
+	}
+	str = str.slice(0, -1);
+	str += '}';
+	return str;
+};
+
+console.log(stringfy({ a: 1, b: { c: 2, d: 3 } }));

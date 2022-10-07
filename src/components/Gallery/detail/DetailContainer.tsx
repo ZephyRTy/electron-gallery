@@ -6,9 +6,11 @@ import React, {
 	useState
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useController } from 'syill';
 import { ReactComponent as SetCover } from '../../../icon/cover.svg';
 import { imageCountOfSinglePage } from '../../../types/constant';
 import { FileOperator } from '../../../utils/fileOperator';
+import { imageStateStore } from '../../../utils/store';
 import { Toast } from '../Toast';
 import { ImageZoomIn } from './ZoomIn';
 const ImgDetail = (props: {
@@ -60,6 +62,7 @@ export const DetailContainer = (props: {
 	total: number;
 }) => {
 	const [current, setCurrent] = useState(-1);
+	const [, setZoom] = useController(imageStateStore);
 	let [searchParams, setParams] = useSearchParams();
 	let page = Number(searchParams.get('page') || '1');
 	let scroll = Number(searchParams.get('scroll') || '0');
@@ -74,6 +77,7 @@ export const DetailContainer = (props: {
 			return;
 		}
 		setCurrent((v) => v - 1);
+		setZoom(props.images[current - 1].src);
 	}, [current, page, setParams]);
 	const next = useCallback(() => {
 		if (current >= props.images.length - 1) {
@@ -83,6 +87,7 @@ export const DetailContainer = (props: {
 			return;
 		}
 		setCurrent((v) => v + 1);
+		setZoom(props.images[current + 1].src);
 	}, [current, props.images.length, props.total, page, setParams]);
 	useEffect(() => {
 		if (current > 0) {
@@ -93,6 +98,7 @@ export const DetailContainer = (props: {
 	}, [page]);
 	useLayoutEffect(() => {
 		if (current < 0) {
+			setZoom('');
 			return;
 		}
 		let h = 0;

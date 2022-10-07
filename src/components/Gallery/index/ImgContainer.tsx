@@ -3,8 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useController } from 'syill';
 import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
 import globalConfig, {
-	BOOKMARK_THUMB,
-	defaultCover
+	defaultCover,
+	getBookmarkThumb
 } from '../../../types/constant';
 import {
 	BasicData,
@@ -106,10 +106,11 @@ export const ImgContainer = (props: {
 						? defaultCover
 						: (v.path + v.cover).replace(/\\/g, '/');
 				let coverPath = imgPath;
-				if (isBookmark(props.packs[0])) {
+				if (isBookmark(v)) {
 					coverPath =
 						imgPath.split('/').slice(0, -1).join('/') +
-						'/bookmark-thumb.jpg';
+						'/' +
+						getBookmarkThumb(v);
 				} else if (!imgPath.endsWith('blank.jpg')) {
 					coverPath =
 						imgPath.split('/').slice(0, -1).join('/') +
@@ -143,10 +144,10 @@ export const ImgContainer = (props: {
 					);
 					console.error(err);
 					console.log(decodeURIComponent(img.src));
-					if (isBookmark(props.packs[0])) {
+					if (isBookmark(v)) {
 						compress(
 							decodeURIComponent(v.path + v.cover),
-							BOOKMARK_THUMB
+							getBookmarkThumb(v)
 						);
 					} else {
 						if (!compress(decodeURIComponent(v.path + v.cover))) {

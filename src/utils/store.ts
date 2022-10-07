@@ -26,3 +26,5 @@ export const dialogActive = {
 		dialogActive.active = !dialogActive.active;
 	}
 };
+
+export const imageStateStore = new Store('');

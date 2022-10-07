@@ -70,7 +70,7 @@ export const PackDetail = () => {
 			}));
 		} else {
 			imgList.current = fileList
-				.filter((e) => e !== 'thumb.jpg')
+				.filter((e) => !e.includes('thumb'))
 				.map((v: any, i: any) => {
 					return {
 						src: path.join(filePath, v),

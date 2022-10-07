@@ -3,11 +3,12 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
 const url = require('url');
+const remote = require('@electron/remote/main');
 let tray = null;
 // 保持window对象的全局引用,避免JavaScript对象被垃圾回收时,窗口被自动关闭.
 let mainWindow;
 
-require('@electron/remote/main').initialize();
+remote.initialize();
 module.exports = { mainWindow: mainWindow };
 function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
@@ -23,7 +24,7 @@ function createWindow() {
 			webSecurity: false
 		}
 	});
-	require('@electron/remote/main').enable(mainWindow.webContents);
+	remote.enable(mainWindow.webContents);
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL('http://localhost:8097/');

@@ -4,8 +4,8 @@
 import { fromJS, Map } from 'immutable';
 import React from 'react';
 import {
-	BOOKMARK_THUMB,
 	defaultCover,
+	getBookmarkThumb,
 	packCountOfSinglePage
 } from '../types/constant';
 import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
@@ -373,7 +373,10 @@ export class FileOperator {
 	}
 
 	bookmarksUpdate(newBookmark: Bookmark, marked: boolean = true) {
-		compress(newBookmark.path + newBookmark.cover, BOOKMARK_THUMB);
+		compress(
+			newBookmark.path + newBookmark.cover,
+			getBookmarkThumb(newBookmark)
+		);
 		this.bookmarkModel.update(newBookmark, marked);
 	}
 
