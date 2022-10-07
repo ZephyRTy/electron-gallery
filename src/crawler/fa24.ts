@@ -75,7 +75,7 @@ export const getImgFrom24fa = async () => {
 		);
 	});
 	connection.end();
-	let recentCatalog = catalog.map((e) => e.path.split('/').pop()!);
+	let recentCatalog = catalog.map((e) => e.title!);
 	let newPacks: {
 		title: string;
 		stared: 0 | 1;

@@ -16,3 +16,13 @@ export const ImageStateStore = {
 export const fileDropVisibleStore = new Store(false);
 export const dirMapVisibleStore = new Store(false);
 export const renameVisibleStore = new Store(false);
+export const configVisibleStore = new Store(false);
+export const dialogActive = {
+	active: false,
+	setActive: (active: boolean) => {
+		dialogActive.active = active;
+	},
+	reverse: () => {
+		dialogActive.active = !dialogActive.active;
+	}
+};

@@ -3,7 +3,11 @@
 /* eslint-disable no-unused-vars */
 import { fromJS, Map } from 'immutable';
 import React from 'react';
-import { defaultCover, packCountOfSinglePage } from '../types/constant';
+import {
+	BOOKMARK_THUMB,
+	defaultCover,
+	packCountOfSinglePage
+} from '../types/constant';
 import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
 import {
 	compress,
@@ -223,24 +227,13 @@ export class FileOperator {
 			}
 			let newPack = {
 				path: data.path,
-				cover: '/' + cover,
+				cover: cover.startsWith('/') ? cover : '/' + cover,
 				title: data.title,
 				stared: 0 as 0
 			};
 			await mysqlOperator.insertPack(newPack, duplicate);
 			const img = newPack.path + newPack.cover;
-			let size = checkImageSize(img);
-			let n = 1;
-			if (size >= 1024 * 1024 * 6) {
-				n = 0.15;
-			} else if (size >= 1024 * 1024 * 4) {
-				n = 0.2;
-			} else if (size >= 1024 * 1024 * 2) {
-				n = 0.4;
-			} else if (size >= 1024 * 1024 * 1) {
-				n = 0.8;
-			}
-			compress(img, n);
+			compress(img);
 			this.switchMode(Mode.Init);
 			this.refresh();
 			return true;
@@ -262,19 +255,18 @@ export class FileOperator {
 			}
 			let newPack = {
 				path: e.path,
-				cover: '/' + cover,
+				cover: cover.startsWith('/') ? cover : '/' + cover,
 				title: e.title,
 				stared: 0 as 0
 			};
+			const img = newPack.path + newPack.cover;
+			compress(img);
 			success.push(
 				mysqlOperator.insertPack(newPack).then((res) => {
 					if (!res) {
 						result.push(`${e.title}:::重复`);
 					} else {
 						successCount++;
-						if (successCount === 1) {
-							result.push('添加成功');
-						}
 					}
 
 					if (i === data.length - 1 && successCount) {
@@ -285,6 +277,7 @@ export class FileOperator {
 			);
 		});
 		return Promise.all(success).then(() => {
+			result.unshift(`${successCount}个图包:::成功`);
 			return result;
 		});
 	}
@@ -380,6 +373,7 @@ export class FileOperator {
 	}
 
 	bookmarksUpdate(newBookmark: Bookmark, marked: boolean = true) {
+		compress(newBookmark.path + newBookmark.cover, BOOKMARK_THUMB);
 		this.bookmarkModel.update(newBookmark, marked);
 	}
 
@@ -525,7 +519,8 @@ export class FileOperator {
 		return mysqlOperator.getCount();
 	}
 
-	async changePackCover(packId: string, cover: string) {
+	async changePackCover(packId: string, cover: string, fullPath: string) {
+		compress(fullPath);
 		let e = this.currentPacks.find((e) => e.id === parseInt(packId))!;
 		await mysqlOperator.changePackCover(e?.id, cover);
 		e.cover = cover;
@@ -535,6 +530,9 @@ export class FileOperator {
 		ImgWaterfallCache.getInstance().updateCover(e);
 	}
 
+	deletePack(packId: number) {
+		mysqlOperator.delete(packId);
+	}
 	get modeOfSearch() {
 		return this.searchCache.mode;
 	}

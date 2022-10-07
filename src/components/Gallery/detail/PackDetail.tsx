@@ -1,15 +1,17 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Back } from '../../../icon/back.svg';
-import { ReactComponent as HomePage } from '../../../icon/homepage.svg';
+import { ReactComponent as HomePage } from '../../../icon/home.svg';
 import globalConfig, {
 	defaultCover,
 	imageCountOfSinglePage
 } from '../../../types/constant';
 import { FileOperator } from '../../../utils/fileOperator';
+import { openInExplorer } from '../../../utils/functions';
+import { OpenInExplorerBtn } from '../Buttons';
 import { Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
 import '../style/PackDetail.scss';
@@ -34,6 +36,7 @@ const endsWith = (str: string, ...arg: string[]) => {
 export const PackDetail = () => {
 	const { pack } = useParams();
 	const fileOperator = useRef(FileOperator.getInstance()).current;
+	const currentPath = useRef(fileOperator.current(parseInt(pack!))?.path);
 	let [searchParams] = useSearchParams();
 	let page = searchParams.get('page')
 		? parseInt(searchParams.get('page') as string, 10)
@@ -43,6 +46,10 @@ export const PackDetail = () => {
 	const length = useRef({ value: 0 }).current;
 	const [total, setTotal] = useState(0);
 	const bookmarkToast = useRef((arg: boolean) => {});
+	const handleOpenFolder = useCallback(() => {
+		if (!pack) return;
+		openInExplorer(currentPath.current);
+	}, [pack]);
 	useEffect(() => {
 		(document.scrollingElement as any).scrollTop = 0;
 	}, [images]);
@@ -51,7 +58,7 @@ export const PackDetail = () => {
 			imgList.current = [];
 			return;
 		}
-		let filePath = fileOperator.current(parseInt(pack))?.path;
+		let filePath = currentPath.current;
 		if (!filePath) {
 			return;
 		}
@@ -154,7 +161,7 @@ export const PackDetail = () => {
 			<SidebarContainer>
 				<Sidebar className="menu">
 					<button
-						className="btn-homepage icon"
+						className="btn-homepage detail-icon"
 						onClick={() => {
 							window.location.href = fileOperator.loadPrevPage();
 						}}
@@ -174,6 +181,7 @@ export const PackDetail = () => {
 						fileOperator={fileOperator}
 						pack={pack}
 					/>
+					<OpenInExplorerBtn handleClick={handleOpenFolder} />
 				</Sidebar>
 			</SidebarContainer>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />

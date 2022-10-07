@@ -2,7 +2,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useController } from 'syill';
 import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
-import globalConfig, { defaultCover } from '../../../types/constant';
+import globalConfig, {
+	BOOKMARK_THUMB,
+	defaultCover
+} from '../../../types/constant';
 import {
 	BasicData,
 	Bookmark,
@@ -17,16 +20,16 @@ import {
 	isDirData
 } from '../../../utils/functions';
 import { ImgWaterfallCache } from '../../../utils/ImgWaterFallCache';
-import { dirMapVisibleStore } from '../../../utils/store';
+import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
 import {
 	Add,
 	Back,
+	ConfigBtn,
 	CrawlerBtn,
 	Refresh,
-	SelectPacks,
-	SettingBtn
+	SelectPacks
 } from '../Buttons';
-import { DirMap, Rename } from '../Dialog';
+import { Config, DirMap, Rename } from '../Dialog';
 import BookmarkItem from '../ImgComponent/Bookmarks';
 import ImageDir from '../ImgComponent/Directory';
 import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
@@ -47,9 +50,7 @@ export const ImgContainer = (props: {
 	const length = useRef({ value: 0, loaded: 0 }).current;
 	const waterfallCache = useRef(ImgWaterfallCache.getInstance()).current;
 	const [inSelect, setInSelect] = useState(0);
-	const handleRename = useRef((_v: boolean) => {});
 	const [dirMapVis, setDirMapVis] = useController(dirMapVisibleStore);
-	const [dialogActive, setDialogActive] = useState(false);
 	const topMenu = useMemo(() => {
 		return (
 			//TODO 增加文件夹中文件flat功能
@@ -58,9 +59,13 @@ export const ImgContainer = (props: {
 				<Refresh util={props.util} />
 				<Add util={props.util} />
 				<CrawlerBtn />
-				<SettingBtn />
+				<ConfigBtn />
 				<SelectPacks
 					handleClick={() => {
+						if (dialogActive.active) {
+							return;
+						}
+						dialogActive.setActive(true);
 						setDirMapVis(true);
 					}}
 					inSelect={inSelect}
@@ -100,12 +105,19 @@ export const ImgContainer = (props: {
 					!globalConfig.r18
 						? defaultCover
 						: (v.path + v.cover).replace(/\\/g, '/');
-				let thumbPath =
-					imgPath.split('/').slice(0, -1).join('/') + '/thumb.jpg';
-				img.src = String.raw`${thumbPath}`.replace(
-					/\s/g,
-					encodeURIComponent(' ')
-				);
+				let coverPath = imgPath;
+				if (isBookmark(props.packs[0])) {
+					coverPath =
+						imgPath.split('/').slice(0, -1).join('/') +
+						'/bookmark-thumb.jpg';
+				} else if (!imgPath.endsWith('blank.jpg')) {
+					coverPath =
+						imgPath.split('/').slice(0, -1).join('/') +
+						'/thumb.jpg';
+				}
+				img.src = String.raw`${coverPath.replace(/\\/g, '/')}`
+					.replaceAll(/\s/g, encodeURIComponent(' '))
+					.replaceAll(/#/g, encodeURIComponent('#'));
 				img.onload = () => {
 					img.onload = null;
 					let min = minIndex(heights);
@@ -130,8 +142,17 @@ export const ImgContainer = (props: {
 						`${v.title} with index ${v.id} get wrong`
 					);
 					console.error(err);
-					console.log(imgPath);
-					compress(v.path + v.cover);
+					console.log(decodeURIComponent(img.src));
+					if (isBookmark(props.packs[0])) {
+						compress(
+							decodeURIComponent(v.path + v.cover),
+							BOOKMARK_THUMB
+						);
+					} else {
+						if (!compress(decodeURIComponent(v.path + v.cover))) {
+							props.util.deletePack(v.id);
+						}
+					}
 				};
 			});
 		}
@@ -160,6 +181,7 @@ export const ImgContainer = (props: {
 				<Menu />
 			</SidebarContainer>
 			{dirMap}
+			<Config />
 			<Rename util={props.util} />
 			<main className={styles['img-main-content']}>
 				{images.map((v) => {

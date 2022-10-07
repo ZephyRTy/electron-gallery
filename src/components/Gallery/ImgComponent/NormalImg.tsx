@@ -6,7 +6,7 @@ import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
 import { ReactComponent as Star } from '../../../icon/star.svg';
 import { BasicData, ImageComponent, Mode } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
-import { renameVisibleStore } from '../../../utils/store';
+import { dialogActive, renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
 export const minIndex = (arr: number[]) => {
 	let min = 0;
@@ -119,6 +119,10 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 				<RenameIcon
 					className={styles['icon--rename']}
 					onClick={() => {
+						if (dialogActive.active) {
+							return;
+						}
+						dialogActive.setActive(true);
 						setVis(true);
 						props.util.packToBeRenamed = {
 							id: props.data.id,

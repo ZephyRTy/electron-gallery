@@ -78,6 +78,13 @@ $height: 60%;
 	&-setting {
 		margin-top: 7px;
 	}
+	&-open-folder {
+		width: 40px !important;
+		margin: {
+			left: 2px;
+			top: 0;
+		}
+	}
 }
 #file-input {
 	display: none;
@@ -105,13 +112,6 @@ svg {
 	margin-bottom: 10px;
 }
 
-.menu {
-	svg {
-		&:hover {
-			fill: #3cb0fc;
-		}
-	}
-}
 .top-menu {
 	top: 10px;
 	position: absolute;
@@ -145,6 +145,9 @@ svg {
 	svg {
 		fill: gray;
 		transition: all 0.15s ease-in;
+		&:hover {
+			fill: #3cb0fc;
+		}
 	}
 	button {
 		width: 42px;
@@ -155,4 +158,8 @@ svg {
 	svg {
 		fill: #3cb0fc;
 	}
+}
+
+.crawler--active {
+	fill: #3cfc52 !important;
 }

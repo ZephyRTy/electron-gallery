@@ -1,5 +1,6 @@
 import { BasicData, Bookmark, DirData } from '../types/global';
 const fs = window.require('fs');
+const path = window.require('path');
 const Buffer = window.require('buffer').Buffer;
 export function formatDate(
 	time: string | number | Date,
@@ -176,28 +177,80 @@ export const setSearchParams = (head: string, params: any) => {
 	return `${head}?${search}`;
 };
 let canvas: HTMLCanvasElement = document.createElement('canvas');
-function imageToCanvas(src: string, fn, quality) {
+function imageToCanvas(
+	src: string,
+	fn: typeof canvasToDataURL,
+	quality: number,
+	thumbName: string
+) {
 	let ctx = canvas.getContext('2d');
 	let img = new Image();
-	let dest = src.replace('\\', '/').split('/').slice(0, -1).join('/');
-	img.src = src;
+
+	let dest = src.replaceAll('\\', '/').split('/').slice(0, -1).join('/');
+	let imgSrc = src
+		.replaceAll('\\', '/')
+		.replaceAll(/\s/g, encodeURIComponent(' '))
+		.replaceAll(/#/g, encodeURIComponent('#'));
+
+	img.src = imgSrc;
+
 	img.onload = function () {
+		img.onload = null;
 		canvas.width = img.width;
 		canvas.height = img.height;
 		ctx!.drawImage(img, 0, 0);
-		fn(canvas, dest, quality);
+		fn(canvas, dest, quality, thumbName);
+	};
+	img.onerror = function () {
+		img.onerror = null;
+		console.log(decodeURI(img.src));
 	};
 }
 
-function canvasToDataURL(canvas: HTMLCanvasElement, dest: string, quality) {
+function canvasToDataURL(
+	canvas: HTMLCanvasElement,
+	dest: string,
+	quality: any,
+	thumbName: any
+) {
 	let data = canvas
-		.toDataURL('image/jpeg', 0.5)
+		.toDataURL('image/jpeg', quality || 0.5)
 		.replace(/^data:image\/\w+;base64,/, '');
 	let dataBuffer = Buffer.from(data, 'base64');
-	fs.writeFileSync(dest + '/thumb.jpg', dataBuffer);
+	fs.writeFile(path.join(dest, thumbName), dataBuffer, (err: Error) => {
+		if (err) {
+			console.log('写入图片错误', err);
+		} else {
+			console.log(path.join(dest, thumbName));
+		}
+	});
 }
-export const compress = (src: string, quality = 0.6) => {
-	imageToCanvas(src, canvasToDataURL, quality);
+
+const checkImageSize = (path: string) => {
+	const size = fs.statSync(path).size;
+	return size;
+};
+export const compress = (src: string, thumbName = 'thumb.jpg') => {
+	let size = 0;
+	try {
+		size = checkImageSize(src);
+	} catch (e: any) {
+		if (e.message.includes('no such file or directory')) {
+			return false;
+		}
+	}
+	let n = 1;
+	if (size >= 1024 * 1024 * 6) {
+		n = 0.15;
+	} else if (size >= 1024 * 1024 * 4) {
+		n = 0.2;
+	} else if (size >= 1024 * 1024 * 2) {
+		n = 0.4;
+	} else if (size >= 1024 * 1024 * 1) {
+		n = 0.8;
+	}
+	imageToCanvas(src, canvasToDataURL, n, thumbName);
+	return true;
 };
 
 export const openInExplorer = (path: string) => {

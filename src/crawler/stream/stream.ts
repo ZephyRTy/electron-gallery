@@ -212,14 +212,16 @@ class Stream<IN, MID, OUT> extends StreamEntry<IN, MID, OUT> {
 	}
 
 	protected pending(req: Promise<any>) {
-		req.then((res) => {
-			if (res.length === 0) {
-				return;
-			}
-			this.inject(res);
-		}).catch((e) => {
-			console.log(e);
-		});
+		let res = req
+			.then((res) => {
+				if (res.length === 0) {
+					return;
+				}
+				this.inject(res);
+			})
+			.catch((e) => {
+				console.log(e);
+			});
 		this.pendingQueue.push(req);
 	}
 	/**
@@ -232,14 +234,14 @@ class Stream<IN, MID, OUT> extends StreamEntry<IN, MID, OUT> {
 	 * 上级管道关闭时，调用此方法
 	 */
 	async readyToClose() {
-		Promise.all(this.pendingQueue)
+		Promise.allSettled(this.pendingQueue)
 			.then(() => {
 				this.status.open = false;
 				this.status.clear();
 				this.pipe.target?.extract();
 			})
 			.catch((e: Error) => {
-				console.log(this.name, e.name);
+				console.log(this.name, e.message);
 			});
 	}
 	protected push(...data: OUT[]) {

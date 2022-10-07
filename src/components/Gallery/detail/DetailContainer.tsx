@@ -37,7 +37,10 @@ const ImgDetail = (props: {
 								.split('?')[0]
 								.split('/')
 								.pop() as any,
-							('\\' + props.src.split('/').pop()) as any
+							('\\' + props.src.split('/').pop()) as any,
+							decodeURIComponent(
+								props.src.replace('file:///', '')
+							)
 						)
 						.then(() => {
 							props.renameToastHandler.current(true);

@@ -3,13 +3,32 @@
 /* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Store, useData } from 'syill';
-import globalConfig from '../../types/constant';
+import globalConfig, { translation } from '../../types/constant';
 import { DirectoryInfo } from '../../types/global';
 import { FileOperator } from '../../utils/fileOperator';
-import { dirMapVisibleStore, renameVisibleStore } from '../../utils/store';
+import {
+	configVisibleStore,
+	dialogActive,
+	dirMapVisibleStore,
+	renameVisibleStore
+} from '../../utils/store';
 import styles from './style/dialog.module.scss';
+const fs = window.require('fs');
+const { dialog } = window.require('@electron/remote');
+const { ipcRenderer } = window.require('electron');
+const longestCommonString = (s1: string, s2: string) => {
+	let common = '';
+	let len = Math.min(s1.length, s2.length);
+	for (let i = 0; i < len; ++i) {
+		if (s1[i] === s2[i]) {
+			common += s1[i];
+		} else {
+			return common;
+		}
+	}
+};
 function createDialog<T>(
 	Component: (props: T) => JSX.Element,
 	store: Store<boolean>
@@ -171,6 +190,7 @@ export const DirMapContent = (props: {
 						styles['dialog-button__back']
 					}
 					onClick={() => {
+						dialogActive.setActive(false);
 						props.setVisible(false);
 					}}
 				>
@@ -189,6 +209,7 @@ export const DirMapContent = (props: {
 							throw new Error('Wrong destination directory');
 						}
 						props.util.addFileToDir(parseInt(destination));
+						dialogActive.setActive(false);
 						props.setVisible(false);
 						props.setInSelect((v: number) => v + 1);
 					}}
@@ -224,6 +245,7 @@ export const RenameContent = (props: {
 						styles['dialog-button__back']
 					}
 					onClick={() => {
+						dialogActive.setActive(false);
 						props.setVisible(false);
 						props.util.packToBeRenamed = { id: -1, oldTitle: '' };
 					}}
@@ -238,11 +260,13 @@ export const RenameContent = (props: {
 					}
 					onClick={() => {
 						if (!globalConfig.r18) {
+							dialogActive.setActive(false);
 							props.setVisible(false);
 							return;
 						}
 						props.util.rename(newTitle).then((res) => {
 							if (res) {
+								dialogActive.setActive(false);
 								props.setVisible(false);
 							} else {
 								console.log('rename fail');
@@ -257,5 +281,160 @@ export const RenameContent = (props: {
 	);
 };
 
+export const configContent = (props: { setVisible: (v: boolean) => void }) => {
+	const newConfig = useRef({ ...globalConfig });
+	const [confirmed, setConfirmed] = useState(false);
+	return (
+		<div className={styles['config-container']}>
+			<ul className={styles['config-list']}>
+				{Object.keys(globalConfig).map((e) => (
+					<ConfigItem
+						confirmed={confirmed}
+						itemKey={e}
+						key={e}
+						newConfig={newConfig.current}
+						value={globalConfig[e]}
+					/>
+				))}
+			</ul>
+			<div className={styles['dialog-button-contain']}>
+				<button
+					className={
+						styles['dialog-button'] +
+						' ' +
+						styles['dialog-button__back']
+					}
+					onClick={() => {
+						dialogActive.setActive(false);
+						newConfig.current = { ...globalConfig };
+						props.setVisible(false);
+						setConfirmed((v) => !v);
+					}}
+				>
+					返回
+				</button>
+				<button
+					className={
+						styles['dialog-button'] +
+						' ' +
+						styles['dialog-button__confirm']
+					}
+					onClick={() => {
+						fs.writeFileSync(
+							'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
+							JSON.stringify(newConfig.current)
+						);
+						ipcRenderer.send('relaunch');
+					}}
+				>
+					确认
+				</button>
+			</div>
+		</div>
+	);
+};
+
+export const ConfigItem = (props: {
+	itemKey: string;
+	confirmed: boolean;
+	value: boolean | string | number;
+	newConfig: object;
+}) => {
+	const [value, setValue] = useState(props.value);
+	useEffect(() => {
+		setValue(props.value);
+	}, [props.confirmed]);
+	const item = () => {
+		switch (typeof value) {
+			case 'number':
+				return (
+					<input
+						onChange={(e) => {
+							setValue(parseInt(e.target.value));
+							props.newConfig[props.itemKey] =
+								parseInt(e.target.value) || 20;
+						}}
+						type="number"
+						value={value}
+					/>
+				);
+			case 'string':
+				if (value.startsWith('http')) {
+					return (
+						<div>
+							<input
+								id={'input' + props.itemKey}
+								onChange={(e) => {
+									props.newConfig[props.itemKey] =
+										e.target.value;
+									setValue(e.target.value.toString());
+								}}
+								type="text"
+								value={value}
+							/>
+						</div>
+					);
+				} else {
+					const otherAtt = { directory: '', webkitdirectory: '' };
+					return (
+						<div>
+							<span
+								className={styles['config-file-label']}
+								onClick={() => {
+									dialog
+										.showOpenDialog({
+											title: '选择路径', //默认路径,默认选择的文件
+											defaultPath: props.value, //过滤文件后缀
+											// filters: [
+											// 	{
+											// 		name: '文件夹',
+											// 		extensions: ['jpg', 'png']
+											// 	}
+											// ],
+											properties: ['openDirectory']
+										})
+										.then((result) => {
+											let newPath =
+												result.filePaths[0].replaceAll(
+													'\\',
+													'/'
+												);
+											setValue(newPath);
+											props.newConfig[props.itemKey] =
+												newPath;
+										})
+										.catch((err) => {
+											console.log(err);
+										});
+								}}
+								title={value}
+							>
+								{value}
+							</span>
+						</div>
+					);
+				}
+			case 'boolean':
+				return (
+					<input
+						checked={value}
+						onClick={(e) => {
+							setValue(!Boolean(value));
+							props.newConfig[props.itemKey] = !value;
+						}}
+						readOnly
+						type="checkbox"
+					/>
+				);
+		}
+	};
+	return (
+		<li className={styles['config-item']}>
+			<span>{translation[props.itemKey]}</span>
+			<div>{item()}</div>
+		</li>
+	);
+};
 export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
 export const Rename = createDialog(RenameContent, renameVisibleStore);
+export const Config = createDialog(configContent, configVisibleStore);

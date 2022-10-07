@@ -1196,10 +1196,10 @@
     "global-agent" "^3.0.0"
     "global-tunnel-ng" "^2.7.1"
 
-"@electron/remote@^2.0.7":
-  "integrity" "sha512-IjtMlSrkSmWNSnsvM0l2PQ3a50xFjco4M+arRi6BiziimgctNF8w8LB5NcRTs43OQZG91U/KGTWd89G1Fw7muA=="
-  "resolved" "https://registry.npmmirror.com/@electron/remote/-/remote-2.0.7.tgz"
-  "version" "2.0.7"
+"@electron/remote@^2.0.8":
+  "integrity" "sha512-P10v3+iFCIvEPeYzTWWGwwHmqWnjoh8RYnbtZAb3RlQefy4guagzIwcWtfftABIfm6JJTNQf4WPSKWZOpLmHXw=="
+  "resolved" "https://registry.npmjs.org/@electron/remote/-/remote-2.0.8.tgz"
+  "version" "2.0.8"
 
 "@electron/universal@1.0.5":
   "integrity" "sha512-zX9O6+jr2NMyAdSkwEUlyltiI4/EBLu2Ls/VD3pUQdi3cAYeYfdQnT2AJJ38HE4QxLccbU13LSpccw1IWlkyag=="

@@ -6,6 +6,8 @@ const url = require('url');
 let tray = null;
 // 保持window对象的全局引用,避免JavaScript对象被垃圾回收时,窗口被自动关闭.
 let mainWindow;
+
+require('@electron/remote/main').initialize();
 module.exports = { mainWindow: mainWindow };
 function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
@@ -21,7 +23,7 @@ function createWindow() {
 			webSecurity: false
 		}
 	});
-
+	require('@electron/remote/main').enable(mainWindow.webContents);
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL('http://localhost:8097/');
@@ -74,6 +76,7 @@ if (!gotTheLock) {
 	});
 	app.disableHardwareAcceleration();
 	app.on('ready', createWindow);
+
 	// 所有窗口关闭时退出应用.
 	app.on('window-all-closed', function () {
 		// macOS中除非用户按下 `Cmd + Q` 显式退出,否则应用与菜单栏始终处于活动状态.
@@ -109,6 +112,10 @@ if (!gotTheLock) {
 	ipcMain.on('console', () =>
 		mainWindow.webContents.openDevTools({ mode: 'detach' })
 	);
+	ipcMain.on('relaunch', () => {
+		app.relaunch();
+		app.exit();
+	});
 }
 // 创建 myWindow, 加载应用的其余部分, etc...
 // app.on('ready', () => {

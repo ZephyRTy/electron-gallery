@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useController } from 'syill';
 import { getImgFrom24fa } from '../../crawler/fa24';
@@ -8,6 +8,7 @@ import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as BookmarkIcon } from '../../icon/bookmark.svg';
 import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
+import { ReactComponent as OpenInExplorerIcon } from '../../icon/folder-open.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
@@ -17,7 +18,7 @@ import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
 import globalConfig from '../../types/constant';
 import { Mode } from '../../types/global';
 import { FileOperator } from '../../utils/fileOperator';
-import { fileDropVisibleStore } from '../../utils/store';
+import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
 export const HomePage = (props: { activeMode: Mode; currentMode: Mode }) => {
 	return (
 		<button
@@ -165,6 +166,22 @@ export const RenameBtn = (props: {
 export const CrawlerBtn = (props: {}) => {
 	const [active, setActive] = useState(false);
 	const [err, setErr] = useState(false);
+	useEffect(() => {
+		if (active) {
+			getImgFrom24fa()
+				.then((res) => {
+					setActive(false);
+					setErr(false);
+				})
+				.catch((err) => {
+					setActive(false);
+					setErr(true);
+					setTimeout(() => {
+						setErr(false);
+					}, 3000);
+				});
+		}
+	}, [active]);
 	return (
 		<button
 			className={'btn-crawler icon'}
@@ -174,18 +191,6 @@ export const CrawlerBtn = (props: {}) => {
 					return;
 				}
 				setActive(true);
-				getImgFrom24fa()
-					.then((res) => {
-						setActive(false);
-						setErr(false);
-					})
-					.catch((err) => {
-						setActive(false);
-						setErr(true);
-						setTimeout(() => {
-							setErr(false);
-						}, 3000);
-					});
 			}}
 		>
 			<Crawler
@@ -197,10 +202,29 @@ export const CrawlerBtn = (props: {}) => {
 	);
 };
 
-export const SettingBtn = () => {
+export const ConfigBtn = () => {
+	const [visible, setVisible] = useController(configVisibleStore);
 	return (
-		<button className={'btn-setting icon'}>
+		<button
+			className={'btn-setting icon'}
+			onClick={(e) => {
+				setVisible(true);
+			}}
+		>
 			<SettingIcon fill="black" />
+		</button>
+	);
+};
+
+export const OpenInExplorerBtn = (props: { handleClick: () => void }) => {
+	return (
+		<button
+			className={'btn-open-folder icon'}
+			onClick={() => {
+				props.handleClick();
+			}}
+		>
+			<OpenInExplorerIcon />
 		</button>
 	);
 };

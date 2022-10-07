@@ -412,5 +412,19 @@ export class MysqlOperator {
 			});
 		});
 	}
+
+	delete(packID: number) {
+		let sql = 'delete from pack_list where id = ?';
+		return new Promise((resolve, reject) => {
+			this._pool.getConnection((err: any, connection: any) => {
+				connection.query(sql, [packID], (err: any, res: any) => {
+					if (err) {
+						reject(err);
+					}
+					resolve(res);
+				});
+			});
+		});
+	}
 }
 export const mysqlOperator = MysqlOperator.getInstance();
