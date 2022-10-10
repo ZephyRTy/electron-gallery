@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Back } from '../../../icon/back.svg';
@@ -15,6 +15,7 @@ import { OpenInExplorerBtn } from '../Buttons';
 import { Loading } from '../Loading';
 import { Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
+import { PageOfTotal } from '../PageOfTotal';
 import '../style/PackDetail.scss';
 import { Toast } from '../Toast';
 import { AddBookmark } from './AddBookmark';
@@ -158,8 +159,13 @@ export const PackDetail = () => {
 			setImages([]);
 		};
 	}, [page]);
+	const totalPage = useMemo(
+		() => Math.ceil(total / imageCountOfSinglePage),
+		[total]
+	);
 	return (
 		<div className="pack-detail-container">
+			<PageOfTotal current={page} total={totalPage} />
 			<SidebarContainer>
 				<Sidebar className="menu">
 					<button

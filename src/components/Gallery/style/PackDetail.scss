@@ -34,6 +34,7 @@
 		margin: 10px;
 		cursor: zoom-in;
 		&-list {
+			background: whitesmoke;
 			transform: translateZ(0);
 			width: 100%;
 			display: flex;
@@ -60,7 +61,7 @@
 	justify-content: center;
 	align-items: center;
 	height: $fullscreen-height;
-	z-index: 100;
+	z-index: 1999;
 	background-color: rgba(128, 128, 128, 0.5);
 	width: calc(100% - 40px);
 	right: 0;
@@ -96,4 +97,20 @@
 	&-next {
 		right: 2%;
 	}
+}
+
+.page-total {
+	position: fixed;
+	width: 50px;
+	right: 5%;
+	top: 5%;
+	z-index: 1000;
+	display: block;
+	text-align: center;
+	font-size: larger;
+	font-family: fantasy;
+}
+
+.page-of-total {
+	margin: 6px;
 }

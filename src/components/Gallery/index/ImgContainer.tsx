@@ -4,7 +4,8 @@ import { useController } from 'syill';
 import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
 import globalConfig, {
 	defaultCover,
-	getBookmarkThumb
+	getBookmarkThumb,
+	imageCountOfSinglePage
 } from '../../../types/constant';
 import {
 	BasicData,
@@ -36,6 +37,7 @@ import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
 import { Loading } from '../Loading';
 import { Menu, Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
+import { PageOfTotal } from '../PageOfTotal';
 import styles from '../style/img.module.scss';
 let index = 0;
 export const ImgContainer = (props: {
@@ -180,6 +182,10 @@ export const ImgContainer = (props: {
 		}
 		waterfallCache.saveTemp([...images]);
 	}, [images, props.util, waterfallCache]);
+	const totalPage = useMemo(
+		() => Math.ceil(props.total / imageCountOfSinglePage),
+		[props.total]
+	);
 	return (
 		<>
 			<SidebarContainer>
@@ -189,9 +195,9 @@ export const ImgContainer = (props: {
 			{dirMap}
 			<Config />
 			<Rename util={props.util} />
-
 			{length.loaded >= length.value ? (
 				<>
+					<PageOfTotal current={props.page} total={totalPage} />
 					<main className={styles['img-main-content']}>
 						{images.map((v) => {
 							return (
