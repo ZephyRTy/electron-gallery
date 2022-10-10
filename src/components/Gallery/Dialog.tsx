@@ -129,6 +129,7 @@ export const DirMapContent = (props: {
 							<input
 								checked={checked === dirIndex}
 								className={styles['dir-map-checkbox']}
+								disabled={!globalConfig.r18}
 								id={'checkbox-' + dirIndex}
 								onClick={() => {
 									if (checked === dirIndex) {
@@ -144,7 +145,11 @@ export const DirMapContent = (props: {
 							/>
 							<label htmlFor={'checkbox-' + dirIndex}>
 								<div className={styles['dir-map-item-content']}>
-									<span>{dir[1].title}</span>
+									<span>
+										{globalConfig.r18
+											? dir[1].title
+											: `文件夹${v}`}
+									</span>
 									<span
 										className={styles['dir-map-item-count']}
 									>
@@ -160,6 +165,7 @@ export const DirMapContent = (props: {
 				className={`${styles['dir-map-input']} ${
 					err ? styles['dir-map-input--error'] : ''
 				}`}
+				disabled={!globalConfig.r18}
 				onChange={(e) => {
 					if (err) {
 						setErr(false);

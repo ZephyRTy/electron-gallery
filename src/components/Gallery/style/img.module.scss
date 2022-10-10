@@ -25,6 +25,7 @@ $radius: 15px;
 		display: flex;
 		justify-content: center;
 		overflow-y: scroll;
+		max-height: 94%;
 		&::-webkit-scrollbar {
 			width: 0px;
 		}

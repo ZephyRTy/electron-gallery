@@ -1,5 +1,4 @@
-import { MutableRefObject, useCallback } from 'react';
-import { useController } from 'syill';
+import { MutableRefObject, useCallback, useRef } from 'react';
 import { ReactComponent as AddBookmarkIcon } from '../../../icon/addBookmark.svg';
 import globalConfig from '../../../types/constant';
 import { BasicData } from '../../../types/global';
@@ -14,15 +13,15 @@ export function AddBookmark(props: {
 	bookmarkToast: MutableRefObject<(arg: boolean) => void>;
 }) {
 	const { fileOperator, pack, bookmarkToast } = props;
-	const [zoom] = useController(imageStateStore);
+	const zoom = useRef(imageStateStore).current;
 	const handleClick = useCallback(
 		(e) => {
 			let top = Math.round(
 				document.getElementsByClassName('pack-detail-list')[0].scrollTop
 			);
 			let imgSrc = '';
-			if (zoom.length > 0) {
-				imgSrc = '/' + zoom().split('/').pop()!;
+			if (zoom.current.length > 0) {
+				imgSrc = '/' + zoom.current.split('/').pop()!;
 			} else {
 				let elements = Array.from(
 					document.getElementsByClassName('pack-detail')
@@ -53,26 +52,22 @@ export function AddBookmark(props: {
 				parseInt(pack!),
 				false
 			) as BasicData;
-
 			// 记录当前图片的位置
 			let href = window.location.href;
 			let url = '#' + href.split('#')[1].split('?')[0] + '?';
-			if (href.includes('&scroll')) {
-				const urlObj = parseUrlQuery(href);
-				for (const key in urlObj) {
-					if (key !== 'scroll') {
-						url += `${key}=${urlObj[key]}&`;
-					} else {
-						url += `scroll=${top}&`;
-					}
+			const urlObj = parseUrlQuery(href);
+			for (const key in urlObj) {
+				if (typeof urlObj[key] === 'undefined' && key.length <= 0) {
+					continue;
 				}
-				// url = `#${href
-				// 	.split('#')
-				// 	.pop()
-				// 	?.replace(/scroll=[0-9]+/, '&scroll=' + top)}`;
-			} else {
-				url = `#${href.split('#')[1]}&scroll=` + top;
+				if (key !== 'scroll') {
+					url += `${key}=${urlObj[key]}&`;
+				}
 			}
+			if (!urlObj.page) {
+				url += 'page=1&';
+			}
+			url += `scroll=${top}&`;
 			fileOperator.bookmarksUpdate({
 				...data,
 				cover: imgSrc,

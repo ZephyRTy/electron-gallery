@@ -177,37 +177,38 @@ export const setSearchParams = (head: string, params: any) => {
 	return `${head}?${search}`;
 };
 let canvas: HTMLCanvasElement = document.createElement('canvas');
-function imageToCanvas(
+async function imageToCanvas(
 	src: string,
 	fn: typeof canvasToDataURL,
 	quality: number,
 	thumbName: string
-) {
-	let ctx = canvas.getContext('2d');
-	let img = new Image();
+): Promise<boolean> {
+	return new Promise((resolve) => {
+		let ctx = canvas.getContext('2d');
+		let img = new Image();
+		let dest = src.replaceAll('\\', '/').split('/').slice(0, -1).join('/');
+		let imgSrc = src
+			.replaceAll('\\', '/')
+			.replaceAll(/\s/g, encodeURIComponent(' '))
+			.replaceAll(/#/g, encodeURIComponent('#'));
 
-	let dest = src.replaceAll('\\', '/').split('/').slice(0, -1).join('/');
-	let imgSrc = src
-		.replaceAll('\\', '/')
-		.replaceAll(/\s/g, encodeURIComponent(' '))
-		.replaceAll(/#/g, encodeURIComponent('#'));
+		img.src = imgSrc;
 
-	img.src = imgSrc;
-
-	img.onload = function () {
-		img.onload = null;
-		canvas.width = img.width;
-		canvas.height = img.height;
-		ctx!.drawImage(img, 0, 0);
-		fn(canvas, dest, quality, thumbName);
-	};
-	img.onerror = function () {
-		img.onerror = null;
-		console.log(decodeURI(img.src));
-	};
+		img.onload = function () {
+			img.onload = null;
+			canvas.width = img.width;
+			canvas.height = img.height;
+			ctx!.drawImage(img, 0, 0);
+			fn(canvas, dest, quality, thumbName).then((res) => resolve(res));
+		};
+		img.onerror = function () {
+			img.onerror = null;
+			console.log(decodeURI(img.src));
+		};
+	});
 }
 
-function canvasToDataURL(
+async function canvasToDataURL(
 	canvas: HTMLCanvasElement,
 	dest: string,
 	quality: any,
@@ -225,24 +226,27 @@ function canvasToDataURL(
 			}
 		});
 	}
-	fs.writeFile(path.join(dest, thumbName), dataBuffer, (err: Error) => {
+	await fs.writeFile(path.join(dest, thumbName), dataBuffer, (err: Error) => {
 		if (err) {
 			console.log('写入图片错误', err);
 		}
 	});
+	return true;
 }
 
 const checkImageSize = (path: string) => {
 	const size = fs.statSync(path).size;
 	return size;
 };
-export const compress = (src: string, thumbName = 'thumb.jpg') => {
+export const compress = async (src: string, thumbName = 'thumb.jpg') => {
 	let size = 0;
+	let imgSrc = decodeURIComponent(src);
 	try {
-		size = checkImageSize(src);
+		size = checkImageSize(imgSrc);
 	} catch (e: any) {
-		if (e.message.includes('no such file or directory')) {
-			return false;
+		if (!fs.existsSync(imgSrc)) {
+			console.log('文件不存在', imgSrc);
+			throw new Error('文件不存在');
 		}
 	}
 	let n = 1;
@@ -253,10 +257,11 @@ export const compress = (src: string, thumbName = 'thumb.jpg') => {
 	} else if (size >= 1024 * 1024 * 2) {
 		n = 0.4;
 	} else if (size >= 1024 * 1024 * 1) {
-		n = 0.8;
+		n = 0.5;
+	} else if (size >= 1024 * 1024 * 0.5) {
+		n = 0.7;
 	}
-	imageToCanvas(src, canvasToDataURL, n, thumbName);
-	return true;
+	return await imageToCanvas(imgSrc, canvasToDataURL, n, thumbName);
 };
 
 export const openInExplorer = (path: string) => {

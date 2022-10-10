@@ -33,14 +33,17 @@ import { Config, DirMap, Rename } from '../Dialog';
 import BookmarkItem from '../ImgComponent/Bookmarks';
 import ImageDir from '../ImgComponent/Directory';
 import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
+import { Loading } from '../Loading';
 import { Menu, Sidebar, SidebarContainer } from '../Menu';
+import { PageNav } from '../PageNav';
 import styles from '../style/img.module.scss';
 let index = 0;
 export const ImgContainer = (props: {
 	packs: BasicData[] | Bookmark[];
 	util: FileOperator;
 	inDir: boolean;
-	// eslint-disable-next-line no-unused-vars
+	page: number;
+	total: number;
 	refresh: any;
 }) => {
 	const [images, setImages] = useState([[], [], [], []] as {
@@ -53,7 +56,6 @@ export const ImgContainer = (props: {
 	const [dirMapVis, setDirMapVis] = useController(dirMapVisibleStore);
 	const topMenu = useMemo(() => {
 		return (
-			//TODO 增加文件夹中文件flat功能
 			<Sidebar className="top-menu">
 				<Back inSelect={inSelect} setInSelect={setInSelect} />
 				<Refresh util={props.util} />
@@ -150,9 +152,12 @@ export const ImgContainer = (props: {
 							getBookmarkThumb(v)
 						);
 					} else {
-						if (!compress(decodeURIComponent(v.path + v.cover))) {
-							props.util.deletePack(v.id);
-						}
+						compress(decodeURIComponent(v.path + v.cover)).catch(
+							(err) => {
+								console.log('compress failed');
+								props.util.deletePack(v.id);
+							}
+						);
 					}
 				};
 			});
@@ -184,39 +189,53 @@ export const ImgContainer = (props: {
 			{dirMap}
 			<Config />
 			<Rename util={props.util} />
-			<main className={styles['img-main-content']}>
-				{images.map((v) => {
-					return (
-						<div className={styles['img-pack']} key={index++}>
-							{v.map((ele) => {
-								if (!globalConfig.r18) {
-									ele.data.title =
-										'图包' + ele.data.id.toString();
-								}
-								let Component: ImageComponent<any>;
-								if (isBookmark(ele.data)) {
-									Component = BookmarkItem;
-								} else if (!ele.data.path) {
-									Component = ImageDir;
-								} else {
-									Component = NormalImg;
-								}
 
-								return (
-									<Component
-										data={ele.data}
-										inSelect={inSelect}
-										key={index++}
-										setInSelect={setInSelect}
-										src={ele.img.src}
-										util={props.util}
-									></Component>
-								);
-							})}
-						</div>
-					);
-				})}
-			</main>
+			{length.loaded >= length.value ? (
+				<>
+					<main className={styles['img-main-content']}>
+						{images.map((v) => {
+							return (
+								<div
+									className={styles['img-pack']}
+									key={index++}
+								>
+									{v.map((ele) => {
+										if (!globalConfig.r18) {
+											ele.data.title =
+												'图包' + ele.data.id.toString();
+										}
+										let Component: ImageComponent<any>;
+										if (isBookmark(ele.data)) {
+											Component = BookmarkItem;
+										} else if (!ele.data.path) {
+											Component = ImageDir;
+										} else {
+											Component = NormalImg;
+										}
+
+										return (
+											<Component
+												data={ele.data}
+												inSelect={inSelect}
+												key={index++}
+												setInSelect={setInSelect}
+												src={ele.img.src}
+												util={props.util}
+											></Component>
+										);
+									})}
+								</div>
+							);
+						})}
+					</main>
+					<PageNav
+						current={props.page}
+						total={Math.ceil(props.total / 20)}
+					/>
+				</>
+			) : (
+				<Loading />
+			)}
 		</>
 	);
 };

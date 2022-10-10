@@ -74,6 +74,7 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 			<input
 				className={styles['check-box'] + ' img__checkbox'}
 				disabled={Boolean(props.data.parent) || !props.inSelect}
+				id={props.data.id.toString()}
 				onChange={selectHandler}
 				style={{
 					display: props.inSelect ? 'initial' : 'none'
@@ -93,7 +94,9 @@ export const NormalImg: ImageComponent<BasicData> = (props: {
 				onMouseDown={down}
 				onMouseUp={up}
 			>
-				<img alt="" src={props.src}></img>
+				<label htmlFor={props.data.id.toString()}>
+					<img alt="" src={props.src}></img>
+				</label>
 			</div>
 			<a
 				className={styles['pack-title']}

@@ -23,7 +23,7 @@ export class Req {
 				{ url, ...netOptions },
 				(err: any, res: any, body: any) => {
 					if (res?.statusCode !== 200) {
-						console.log(res?.statusCode, url);
+						console.log(url);
 					}
 					if (err) {
 						reject(err);

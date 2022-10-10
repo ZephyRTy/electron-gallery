@@ -82,7 +82,7 @@ export const PageNav = (props: {
 	let search = searchParam.get('search');
 	let stared = searchParam.get('stared');
 	return (
-		<nav>
+		<nav className="nav-container">
 			<ul className="page-nav">
 				<PageSpan
 					currentPage={props.current}

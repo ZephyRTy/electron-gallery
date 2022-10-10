@@ -6,7 +6,6 @@ import React, {
 	useState
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useController } from 'syill';
 import { ReactComponent as SetCover } from '../../../icon/cover.svg';
 import { imageCountOfSinglePage } from '../../../types/constant';
 import { FileOperator } from '../../../utils/fileOperator';
@@ -62,13 +61,42 @@ export const DetailContainer = (props: {
 	total: number;
 }) => {
 	const [current, setCurrent] = useState(-1);
-	const [, setZoom] = useController(imageStateStore);
+	const currentZoom = useRef(imageStateStore);
 	let [searchParams, setParams] = useSearchParams();
 	let page = Number(searchParams.get('page') || '1');
 	let scroll = Number(searchParams.get('scroll') || '0');
+
 	const scrollingElement = useRef(null);
 	// eslint-disable-next-line no-unused-vars
 	const renameToast = useRef((_arg: boolean) => {});
+	useLayoutEffect(() => {
+		if (!scroll) {
+			return;
+		}
+		const mutationCallback = (mutationsList) => {
+			const mutation = mutationsList[0];
+			let type = mutation.type;
+			switch (type) {
+				case 'childList':
+					if (scroll >= 0) {
+						(
+							scrollingElement.current as unknown as HTMLElement
+						).scrollTop = scroll;
+					}
+					observe.disconnect();
+					break;
+				default:
+					break;
+			}
+		};
+		if (!scrollingElement.current) {
+			return;
+		}
+		const observe = new MutationObserver(mutationCallback);
+		observe.observe(scrollingElement.current, {
+			childList: true //目标节点的子节点的新增和删除
+		});
+	}, []);
 	const prev = useCallback(() => {
 		if (current <= 0) {
 			if (page > 1) {
@@ -77,7 +105,7 @@ export const DetailContainer = (props: {
 			return;
 		}
 		setCurrent((v) => v - 1);
-		setZoom(props.images[current - 1].src);
+		currentZoom.current.current = props.images[current - 1]?.src;
 	}, [current, page, setParams]);
 	const next = useCallback(() => {
 		if (current >= props.images.length - 1) {
@@ -87,7 +115,7 @@ export const DetailContainer = (props: {
 			return;
 		}
 		setCurrent((v) => v + 1);
-		setZoom(props.images[current + 1].src);
+		currentZoom.current.current = props.images[current + 1].src;
 	}, [current, props.images.length, props.total, page, setParams]);
 	useEffect(() => {
 		if (current > 0) {
@@ -98,27 +126,19 @@ export const DetailContainer = (props: {
 	}, [page]);
 	useLayoutEffect(() => {
 		if (current < 0) {
-			setZoom('');
+			currentZoom.current.current = '';
 			return;
 		}
-		let h = 0;
-		props.images.slice(0, current).forEach((v) => {
-			h += (v.naturalHeight / v.naturalWidth) * WIDTH;
-		});
-		(scrollingElement.current as unknown as HTMLElement).scrollTop =
-			h + current * 60;
+		// props.images.slice(0, current).forEach((v) => {
+		// 	h += (v.naturalHeight / v.naturalWidth) * WIDTH;
+		// });
+		// (scrollingElement.current as unknown as HTMLElement).scrollTop =
+		// 	h + current * 60;
+		const e = document.querySelector(
+			'img[src="' + props.images[current]?.src + '"]'
+		);
+		e?.scrollIntoView();
 	}, [current]);
-	useLayoutEffect(() => {
-		if (isNaN(scroll)) {
-			scroll = 0;
-		}
-		if (scroll >= 0) {
-			setTimeout(() => {
-				(scrollingElement.current as unknown as HTMLElement).scrollTop =
-					scroll;
-			}, 300);
-		}
-	}, [scroll]);
 	return (
 		<>
 			<Toast handler={renameToast} message="更改封面成功！" />

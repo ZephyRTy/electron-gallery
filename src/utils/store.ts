@@ -27,4 +27,4 @@ export const dialogActive = {
 	}
 };
 
-export const imageStateStore = new Store('');
+export const imageStateStore = { current: '' };

@@ -12,6 +12,7 @@ import globalConfig, {
 import { FileOperator } from '../../../utils/fileOperator';
 import { openInExplorer } from '../../../utils/functions';
 import { OpenInExplorerBtn } from '../Buttons';
+import { Loading } from '../Loading';
 import { Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
 import '../style/PackDetail.scss';
@@ -51,6 +52,7 @@ export const PackDetail = () => {
 		openInExplorer(currentPath.current);
 	}, [pack]);
 	useEffect(() => {
+		fileOperator.titleUpdate();
 		(document.scrollingElement as any).scrollTop = 0;
 	}, [images]);
 	useEffect(() => {
@@ -185,15 +187,21 @@ export const PackDetail = () => {
 				</Sidebar>
 			</SidebarContainer>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
-			<DetailContainer
-				images={images}
-				total={Math.ceil(total / imageCountOfSinglePage)}
-			/>
-			<PageNav
-				current={page}
-				pack={pack}
-				total={Math.ceil(total / imageCountOfSinglePage)}
-			/>
+			{images.length ? (
+				<>
+					<DetailContainer
+						images={images}
+						total={Math.ceil(total / imageCountOfSinglePage)}
+					/>
+					<PageNav
+						current={page}
+						pack={pack}
+						total={Math.ceil(total / imageCountOfSinglePage)}
+					/>
+				</>
+			) : (
+				<Loading />
+			)}
 		</div>
 	);
 };

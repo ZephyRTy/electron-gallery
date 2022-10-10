@@ -55,7 +55,7 @@ export class FileOperator {
 	private readonly starModel = starModel;
 	private readonly bookmarkModel = bookmarkModel;
 	private selection = selectionModel;
-
+	private nextTitle = '';
 	private searchCache = {
 		key: '',
 		mode: Mode.Normal,
@@ -109,7 +109,7 @@ export class FileOperator {
 
 	//搜索图包
 	private async searchPacks(key: string, page: number) {
-		this.setTitle('Search=' + this.searchCache.key);
+		this.titleWillUpdate('Search=' + this.searchCache.key);
 		if (this.searchCache.key === key && this.searchCache.valid) {
 			return this.searchCache.res.slice(
 				(page - 1) * packCountOfSinglePage,
@@ -163,7 +163,7 @@ export class FileOperator {
 	//模式切换
 	private switchMode(mode: Mode) {
 		if (mode !== Mode.Detail) {
-			this.setTitle(this.modeType(mode));
+			this.titleWillUpdate(this.modeType(mode));
 		}
 
 		if (mode === this.mode) {
@@ -260,7 +260,6 @@ export class FileOperator {
 				stared: 0 as 0
 			};
 			const img = newPack.path + newPack.cover;
-			compress(img);
 			success.push(
 				mysqlOperator.insertPack(newPack).then((res) => {
 					if (!res) {
@@ -271,13 +270,18 @@ export class FileOperator {
 
 					if (i === data.length - 1 && successCount) {
 						this.switchMode(Mode.Init);
-						this.refresh();
+						compress(img).then(() => {
+							this.refresh();
+						});
 					}
 				})
 			);
 		});
 		return Promise.all(success).then(() => {
-			result.unshift(`${successCount}个图包:::成功`);
+			if (successCount) {
+				result.unshift(`${successCount}个图包:::成功`);
+			}
+
 			return result;
 		});
 	}
@@ -337,10 +341,13 @@ export class FileOperator {
 		];
 	}
 	//修改窗口标题
-	setTitle(title: string) {
-		this.setTitleFn(title);
+	private titleWillUpdate(title: string) {
+		this.nextTitle = title;
 	}
 
+	titleUpdate() {
+		this.setTitleFn(this.nextTitle);
+	}
 	//刷新
 	refresh() {
 		this.switchMode(Mode.Init);
@@ -367,13 +374,13 @@ export class FileOperator {
 			res = this.currentPacks.find((v) => v.id === packId)!;
 		}
 		if (change) {
-			this.setTitle(res.title);
+			this.titleWillUpdate(res.title);
 		}
 		return res;
 	}
 
-	bookmarksUpdate(newBookmark: Bookmark, marked: boolean = true) {
-		compress(
+	async bookmarksUpdate(newBookmark: Bookmark, marked: boolean = true) {
+		await compress(
 			newBookmark.path + newBookmark.cover,
 			getBookmarkThumb(newBookmark)
 		);
