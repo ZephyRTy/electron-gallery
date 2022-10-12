@@ -55,7 +55,7 @@ const ImgDetail = (props: {
 	);
 };
 
-const WIDTH = document.body.clientWidth * 0.7 * 0.65;
+//const WIDTH = document.body.clientWidth * 0.7 * 0.65;
 export const DetailContainer = (props: {
 	images: HTMLImageElement[];
 	total: number;
@@ -69,34 +69,6 @@ export const DetailContainer = (props: {
 	const scrollingElement = useRef(null);
 	// eslint-disable-next-line no-unused-vars
 	const renameToast = useRef((_arg: boolean) => {});
-	useLayoutEffect(() => {
-		if (!scroll) {
-			return;
-		}
-		const mutationCallback = (mutationsList) => {
-			const mutation = mutationsList[0];
-			let type = mutation.type;
-			switch (type) {
-				case 'childList':
-					if (scroll >= 0) {
-						(
-							scrollingElement.current as unknown as HTMLElement
-						).scrollTop = scroll;
-					}
-					observe.disconnect();
-					break;
-				default:
-					break;
-			}
-		};
-		if (!scrollingElement.current) {
-			return;
-		}
-		const observe = new MutationObserver(mutationCallback);
-		observe.observe(scrollingElement.current, {
-			childList: true //目标节点的子节点的新增和删除
-		});
-	}, []);
 	const prev = useCallback(() => {
 		if (current <= 0) {
 			if (page > 1) {
@@ -129,16 +101,18 @@ export const DetailContainer = (props: {
 			currentZoom.current.current = '';
 			return;
 		}
-		// props.images.slice(0, current).forEach((v) => {
-		// 	h += (v.naturalHeight / v.naturalWidth) * WIDTH;
-		// });
-		// (scrollingElement.current as unknown as HTMLElement).scrollTop =
-		// 	h + current * 60;
+
 		const e = document.querySelector(
 			'img[src="' + props.images[current]?.src + '"]'
 		);
 		e?.scrollIntoView();
 	}, [current]);
+	useEffect(() => {
+		if (props.images.length && scroll) {
+			(scrollingElement.current as unknown as HTMLElement).scrollTop =
+				scroll;
+		}
+	}, [props.images.length, scroll]);
 	return (
 		<>
 			<Toast handler={renameToast} message="更改封面成功！" />
