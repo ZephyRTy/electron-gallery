@@ -1,4 +1,4 @@
-import { BasicData, Bookmark, DirData } from '../types/global';
+import { Bookmark, DirData } from '../types/global';
 const fs = window.require('fs');
 const path = window.require('path');
 const Buffer = window.require('buffer').Buffer;
@@ -38,11 +38,11 @@ export const notMoreThanOne = (...arr: any[]) => {
 	return count <= 1;
 };
 
-export const isBookmark = (data: Bookmark | BasicData): data is Bookmark => {
+export const isBookmark = (data: any): data is Bookmark => {
 	return Boolean((data as Bookmark).url);
 };
 export const isDirData = (data: any): data is DirData => {
-	return !data.path && !data.url;
+	return !data.url && data.timeStamp;
 };
 export const parseUrlQuery = (url: string) => {
 	const query = decodeURIComponent(url.split('?')[1]);
