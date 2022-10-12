@@ -1,17 +1,13 @@
 $height: 60%;
 
 @import './header.module.scss';
-.gallery {
+.main-content {
 	width: 100%;
 	height: $fullscreen-height;
 	display: flex;
 	align-items: center;
 	flex-direction: column;
 	background-color: whitesmoke;
-	// background-image: url('../../../../public/52467-b934323301231709.jpg');
-	// background-size: auto 100%;
-	// background-repeat: no-repeat;
-	// background-position: 50% 50%;
 	margin: 0 auto;
 	max-width: 1200px;
 	padding: 0;
@@ -162,4 +158,11 @@ svg {
 
 .crawler--active {
 	fill: #3cfc52 !important;
+}
+.text {
+	&-br,
+	&-line {
+		height: 30px;
+		margin: 0;
+	}
 }
