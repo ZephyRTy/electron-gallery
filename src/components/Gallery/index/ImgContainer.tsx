@@ -28,7 +28,6 @@ import {
 	Back,
 	ConfigBtn,
 	CrawlerBtn,
-	GotoReaderBtn,
 	Refresh,
 	SelectPacks
 } from '../Buttons';
@@ -67,7 +66,6 @@ export const ImgContainer = (props: {
 				<Add util={props.util} />
 				<CrawlerBtn />
 				<ConfigBtn />
-				<GotoReaderBtn />
 				<SelectPacks
 					handleClick={() => {
 						if (dialogActive.active) {
