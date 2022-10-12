@@ -233,7 +233,7 @@ export class FileOperator {
 			};
 			await mysqlOperator.insertPack(newPack, duplicate);
 			const img = newPack.path + newPack.cover;
-			compress(img);
+			await compress(img);
 			this.switchMode(Mode.Init);
 			this.refresh();
 			return true;
