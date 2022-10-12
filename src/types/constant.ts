@@ -38,3 +38,9 @@ export const getBookmarkThumb = (bookmark: Bookmark) => {
 	return `bookmark-thumb-${new Date(bookmark.timeStamp).getTime()}.jpg`;
 };
 export default globalConfig;
+export const LINE_HEIGHT = 30;
+export const DELTA_LINE = 70;
+export const DELTA_HEIGHT = LINE_HEIGHT * DELTA_LINE;
+export const CONTENT_RANGE = 200;
+export const OVERFLOW_NUM = 20;
+export const DISTANCE_2_UPDATE = 1800;

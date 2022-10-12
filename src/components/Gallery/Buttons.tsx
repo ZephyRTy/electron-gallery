@@ -10,6 +10,8 @@ import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as OpenInExplorerIcon } from '../../icon/folder-open.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
+import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
+import { ReactComponent as GotoReaderIcon } from '../../icon/reader.svg';
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
@@ -225,6 +227,31 @@ export const OpenInExplorerBtn = (props: { handleClick: () => void }) => {
 			}}
 		>
 			<OpenInExplorerIcon />
+		</button>
+	);
+};
+
+export const GotoReaderBtn = () => {
+	return (
+		<button
+			className={'btn-goto-reader icon'}
+			onClick={() => {
+				window.location.href = '#/reader';
+			}}
+		>
+			<GotoReaderIcon />
+		</button>
+	);
+};
+export const GotoGalleryBtn = () => {
+	return (
+		<button
+			className={'btn-goto-gallery icon'}
+			onClick={() => {
+				window.location.href = '#/gallery';
+			}}
+		>
+			<GotoGalleryIcon />
 		</button>
 	);
 };

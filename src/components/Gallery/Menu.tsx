@@ -2,7 +2,13 @@
 import { ReactChild, useEffect, useState } from 'react';
 import { Mode } from '../../types/global';
 import { parseUrlQuery } from '../../utils/functions';
-import { BookmarkBtn, HomePage, ShowDir, Stared } from './Buttons';
+import {
+	BookmarkBtn,
+	GotoGalleryBtn,
+	HomePage,
+	ShowDir,
+	Stared
+} from './Buttons';
 
 export const Sidebar = (props: {
 	children: ReactChild[] | ReactChild;
@@ -60,6 +66,14 @@ export const Menu = () => {
 			<Stared activeMode={Mode.Stared} currentMode={mode} />
 			<BookmarkBtn activeMode={Mode.Bookmark} currentMode={mode} />
 			<ShowDir activeMode={Mode.ShowDir} currentMode={mode} />
+		</Sidebar>
+	);
+};
+
+export const ReaderMenu = () => {
+	return (
+		<Sidebar className="menu">
+			<GotoGalleryBtn />
 		</Sidebar>
 	);
 };
