@@ -54,7 +54,7 @@ export function AddBookmark(props: {
 			) as BasicData;
 			// 记录当前图片的位置
 			let href = window.location.href;
-			let url = '#' + href.split('#')[1].split('?')[0] + '?';
+			let url = window.location.hash.split('?')[0] + '?';
 			const urlObj = parseUrlQuery(href);
 			for (const key in urlObj) {
 				if (typeof urlObj[key] === 'undefined' && key.length <= 0) {

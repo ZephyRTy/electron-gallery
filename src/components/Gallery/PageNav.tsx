@@ -6,6 +6,7 @@ import { ReactComponent as LeftArrow } from '../../icon/leftArrow.svg';
 import { ReactComponent as LeftDoubleArrow } from '../../icon/leftDoubleArrow.svg';
 import { ReactComponent as RightArrow } from '../../icon/rightArrow.svg';
 import { ReactComponent as RightDoubleArrow } from '../../icon/rightDoubleArrow.svg';
+import { parseUrlQuery } from '../../utils/functions';
 import './style/nav.scss';
 export const range = (start: number, end: number) => {
 	if (start === end) {
@@ -30,6 +31,27 @@ const parseQueryString = (url: string, page: number) => {
 	}
 	return href.replace(/page=[0-9]+/, 'page=' + page);
 };
+
+const generateNewPageUrl = (page: number) => {
+	let href = window.location.href;
+	let path = window.location.hash.split('?')[0] + '?';
+	const urlObj = parseUrlQuery(href);
+	urlObj['page'] = page.toString();
+	for (const key in urlObj) {
+		if (
+			typeof urlObj[key] === 'undefined' ||
+			key.length <= 0 ||
+			urlObj[key].length <= 0
+		) {
+			continue;
+		}
+		if (key === 'scroll') {
+			continue;
+		}
+		path += key + '=' + urlObj[key].toString() + '&';
+	}
+	return path.startsWith('#') ? path : '#' + path;
+};
 export const PageSpan = (props: {
 	params: {
 		search?: string | null;
@@ -42,6 +64,7 @@ export const PageSpan = (props: {
 	icon?: React.ReactElement;
 	disable?: boolean;
 }) => {
+	let url = parseUrlQuery(window.location.href);
 	return (
 		<li
 			className={'page-span' + (props.special ? ' ' + props.special : '')}
@@ -52,7 +75,7 @@ export const PageSpan = (props: {
 					' page-link' +
 					(props.disable ? ' disable' : '')
 				}
-				href={parseQueryString(window.location.href, props.page)}
+				href={generateNewPageUrl(props.page)}
 				onClick={(e) => {
 					if (props.disable) {
 						e.preventDefault();
