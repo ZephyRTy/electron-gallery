@@ -17,6 +17,9 @@ $radius: 15px;
 	}
 	&-pack {
 		margin: 10px;
+		display: flex;
+		flex-direction: column;
+		height: fit-content;
 	}
 	&-main-content {
 		transform: translateZ(0);
