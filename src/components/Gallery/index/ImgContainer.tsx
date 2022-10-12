@@ -10,6 +10,7 @@ import globalConfig, {
 import {
 	BasicData,
 	Bookmark,
+	DirData,
 	ImageComponent,
 	Mode
 } from '../../../types/global';
@@ -27,6 +28,7 @@ import {
 	Back,
 	ConfigBtn,
 	CrawlerBtn,
+	GotoReaderBtn,
 	Refresh,
 	SelectPacks
 } from '../Buttons';
@@ -50,12 +52,13 @@ export const ImgContainer = (props: {
 }) => {
 	const [images, setImages] = useState([[], [], [], []] as {
 		img: HTMLImageElement;
-		data: BasicData | Bookmark;
+		data: BasicData | Bookmark | DirData;
 	}[][]);
 	const length = useRef({ value: 0, loaded: 0 }).current;
 	const waterfallCache = useRef(ImgWaterfallCache.getInstance()).current;
 	const [inSelect, setInSelect] = useState(0);
 	const [dirMapVis, setDirMapVis] = useController(dirMapVisibleStore);
+	const [ready, setReady] = useState(false);
 	const topMenu = useMemo(() => {
 		return (
 			<Sidebar className="top-menu">
@@ -64,6 +67,7 @@ export const ImgContainer = (props: {
 				<Add util={props.util} />
 				<CrawlerBtn />
 				<ConfigBtn />
+				<GotoReaderBtn />
 				<SelectPacks
 					handleClick={() => {
 						if (dialogActive.active) {
@@ -87,6 +91,7 @@ export const ImgContainer = (props: {
 	}, [props.util]);
 	useEffectOnChange(() => {
 		if (props.packs.length === 0) {
+			setReady(true);
 			return;
 		}
 		length.loaded = 0;
@@ -94,13 +99,14 @@ export const ImgContainer = (props: {
 			setImages(waterfallCache.load());
 		} else {
 			length.value = props.packs.length;
-			let buffer: { img: HTMLImageElement; data: BasicData }[][] = [
+			let waterfall: { img: HTMLImageElement; data: BasicData }[][] = [
 				[],
 				[],
 				[],
 				[]
 			];
 			let heights = [0, 0, 0, 0];
+			const buffer: { img: HTMLImageElement; data: BasicData }[] = [];
 			//NOTE 预渲染图像
 			props.packs.forEach((v) => {
 				let img = new Image();
@@ -108,7 +114,7 @@ export const ImgContainer = (props: {
 					(!hasExternalDriver && v.cover.startsWith('E')) ||
 					!globalConfig.r18
 						? defaultCover
-						: (v.path + v.cover).replace(/\\/g, '/');
+						: ((v.path ?? '') + v.cover).replace(/\\/g, '/');
 				let coverPath = imgPath;
 				if (isBookmark(v)) {
 					coverPath =
@@ -125,23 +131,51 @@ export const ImgContainer = (props: {
 					.replaceAll(/#/g, encodeURIComponent('#'));
 				img.onload = () => {
 					img.onload = null;
-					let min = minIndex(heights);
-					let height = isDirData(v)
-						? 100
-						: Math.ceil(
-								180 * (img.naturalHeight / img.naturalWidth)
-						  );
-					heights[min] += height + buffer[min].push({ img, data: v });
+					buffer.push({ img, data: v });
 					length.loaded++;
 					if (length.loaded >= length.value) {
-						setImages([...buffer]);
+						buffer
+							.sort((a, b) => {
+								if (
+									(isBookmark(a.data) &&
+										isBookmark(b.data)) ||
+									(isDirData(a.data) && isDirData(b.data))
+								) {
+									return b.data.timeStamp > a.data.timeStamp
+										? 1
+										: -1;
+								}
+								return b.data.id - a.data.id;
+							})
+							.forEach((v, i) => {
+								let min = minIndex(heights);
+								if (isDirData(v.data)) {
+									min = i % 4;
+								}
+								let height = isDirData(v)
+									? 100
+									: Math.ceil(
+											180 *
+												(v.img.naturalHeight /
+													v.img.naturalWidth)
+									  );
+								heights[min] +=
+									height +
+									waterfall[min].push({
+										img: v.img,
+										data: v.data
+									});
+							});
+						setImages([...waterfall]);
+						setReady(true);
 					}
 				};
 				img.onerror = () => {
 					--length.value;
 					img.onerror = null;
 					if (length.loaded >= length.value) {
-						setImages([...buffer]);
+						setImages([...waterfall]);
+						setReady(true);
 					}
 					let err = new Error(
 						`${v.title} with index ${v.id} get wrong`
@@ -166,6 +200,7 @@ export const ImgContainer = (props: {
 		}
 		return () => {
 			setImages([[], [], [], []]);
+			setReady(false);
 			length.loaded = 0;
 		};
 	}, [props.packs]);
@@ -195,9 +230,12 @@ export const ImgContainer = (props: {
 			{dirMap}
 			<Config />
 			<Rename util={props.util} />
-			{length.loaded >= length.value ? (
+			{ready ? (
 				<>
-					<PageOfTotal current={props.page} total={totalPage} />
+					<PageOfTotal
+						current={totalPage > 0 ? props.page : 0}
+						total={totalPage}
+					/>
 					<main className={styles['img-main-content']}>
 						{images.map((v) => {
 							return (
@@ -213,7 +251,7 @@ export const ImgContainer = (props: {
 										let Component: ImageComponent<any>;
 										if (isBookmark(ele.data)) {
 											Component = BookmarkItem;
-										} else if (!ele.data.path) {
+										} else if (isDirData(ele.data)) {
 											Component = ImageDir;
 										} else {
 											Component = NormalImg;

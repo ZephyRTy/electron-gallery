@@ -1,10 +1,10 @@
 import { useController } from 'syill';
 import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
-import { BasicData, DirData, ImageComponent } from '../../../types/global';
+import { DirData, ImageComponent } from '../../../types/global';
 import { FileOperator } from '../../../utils/fileOperator';
 import { renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
-export const ImageDir: ImageComponent<BasicData> = (props: {
+export const ImageDir: ImageComponent<DirData> = (props: {
 	src: string;
 	data: DirData;
 	util: FileOperator;

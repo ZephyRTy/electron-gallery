@@ -1,6 +1,12 @@
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
-import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
+import {
+	BasicData,
+	Bookmark,
+	DirData,
+	DirectoryInfo,
+	Mode
+} from '../types/global';
 import { formatDate, hasExternalDriver } from './functions';
 
 /* eslint-disable no-underscore-dangle */
@@ -88,19 +94,33 @@ export class MysqlOperator {
 							resolve(
 								result.map((v: any) => {
 									return {
-										id: v.id ?? v.dir_id,
-										title: v.title ?? v.dir_title,
-										path: v.path ?? '',
-										cover: v.cover ?? v.dir_cover,
+										id: v.id,
+										title: v.title,
+										path: v.path,
+										cover: v.cover,
 										url: v.url,
+										timeStamp: formatDate(
+											new Date(v.timeStamp).toString()
+										),
+										stared: Boolean(v.stared)
+									} as BasicData;
+								})
+							);
+							return;
+						} else if (mode === Mode.ShowDir) {
+							resolve(
+								result.map((v: any) => {
+									return {
+										id: v.dir_id,
+										title: v.dir_title,
+										cover: v.dir_cover,
 										timeStamp:
 											formatDate(
-												new Date(v.timeStamp).toString()
-											) ?? 0,
-										stared: Boolean(
-											v.stared ?? v.dir_stared
-										)
-									} as BasicData;
+												new Date(
+													v.update_time
+												).toString()
+											) ?? ''
+									} as DirData;
 								})
 							);
 							return;

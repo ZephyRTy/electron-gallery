@@ -1,10 +1,10 @@
-import { BasicData, Bookmark } from '../types/global';
+import { Bookmark, ImageData } from '../types/global';
 import { isBookmark } from './functions';
 
 // 缓存进入图片时的页面，保证前后页面排列的一致性
 export class ImgWaterfallCache {
 	private static instance: ImgWaterfallCache;
-	private temp: { img: HTMLImageElement; data: BasicData }[][] = [
+	private temp: { img: HTMLImageElement; data: ImageData }[][] = [
 		[],
 		[],
 		[],
@@ -16,14 +16,14 @@ export class ImgWaterfallCache {
 		}
 		return ImgWaterfallCache.instance;
 	}
-	private data: { img: HTMLImageElement; data: BasicData }[][] = [
+	private data: { img: HTMLImageElement; data: ImageData }[][] = [
 		[],
 		[],
 		[],
 		[]
 	];
 	private cacheNeeded = false;
-	saveTemp(data: { img: HTMLImageElement; data: BasicData }[][]) {
+	saveTemp(data: { img: HTMLImageElement; data: ImageData }[][]) {
 		this.temp = data;
 	}
 	save() {
@@ -32,14 +32,14 @@ export class ImgWaterfallCache {
 		this.cacheNeeded = true;
 	}
 
-	load(): { img: HTMLImageElement; data: BasicData }[][] {
+	load(): { img: HTMLImageElement; data: ImageData }[][] {
 		this.cacheNeeded = false;
 		let data = this.data;
 		this.data = [[], [], [], []];
 		return data;
 	}
 
-	isNeeded(sample: BasicData[] | Bookmark[]) {
+	isNeeded(sample: ImageData[] | Bookmark[]) {
 		if (isBookmark(sample[0])) {
 			this.cacheNeeded = false;
 		} else if (this.count !== sample.length) {
@@ -64,12 +64,12 @@ export class ImgWaterfallCache {
 		return this.data.reduce((a, b) => a + b.length, 0);
 	}
 
-	updateCover(data: BasicData) {
+	updateCover(data: ImageData) {
 		this.data.forEach((e) => {
 			let index = e.findIndex((e) => e.data.id === data.id);
 			if (index !== -1) {
 				e[index].data.cover = data.cover;
-				e[index].img.src = data.path + data.cover;
+				e[index].img.src = ((data as any).path ?? '') + data.cover;
 			}
 		});
 	}

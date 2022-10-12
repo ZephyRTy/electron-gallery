@@ -30,7 +30,7 @@ export const Gallery = () => {
 		});
 	}, [window.location.href, refresh]);
 	return (
-		<div className="gallery">
+		<div className="main-content">
 			<FileDrop util={fileOperator} />
 			<ImgContainer
 				inDir={window.location.href.includes('/directory/')}
