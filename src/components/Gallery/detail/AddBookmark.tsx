@@ -1,13 +1,13 @@
 import { MutableRefObject, useCallback, useRef } from 'react';
 import { ReactComponent as AddBookmarkIcon } from '../../../icon/addBookmark.svg';
 import globalConfig from '../../../types/constant';
-import { BasicData } from '../../../types/global';
-import { FileOperator } from '../../../utils/fileOperator';
+import { NormalImage } from '../../../types/global';
 import { formatDate, parseUrlQuery } from '../../../utils/functions';
+import { GalleryOperator } from '../../../utils/galleryOperator';
 import { imageStateStore } from '../../../utils/store';
 
 export function AddBookmark(props: {
-	fileOperator: FileOperator;
+	fileOperator: GalleryOperator;
 	pack: string | undefined;
 	// eslint-disable-next-line no-unused-vars
 	bookmarkToast: MutableRefObject<(arg: boolean) => void>;
@@ -51,7 +51,7 @@ export function AddBookmark(props: {
 			let data = fileOperator.current(
 				parseInt(pack!),
 				false
-			) as BasicData;
+			) as NormalImage;
 			// 记录当前图片的位置
 			let href = window.location.href;
 			let url = window.location.hash.split('?')[0] + '?';

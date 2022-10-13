@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useModel } from 'syill';
-import { FileOperator } from '../../utils/fileOperator';
+import { galleryOperator } from '../../utils/galleryOperator';
 import { fileDropVisibleStore } from '../../utils/store';
 import styles from './style/fileDrop.module.scss';
 // eslint-disable-next-line no-unused-vars
 const _ = React;
-export const FileDrop = (props: { util: FileOperator }) => {
+export const FileDrop = () => {
 	const visible = useModel(fileDropVisibleStore);
 	const [result, setResult] = useState([] as string[]);
 	useEffect(() => {
@@ -39,7 +39,7 @@ export const FileDrop = (props: { util: FileOperator }) => {
 						e.stopPropagation();
 						const files = Array.from(e.dataTransfer.files);
 						if (files.length > 0) {
-							props.util
+							galleryOperator
 								.addNewPack(
 									files.map((e) => {
 										return {

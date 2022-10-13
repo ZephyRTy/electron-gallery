@@ -1,6 +1,6 @@
 $height: 60%;
 
-@import './header.module.scss';
+@import '../../style/header.module.scss';
 .main-content {
 	width: 100%;
 	height: $fullscreen-height;
@@ -164,5 +164,6 @@ svg {
 	&-line {
 		height: 30px;
 		margin: 0;
+		user-select: initial;
 	}
 }

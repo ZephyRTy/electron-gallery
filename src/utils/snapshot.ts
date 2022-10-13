@@ -1,9 +1,9 @@
-import { BasicData } from '../types/global';
+import { NormalImage } from '../types/global';
 
 export const snapshot = {
 	value: [] as {
 		img: HTMLImageElement;
-		data: BasicData;
+		data: NormalImage;
 	}[][],
 	ready: false,
 	load() {
@@ -15,7 +15,7 @@ export const snapshot = {
 	save(
 		value: {
 			img: HTMLImageElement;
-			data: BasicData;
+			data: NormalImage;
 		}[][]
 	) {
 		console.log(value);

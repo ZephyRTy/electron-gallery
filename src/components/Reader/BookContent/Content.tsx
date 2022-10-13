@@ -6,38 +6,53 @@ import {
 	DISTANCE_2_UPDATE,
 	LINE_HEIGHT,
 	OVERFLOW_NUM
-} from '../../types/constant';
-import { TextLine } from '../../types/global';
-import { ReaderOperator } from '../../utils/readerOperator';
+} from '../../../types/constant';
+import { TextLine } from '../../../types/global';
+import { BookDetail } from '../../../utils/book';
+import { readerOperator } from '../../../utils/readerOperator';
+import { CatalogPortal } from '../../Dialog';
+import styles from '../style/reader.module.scss';
 import { Placeholder } from './Placeholder';
-import styles from './style/content.module.scss';
-export const ScrollContent = () => {
+export const BookContent = () => {
 	const article = useRef(null as HTMLDivElement | null);
 	const scrollTop = useRef(0);
 	const [top, setTop] = useState(0);
 	const [bottom, setBottom] = useState(0);
 	const [start, setStart] = useState(0);
+	const [book, setBook] = useState(null as any as BookDetail);
 	const [content, setContent] = useState([] as TextLine[]);
-	const readerOperator = useRef(ReaderOperator.getInstance()).current;
 	const scrollEle = useRef(null);
 	const initBottom = useMemo(
-		() => (readerOperator.length - CONTENT_RANGE) * LINE_HEIGHT,
-		[]
+		() => (book ? (book.length - CONTENT_RANGE) * LINE_HEIGHT : 0),
+		[book]
 	);
-	const updateWhenScrollLot = useCallback((eleScrollTop) => {
-		let lineNum = Math.ceil(eleScrollTop / LINE_HEIGHT);
-		const startLine = lineNum - DELTA_LINE - OVERFLOW_NUM;
-		setContent(
-			readerOperator.getContent(startLine, startLine + CONTENT_RANGE)
-		);
-		setStart(startLine);
-		setTop(eleScrollTop - (DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT);
-		setBottom(
-			initBottom -
-				(eleScrollTop - (DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT) -
-				LINE_HEIGHT * CONTENT_RANGE
-		);
-	}, []);
+	const updateWhenScrollLot = useCallback(
+		(eleScrollTop) => {
+			if (!book) return;
+			let lineNum = Math.ceil(eleScrollTop / LINE_HEIGHT);
+			console.log('lineNum', lineNum);
+			const startLine =
+				lineNum - DELTA_LINE - OVERFLOW_NUM > 0
+					? lineNum - DELTA_LINE - OVERFLOW_NUM
+					: 0;
+			setContent(book.getContent(startLine, startLine + CONTENT_RANGE));
+			setStart(startLine);
+			setTop(
+				startLine
+					? eleScrollTop - (DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT
+					: 0
+			);
+			setBottom(
+				startLine
+					? initBottom -
+							(eleScrollTop -
+								(DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT) -
+							LINE_HEIGHT * CONTENT_RANGE
+					: initBottom
+			);
+		},
+		[book]
+	);
 	const beforeScrollTop = useRef(0);
 	const handleScroll = useMemo(() => {
 		let timer: number;
@@ -58,14 +73,14 @@ export const ScrollContent = () => {
 						let distance = (
 							article.current as HTMLElement
 						).getBoundingClientRect().bottom;
-						if (start + CONTENT_RANGE >= readerOperator.length) {
+						if (start + CONTENT_RANGE >= book.length) {
 							return;
 						}
 						if (distance < 0) {
 							updateWhenScrollLot(eleScrollTop);
 						} else if (distance < DISTANCE_2_UPDATE) {
 							setContent(
-								readerOperator.getContent(
+								book.getContent(
 									start + DELTA_LINE,
 									start + DELTA_LINE + CONTENT_RANGE
 								)
@@ -85,7 +100,7 @@ export const ScrollContent = () => {
 							updateWhenScrollLot(eleScrollTop);
 						} else if (distance > -DISTANCE_2_UPDATE) {
 							setContent(
-								readerOperator.getContent(
+								book.getContent(
 									start - DELTA_LINE,
 									start - DELTA_LINE + CONTENT_RANGE
 								)
@@ -104,13 +119,11 @@ export const ScrollContent = () => {
 	useEffect(() => {
 		readerOperator
 			.loadText('D:\\webDemo\\desktop-reader\\text.txt')
-			.then(() => {
-				setContent(
-					readerOperator.getContent(start, start + CONTENT_RANGE)
-				);
-				setBottom(
-					(readerOperator.length - CONTENT_RANGE) * LINE_HEIGHT
-				);
+			.then((res) => {
+				setBook(res);
+				//res.printCatalog();
+				setContent(res.getContent(start, start + CONTENT_RANGE));
+				setBottom((res.length - CONTENT_RANGE) * LINE_HEIGHT);
 			});
 	}, []);
 	useEffect(() => {
@@ -121,6 +134,7 @@ export const ScrollContent = () => {
 	return (
 		<div
 			className={styles['scroll-content']}
+			id="reader-scroll-ele"
 			onScroll={handleScroll}
 			ref={scrollEle}
 		>
@@ -132,6 +146,10 @@ export const ScrollContent = () => {
 				}}
 				ref={article}
 			></article>
+			<CatalogPortal
+				book={book}
+				scrollEle={scrollEle as any as HTMLElement}
+			/>
 			<Placeholder height={bottom} />
 		</div>
 	);

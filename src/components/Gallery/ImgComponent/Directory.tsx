@@ -1,13 +1,13 @@
 import { useController } from 'syill';
 import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
-import { DirData, ImageComponent } from '../../../types/global';
-import { FileOperator } from '../../../utils/fileOperator';
+import { ImageComponent, ImageDirectory } from '../../../types/global';
+import { GalleryOperator } from '../../../utils/galleryOperator';
 import { renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
-export const ImageDir: ImageComponent<DirData> = (props: {
+export const ImageDir: ImageComponent<ImageDirectory> = (props: {
 	src: string;
-	data: DirData;
-	util: FileOperator;
+	data: ImageDirectory;
+	util: GalleryOperator;
 }) => {
 	const [, setVis] = useController(renameVisibleStore);
 	return (
@@ -44,4 +44,3 @@ export const ImageDir: ImageComponent<DirData> = (props: {
 		</div>
 	);
 };
-export default ImageDir;

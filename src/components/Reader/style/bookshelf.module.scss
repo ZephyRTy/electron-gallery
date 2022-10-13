@@ -1,0 +1,54 @@
+.bookshelf {
+	display: flex;
+	&-row {
+		width: 100%;
+		height: fit-content;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		margin: 20px;
+		&-item {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+		&-cover {
+			background-color: rgb(235, 235, 41);
+			height: 170px;
+			width: 130px;
+			margin: 0 30px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+	&-title-container {
+		height: 40px;
+	}
+}
+
+.book-item {
+	&-title {
+		text-align: center;
+		font-size: 14px;
+		display: block;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}
+
+.line {
+	&-1 {
+		width: 130px;
+	}
+	&-2 {
+		width: 130px;
+	}
+	&-3 {
+		width: 100px;
+	}
+}

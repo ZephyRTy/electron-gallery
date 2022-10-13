@@ -17,6 +17,7 @@ export const fileDropVisibleStore = new Store(false);
 export const dirMapVisibleStore = new Store(false);
 export const renameVisibleStore = new Store(false);
 export const configVisibleStore = new Store(false);
+export const catalogVisibleStore = new Store(false);
 export const dialogActive = {
 	active: false,
 	setActive: (active: boolean) => {

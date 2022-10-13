@@ -1,4 +1,4 @@
-import styles from './style/content.module.scss';
+import styles from '../style/reader.module.scss';
 
 export const Placeholder = (props: { height: number }) => {
 	return (

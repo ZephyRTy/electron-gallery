@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
 import { Bookmark, ImageComponent } from '../../../types/global';
-import { FileOperator } from '../../../utils/fileOperator';
+import { GalleryOperator } from '../../../utils/galleryOperator';
 import styles from '../style/img.module.scss';
 export const BookmarkItem: ImageComponent<Bookmark> = (props: {
 	src: string;
 	data: Bookmark;
-	util: FileOperator;
+	util: GalleryOperator;
 }) => {
 	const [marked, setMarked] = useState(true);
 	const [changed, setChanged] = useState(false);

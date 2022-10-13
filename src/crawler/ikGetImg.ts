@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { downloadPath } from '../types/constant';
-import { FileOperator } from '../utils/fileOperator';
+import { GalleryOperator } from '../utils/galleryOperator';
 import { getImg } from './utils/getImg';
 const fs = window.require('fs');
 // let { imgList, title } = JSON.parse(
@@ -55,7 +55,7 @@ export async function getImgList(
 			// );
 			clearInterval(id);
 			try {
-				FileOperator.getInstance().addNewPack(o, true);
+				GalleryOperator.getInstance().addNewPack(o, true);
 			} catch (e) {
 				if (!target) {
 					console.log(e);

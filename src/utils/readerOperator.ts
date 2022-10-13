@@ -1,4 +1,7 @@
+import { SPACE_CODE } from '../types/constant';
 import { TextLine } from '../types/global';
+import { BookDetail } from './book';
+import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs/promises');
 const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
@@ -8,7 +11,8 @@ const splitWords = (str: string, len: number) => {
 	}
 	return result;
 };
-const SPACE_CODE = decodeURIComponent('%E3%80%80');
+
+// eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
 export class ReaderOperator {
 	private static instance: ReaderOperator;
@@ -29,17 +33,19 @@ export class ReaderOperator {
 
 	async loadText(textPath: string) {
 		const text = await fs.readFile(textPath, 'utf-8');
-		this.parseText(text);
+		let title = textPath.replaceAll('\\', '/').split('/').pop()!;
+		return this.parseBook(text, title);
 	}
-	private parseText(text: string) {
+	private parseBook(text: string, title: string) {
+		const book = new BookDetail(title);
 		const lines = text.split('\n');
 		let lineNum = 0;
 		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i].replace(/^\s+/g, SPACE_CODE + SPACE_CODE);
+			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
 			let len = line.length;
 			if (len) {
-				this.content.push(
-					...splitWords(line, this.lettersOfEachLine).map((item) => {
+				book.addContent(
+					splitWords(line, this.lettersOfEachLine).map((item) => {
 						return {
 							index: lineNum++,
 							content: `<p class="text-line">${item}</p>`
@@ -47,23 +53,16 @@ export class ReaderOperator {
 					})
 				);
 			}
-			this.content.push({
-				index: len,
+			book.addContent({
+				index: lineNum++,
 				content: '<p class="text-br"></p>'
 			});
 		}
+		return book;
 	}
-
-	public getContent(start: number, end: number): TextLine[] {
-		this.contentSize = { start, end };
-		return this.content.slice(start, end);
-	}
-
-	get start() {
-		return this.contentSize.start;
-	}
-
-	get length() {
-		return this.content.length;
+	public load() {
+		mysqlOperator.checkConnection('book');
 	}
 }
+
+export const readerOperator = ReaderOperator.getInstance();

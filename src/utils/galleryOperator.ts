@@ -8,7 +8,7 @@ import {
 	getBookmarkThumb,
 	packCountOfSinglePage
 } from '../types/constant';
-import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
+import { Bookmark, DirectoryInfo, Mode, NormalImage } from '../types/global';
 import {
 	compress,
 	convertJsRegToMysqlReg,
@@ -27,11 +27,11 @@ const checkImageSize = (path: string) => {
 	return size;
 };
 // 对文件进行操作，可与数据进行交互
-export class FileOperator {
-	private directories: BasicData[] = [];
+export class GalleryOperator {
+	private directories: NormalImage[] = [];
 	private fileCache = {
 		startPage: 0,
-		data: [] as BasicData[]
+		data: [] as NormalImage[]
 	};
 	private prevPage = '';
 	private refreshFn: React.Dispatch<React.SetStateAction<boolean>> = (
@@ -40,17 +40,17 @@ export class FileOperator {
 	private setTitleFn: React.Dispatch<React.SetStateAction<string>> = (
 		v: any
 	) => {};
-	private static instance: FileOperator;
-	static getInstance(): FileOperator {
-		if (!FileOperator.instance) {
-			FileOperator.instance = new FileOperator();
+	private static instance: GalleryOperator;
+	static getInstance(): GalleryOperator {
+		if (!GalleryOperator.instance) {
+			GalleryOperator.instance = new GalleryOperator();
 		}
-		return FileOperator.instance;
+		return GalleryOperator.instance;
 	}
 
 	private mode: Mode = Mode.Init;
 	private total = 0;
-	private currentPacks = [] as BasicData[];
+	private currentPacks = [] as NormalImage[];
 	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
 	private readonly starModel = starModel;
 	private readonly bookmarkModel = bookmarkModel;
@@ -59,7 +59,7 @@ export class FileOperator {
 	private searchCache = {
 		key: '',
 		mode: Mode.Normal,
-		res: [] as BasicData[],
+		res: [] as NormalImage[],
 		total: 0,
 		reg: false,
 		valid: false
@@ -70,13 +70,13 @@ export class FileOperator {
 			this.total = res;
 		});
 		mysqlOperator.select([], Mode.Stared).then((res) => {
-			this.starModel.data = res;
+			this.starModel.data = res as NormalImage[];
 		});
 		mysqlOperator.select([], Mode.Bookmark).then((res) => {
 			this.bookmarkModel.data = res as Bookmark[];
 		});
 		mysqlOperator.select([], Mode.ShowDir).then((res) => {
-			this.directories = res;
+			this.directories = res as NormalImage[];
 		});
 		mysqlOperator.mapDir().then((res) => {
 			this.dirMap = Map(res);
@@ -119,7 +119,7 @@ export class FileOperator {
 		this.searchCache.valid = true;
 		this.searchCache.key = key;
 		this.searchCache.res = [];
-		let result = [] as BasicData[];
+		let result = [] as NormalImage[];
 		if (this.mode === Mode.InDir) {
 			result = this.currentPacks.filter((v) => v.title.includes(key));
 		} else {
@@ -149,7 +149,7 @@ export class FileOperator {
 		);
 	}
 
-	private getBookmarks(page: number): [BasicData[], number] {
+	private getBookmarks(page: number): [NormalImage[], number] {
 		this.switchMode(Mode.Bookmark);
 		this.currentPacks = this.bookmarkModel.data;
 		return [
@@ -177,7 +177,7 @@ export class FileOperator {
 	private async getDirContent(
 		index: number,
 		page: number
-	): Promise<[BasicData[], number]> {
+	): Promise<[NormalImage[], number]> {
 		if (this.switchMode(Mode.InDir)) {
 			this.currentPacks = await mysqlOperator.select([], Mode.InDir);
 		}
@@ -286,22 +286,25 @@ export class FileOperator {
 		});
 	}
 
-	staredUpdate(newStar: BasicData) {
+	staredUpdate(newStar: NormalImage) {
 		this.starModel.update(newStar);
 	}
-	async showDir(page: number): Promise<[BasicData[], number]> {
+	async showDir(page: number): Promise<[NormalImage[], number]> {
 		this.switchMode(Mode.ShowDir);
 		let res = await mysqlOperator.select([], Mode.ShowDir);
-		this.currentPacks = res;
+		this.currentPacks = res as NormalImage[];
 		return [
 			res.slice(
 				(page - 1) * packCountOfSinglePage,
 				page * packCountOfSinglePage
-			),
+			) as unknown as NormalImage[],
 			res.length
 		];
 	}
-	async getPacks(page: number, url: string): Promise<[BasicData[], number]> {
+	async getPacks(
+		page: number,
+		url: string
+	): Promise<[NormalImage[], number]> {
 		let query: {
 			search?: string;
 			directory?: string;
@@ -367,7 +370,7 @@ export class FileOperator {
 	//获取当前要打开的页面
 	current(packId: number, change: boolean = true) {
 		this.switchMode(Mode.Detail);
-		let res: BasicData = null as any;
+		let res: NormalImage = null as any;
 		if (this.mode === Mode.Bookmark) {
 			res = this.bookmarks.find((v) => v.id === packId)!;
 		} else {
@@ -564,6 +567,10 @@ export class FileOperator {
 	getMode() {
 		return this.mode;
 	}
+
+	public load() {
+		mysqlOperator.checkConnection('GALLERY');
+	}
 }
 
-export const fileOperator = FileOperator.getInstance();
+export const galleryOperator = GalleryOperator.getInstance();

@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { PackDetail } from './components/Gallery/detail/PackDetail';
 import { Gallery } from './components/Gallery/index/Gallery';
-import { Reader } from './components/Reader/Reader';
+import { Reader } from './components/Reader/BookContent/Reader';
+import { Bookshelf } from './components/Reader/index/Bookshelf';
 import { ImgServer } from './server/imgServer';
 export const MainRouter = () => {
 	useEffect(() => {
@@ -15,7 +16,8 @@ export const MainRouter = () => {
 		<HashRouter>
 			<Routes>
 				<Route element={<Gallery />} path="gallery" />
-				<Route element={<Reader />} path="reader" />
+				<Route element={<Bookshelf />} path="reader" />
+				<Route element={<Reader />} path="reader/content/:bookID" />
 				<Route
 					element={<PackDetail />}
 					path="gallery/pack/:pack"

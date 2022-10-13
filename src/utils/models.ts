@@ -1,11 +1,11 @@
-import { BasicData, Bookmark, Mode, Model } from '../types/global';
+import { Bookmark, Mode, Model, NormalImage } from '../types/global';
 import { mysqlOperator } from './mysqlOperator';
 
-export const starModel: Model<BasicData> = {
+export const starModel: Model<NormalImage> = {
 	dirty: false,
-	data: [] as BasicData[],
-	dataToUpdate: [] as BasicData[],
-	async update(newStar?: BasicData) {
+	data: [] as NormalImage[],
+	dataToUpdate: [] as NormalImage[],
+	async update(newStar?: NormalImage) {
 		this.dirty = true;
 		if (newStar) {
 			await mysqlOperator.updateStar(newStar);

@@ -8,42 +8,43 @@ import globalConfig, {
 	imageCountOfSinglePage
 } from '../../../types/constant';
 import {
-	BasicData,
 	Bookmark,
-	DirData,
 	ImageComponent,
-	Mode
+	ImageData,
+	Mode,
+	NormalImage
 } from '../../../types/global';
-import { FileOperator } from '../../../utils/fileOperator';
 import {
 	compress,
 	hasExternalDriver,
 	isBookmark,
-	isDirData
+	isImageDir
 } from '../../../utils/functions';
+import { GalleryOperator } from '../../../utils/galleryOperator';
 import { ImgWaterfallCache } from '../../../utils/ImgWaterFallCache';
 import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
+import { Config, DirMap, Rename } from '../../Dialog';
+import { Menu, Sidebar, SidebarContainer } from '../../Menu';
 import {
 	Add,
 	Back,
 	ConfigBtn,
 	CrawlerBtn,
+	GotoReaderBtn,
 	Refresh,
 	SelectPacks
 } from '../Buttons';
-import { Config, DirMap, Rename } from '../Dialog';
 import BookmarkItem from '../ImgComponent/Bookmarks';
-import ImageDir from '../ImgComponent/Directory';
+import { ImageDir } from '../ImgComponent/Directory';
 import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
 import { Loading } from '../Loading';
-import { Menu, Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
 import { PageOfTotal } from '../PageOfTotal';
 import styles from '../style/img.module.scss';
 let index = 0;
 export const ImgContainer = (props: {
-	packs: BasicData[] | Bookmark[];
-	util: FileOperator;
+	packs: NormalImage[] | Bookmark[];
+	util: GalleryOperator;
 	inDir: boolean;
 	page: number;
 	total: number;
@@ -51,7 +52,7 @@ export const ImgContainer = (props: {
 }) => {
 	const [images, setImages] = useState([[], [], [], []] as {
 		img: HTMLImageElement;
-		data: BasicData | Bookmark | DirData;
+		data: ImageData;
 	}[][]);
 	const length = useRef({ value: 0, loaded: 0 }).current;
 	const waterfallCache = useRef(ImgWaterfallCache.getInstance()).current;
@@ -60,12 +61,13 @@ export const ImgContainer = (props: {
 	const [ready, setReady] = useState(false);
 	const topMenu = useMemo(() => {
 		return (
-			<Sidebar className="top-menu">
+			<Sidebar menuPosition="top">
 				<Back inSelect={inSelect} setInSelect={setInSelect} />
 				<Refresh util={props.util} />
 				<Add util={props.util} />
 				<CrawlerBtn />
 				<ConfigBtn />
+				<GotoReaderBtn />
 				<SelectPacks
 					handleClick={() => {
 						if (dialogActive.active) {
@@ -97,14 +99,14 @@ export const ImgContainer = (props: {
 			setImages(waterfallCache.load());
 		} else {
 			length.value = props.packs.length;
-			let waterfall: { img: HTMLImageElement; data: BasicData }[][] = [
+			let waterfall: { img: HTMLImageElement; data: NormalImage }[][] = [
 				[],
 				[],
 				[],
 				[]
 			];
 			let heights = [0, 0, 0, 0];
-			const buffer: { img: HTMLImageElement; data: BasicData }[] = [];
+			const buffer: { img: HTMLImageElement; data: NormalImage }[] = [];
 			//NOTE 预渲染图像
 			props.packs.forEach((v) => {
 				let img = new Image();
@@ -137,7 +139,7 @@ export const ImgContainer = (props: {
 								if (
 									(isBookmark(a.data) &&
 										isBookmark(b.data)) ||
-									(isDirData(a.data) && isDirData(b.data))
+									(isImageDir(a.data) && isImageDir(b.data))
 								) {
 									return b.data.timeStamp > a.data.timeStamp
 										? 1
@@ -147,10 +149,10 @@ export const ImgContainer = (props: {
 							})
 							.forEach((v, i) => {
 								let min = minIndex(heights);
-								if (isDirData(v.data)) {
+								if (isImageDir(v.data)) {
 									min = i % 4;
 								}
-								let height = isDirData(v)
+								let height = isImageDir(v)
 									? 100
 									: Math.ceil(
 											180 *
@@ -249,7 +251,7 @@ export const ImgContainer = (props: {
 										let Component: ImageComponent<any>;
 										if (isBookmark(ele.data)) {
 											Component = BookmarkItem;
-										} else if (isDirData(ele.data)) {
+										} else if (isImageDir(ele.data)) {
 											Component = ImageDir;
 										} else {
 											Component = NormalImg;

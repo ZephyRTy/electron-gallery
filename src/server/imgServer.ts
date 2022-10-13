@@ -1,7 +1,7 @@
 import { getImg } from '../crawler/utils/getImg';
 import { downloadPath, otherPath } from '../types/constant';
-import { FileOperator } from '../utils/fileOperator';
 import { parseUrlQuery } from '../utils/functions';
+import { GalleryOperator } from '../utils/galleryOperator';
 const fs = window.require('fs');
 const http = window.require('http');
 const titles = new Set();
@@ -140,7 +140,7 @@ export class ImgServer {
 				// );
 				clearInterval(id);
 				try {
-					FileOperator.getInstance().addNewPack(o, true);
+					GalleryOperator.getInstance().addNewPack(o, true);
 				} catch (e) {
 					if (!target) {
 						console.log(e);

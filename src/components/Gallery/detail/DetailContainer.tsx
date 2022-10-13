@@ -8,7 +8,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as SetCover } from '../../../icon/cover.svg';
 import { imageCountOfSinglePage } from '../../../types/constant';
-import { FileOperator } from '../../../utils/fileOperator';
+import { GalleryOperator } from '../../../utils/galleryOperator';
 import { imageStateStore } from '../../../utils/store';
 import { Toast } from '../Toast';
 import { ImageZoomIn } from './ZoomIn';
@@ -32,7 +32,7 @@ const ImgDetail = (props: {
 			<SetCover
 				className="set-cover"
 				onClick={() => {
-					FileOperator.getInstance()
+					GalleryOperator.getInstance()
 						.changePackCover(
 							window.location.href
 								.split('?')[0]

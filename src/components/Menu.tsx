@@ -1,21 +1,25 @@
 /* eslint-disable camelcase */
-import { ReactChild, useEffect, useState } from 'react';
-import { Mode } from '../../types/global';
-import { parseUrlQuery } from '../../utils/functions';
-import {
-	BookmarkBtn,
-	GotoGalleryBtn,
-	HomePage,
-	ShowDir,
-	Stared
-} from './Buttons';
+import { ReactChild, useEffect, useMemo, useState } from 'react';
+import { Mode } from '../types/global';
+import { parseUrlQuery } from '../utils/functions';
+import { BookmarkBtn, HomePage, ShowDir, Stared } from './Gallery/Buttons';
 
 export const Sidebar = (props: {
 	children: ReactChild[] | ReactChild;
-	className: string;
+	menuPosition: 'top' | 'bottom' | 'middle';
 }) => {
+	const pos = useMemo(
+		() => ({
+			'top': 'top',
+			'bottom': 'bottom',
+			// 'left': 'left',
+			// 'right': 'right',
+			'middle': 'middle'
+		}),
+		[]
+	);
 	return (
-		<ul className={props.className}>
+		<ul className={pos[props.menuPosition] + '-menu'}>
 			{Array.isArray(props.children) ? (
 				props.children.map((child, index) => {
 					return <li key={index}>{child}</li>;
@@ -61,19 +65,11 @@ export const Menu = () => {
 		}
 	}, [window.location.href]);
 	return (
-		<Sidebar className="menu">
+		<Sidebar menuPosition="middle">
 			<HomePage activeMode={Mode.Normal} currentMode={mode} />
 			<Stared activeMode={Mode.Stared} currentMode={mode} />
 			<BookmarkBtn activeMode={Mode.Bookmark} currentMode={mode} />
 			<ShowDir activeMode={Mode.ShowDir} currentMode={mode} />
-		</Sidebar>
-	);
-};
-
-export const ReaderMenu = () => {
-	return (
-		<Sidebar className="menu">
-			<GotoGalleryBtn />
 		</Sidebar>
 	);
 };

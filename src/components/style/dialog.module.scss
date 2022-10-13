@@ -212,3 +212,33 @@
 .hidden.dialog-cover {
 	display: none;
 }
+.catalog-list {
+	list-style: none;
+	transform: translateZ(0);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 90%;
+	height: 85%;
+	overflow-y: auto;
+	padding: {
+		left: 10px;
+		right: 10px;
+	}
+	&-item {
+		margin: 5px;
+		span {
+			text-align: center;
+			display: block;
+			max-width: 300px;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+	}
+}
+.catalog-container {
+	height: fit-content;
+	max-height: 600px;
+	overflow-y: scroll;
+}

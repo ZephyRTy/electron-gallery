@@ -6,12 +6,12 @@ import { getImgFrom24fa } from '../../crawler/fa24';
 import { ReactComponent as AddIcon } from '../../icon/add.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as BookmarkIcon } from '../../icon/bookmark.svg';
+import { ReactComponent as GotoReaderIcon } from '../../icon/books.svg';
 import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as OpenInExplorerIcon } from '../../icon/folder-open.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
-import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
-import { ReactComponent as GotoReaderIcon } from '../../icon/reader.svg';
+
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
@@ -19,7 +19,7 @@ import { ReactComponent as SettingIcon } from '../../icon/setting.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
 import globalConfig from '../../types/constant';
 import { Mode } from '../../types/global';
-import { FileOperator } from '../../utils/fileOperator';
+import { GalleryOperator } from '../../utils/galleryOperator';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
 export const HomePage = (props: { activeMode: Mode; currentMode: Mode }) => {
 	return (
@@ -74,7 +74,7 @@ export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
 	);
 };
 
-export const Add = (props: { util: FileOperator }) => {
+export const Add = (props: { util: GalleryOperator }) => {
 	const [visible, setVisible] = useController(fileDropVisibleStore);
 	return (
 		<>
@@ -105,7 +105,7 @@ export const BookmarkBtn = (props: { activeMode: Mode; currentMode: Mode }) => {
 		</button>
 	);
 };
-export const Refresh = (props: { util: FileOperator }) => {
+export const Refresh = (props: { util: GalleryOperator }) => {
 	return (
 		<button
 			className="btn-refresh icon"
@@ -240,18 +240,6 @@ export const GotoReaderBtn = () => {
 			}}
 		>
 			<GotoReaderIcon />
-		</button>
-	);
-};
-export const GotoGalleryBtn = () => {
-	return (
-		<button
-			className={'btn-goto-gallery icon'}
-			onClick={() => {
-				window.location.href = '#/gallery';
-			}}
-		>
-			<GotoGalleryIcon />
 		</button>
 	);
 };

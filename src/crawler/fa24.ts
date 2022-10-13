@@ -4,7 +4,7 @@ import globalConfig, {
 	downloadPath,
 	proxyEnabled
 } from '../types/constant';
-import { FileOperator } from '../utils/fileOperator';
+import { GalleryOperator } from '../utils/galleryOperator';
 import { Circuit } from './stream/Circuit';
 import { Req } from './stream/req';
 import { Stream } from './stream/stream';
@@ -12,9 +12,6 @@ import { getImg } from './utils/getImg';
 const mysql = window.require('mysql');
 const fs = window.require('fs');
 const cheerio = window.require('cheerio');
-const proxyIP = '127.0.0.1';
-const proxyPort = '10809';
-const proxy = 'http://' + proxyIP + ':' + proxyPort;
 
 let headers = {
 	'User-Agent':
@@ -218,7 +215,7 @@ export const getImgFrom24fa = async () => {
 				.close(() => {
 					console.log('end');
 					if (mode === 'new') {
-						FileOperator.getInstance()
+						GalleryOperator.getInstance()
 							.addNewPack(newPacks)
 							.then(() => {
 								resolve(true);
