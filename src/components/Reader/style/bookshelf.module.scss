@@ -1,7 +1,6 @@
 $cover-width: 130px;
-
+$bg-color: #3c5b7a;
 .bookshelf {
-	$bg-color: #3c5b7a;
 	display: flex;
 	&-container {
 		overflow-y: auto;
@@ -33,6 +32,7 @@ $cover-width: 130px;
 			justify-content: center;
 		}
 		&-cover {
+			position: relative;
 			background-color: $bg-color;
 			color: white;
 			height: 145px;
@@ -43,11 +43,21 @@ $cover-width: 130px;
 			align-items: center;
 			justify-content: center;
 			margin-bottom: 0;
-			& + div {
+			& + .bookshelf-row-bar {
 				position: relative;
 				width: $cover-width;
 				height: 5px;
 				background: #77fff8;
+			}
+			&:hover {
+				color: #77fff8;
+			}
+		}
+		&-cover.bookshelf-row-folder {
+			background-color: #3b4675;
+			color: white;
+			&:hover {
+				color: #77fff8;
 			}
 		}
 	}
@@ -62,14 +72,20 @@ $cover-width: 130px;
 			background-color: $stared-color;
 		}
 	}
+	&-folder-button {
+		height: 24px;
+		border: none;
+		width: $cover-width;
+		background-color: #3b4675;
+	}
 	&-stared {
-		& + div {
+		& + .bookshelf-row-bar {
 			background-color: $stared-color !important;
 		}
 	}
 
 	&-bookmark {
-		& + div {
+		& + .bookshelf-row-bar {
 			background-color: $bookmark-color !important;
 		}
 		&-button {
@@ -105,4 +121,11 @@ $cover-width: 130px;
 	&-3 {
 		width: 100px;
 	}
+}
+.check-box {
+	position: absolute;
+	right: 8%;
+	top: 8%;
+	width: 20px;
+	height: 20px;
 }

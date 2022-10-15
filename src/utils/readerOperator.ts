@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+import { Map } from 'immutable';
 import { SPACE_CODE } from '../types/constant';
 import { Book, BookDirectory, BookmarkOfBook, Mode } from '../types/global';
 import { BookDetail } from './BookDetail';
@@ -144,6 +146,21 @@ export class ReaderOperator extends FileOperator<
 			this.refresh();
 			return result;
 		});
+	}
+	async addNewDir(dirName: string) {
+		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
+			return -1;
+		}
+		let newDirectory = {
+			dir_title: dirName
+		};
+		let res = await mysqlOperator.insertDir(newDirectory);
+		if (res) {
+			this.dirMap = Map(await mysqlOperator.mapDir());
+			this.switchMode(Mode.Init);
+			return res;
+		}
+		return -1;
 	}
 	// eslint-disable-next-line no-unused-vars
 	current() {

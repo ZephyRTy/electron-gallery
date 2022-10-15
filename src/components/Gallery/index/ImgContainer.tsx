@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useController } from 'syill';
-import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
 import globalConfig, {
 	defaultCover,
 	getBookmarkThumb,
@@ -89,7 +88,7 @@ export const ImgContainer = (props: {
 	const dirMap = useMemo(() => {
 		return <DirMap setInSelect={setInSelect} util={props.util} />;
 	}, [props.util]);
-	useEffectOnChange(() => {
+	useEffect(() => {
 		if (props.packs.length === 0) {
 			setReady(true);
 			return;

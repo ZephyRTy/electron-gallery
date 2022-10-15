@@ -47,6 +47,10 @@ export const isBookmarkOfBook = (data: any): data is BookmarkOfBook => {
 export const isImageDir = (data: any): data is ImageDirectory => {
 	return !data.url && !!data.timeStamp && !!data.cover;
 };
+
+export const isBookDir = (data: any): data is ImageDirectory => {
+	return !data.url && !!data.timeStamp && !data.cover;
+};
 export const parseUrlQuery = (url: string) => {
 	const query = decodeURIComponent(url.split('?')[1]);
 	if (query) {

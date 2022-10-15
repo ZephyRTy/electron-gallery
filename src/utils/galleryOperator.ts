@@ -3,6 +3,7 @@
 /* eslint-disable no-unused-vars */
 import { fromJS, Map } from 'immutable';
 import React from 'react';
+import { defaultCover } from '../types/constant';
 import {
 	DirectoryInfo,
 	ImageBookmark,
@@ -13,7 +14,6 @@ import {
 import { FileOperator } from './fileOperator';
 import { compress, endsWith } from './functions';
 import { ImgWaterfallCache } from './ImgWaterFallCache';
-import { selectionModel } from './models';
 import { mysqlOperator } from './mysqlOperator';
 import { ReaderOperator } from './readerOperator';
 const fs = window.require('fs');
@@ -50,7 +50,6 @@ export class GalleryOperator extends FileOperator<
 	protected currentPacks = [] as NormalImage[];
 	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
 
-	protected selection = selectionModel;
 	protected nextTitle = '';
 	protected searchCache = {
 		key: '',
@@ -156,7 +155,22 @@ export class GalleryOperator extends FileOperator<
 			return result;
 		});
 	}
-
+	async addNewDir(dirName: string) {
+		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
+			return -1;
+		}
+		let newDirectory = {
+			dir_title: dirName,
+			dir_cover: defaultCover
+		};
+		let res = await mysqlOperator.insertDir(newDirectory);
+		if (res) {
+			this.dirMap = Map(await mysqlOperator.mapDir());
+			this.switchMode(Mode.Init);
+			return res;
+		}
+		return -1;
+	}
 	//获取当前要打开的页面
 	current(packId: number, change: boolean = true) {
 		this.switchMode(Mode.Detail);

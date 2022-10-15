@@ -32,6 +32,7 @@ export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 					title={props.bookItem?.title.slice(16)}
 				/>
 			</div>
+			<div className={styles['bookshelf-row-bar']}></div>
 			<button
 				className={styles['bookshelf-bookmark-button']}
 				onClick={() => {

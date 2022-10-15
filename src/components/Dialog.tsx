@@ -9,6 +9,7 @@ import { Store, useData } from 'syill';
 import globalConfig, { LINE_HEIGHT, translation } from '../types/constant';
 import { DirectoryInfo } from '../types/global';
 import { BookDetail } from '../utils/BookDetail';
+import { FileOperator } from '../utils/fileOperator';
 import { GalleryOperator } from '../utils/galleryOperator';
 import {
 	catalogVisibleStore,
@@ -76,7 +77,7 @@ const sortCNAndEN = (
 	);
 };
 const DirMapContent = (props: {
-	util: GalleryOperator;
+	util: FileOperator<any, any, any>;
 	setInSelect: React.Dispatch<React.SetStateAction<number>>;
 	setVisible: (v: boolean) => void;
 	visible?: boolean;

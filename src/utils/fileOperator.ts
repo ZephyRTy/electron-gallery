@@ -326,22 +326,22 @@ export abstract class FileOperator<
 					if (count === 0) {
 						cover = e.path + e.cover;
 					}
-					++count;
-					e.parent = dirIndex;
-					mysqlOperator
-						.updateDir(dirIndex, e.id, 1, count === 1 ? cover : '')
-						.then(() => {
-							if (count === this.selection.selected.size) {
-								this.dirMap.get(dirIndex.toString())!.count +=
-									this.selection.selected.size;
-								this.selection.selected.clear();
-								if (this.mode === Mode.Normal) {
-									this.refresh();
-								}
-								this.switchMode(Mode.Init);
-							}
-						});
 				}
+				++count;
+				e.parent = dirIndex;
+				mysqlOperator
+					.updateDir(dirIndex, e.id, 1, count === 1 ? cover : '')
+					.then(() => {
+						if (count === this.selection.selected.size) {
+							this.dirMap.get(dirIndex.toString())!.count +=
+								this.selection.selected.size;
+							this.selection.selected.clear();
+							if (this.mode === Mode.Normal) {
+								this.refresh();
+							}
+							this.switchMode(Mode.Init);
+						}
+					});
 			}
 		});
 	}

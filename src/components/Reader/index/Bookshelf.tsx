@@ -1,14 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useController } from 'syill';
 import { Book } from '../../../types/global';
-import { isBookmarkOfBook } from '../../../utils/functions';
+import { isBookDir, isBookmarkOfBook } from '../../../utils/functions';
 import { readerOperator as readerOp } from '../../../utils/galleryOperator';
-import { Add, ConfigBtn, Refresh } from '../../Gallery/Buttons';
+import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
+import { DirMap } from '../../Dialog';
+import {
+	Add,
+	Back,
+	ConfigBtn,
+	Refresh,
+	SelectPacks
+} from '../../Gallery/Buttons';
 import { FileDrop } from '../../Gallery/FileDrop';
 import { PageNav } from '../../Gallery/PageNav';
 import { Menu, Sidebar, SidebarContainer } from '../../Menu';
 import { GotoGalleryBtn } from '../Buttons';
 import styles from '../style/bookshelf.module.scss';
+import { ShelfBookFolder } from './BookFolder';
 import { ShelfBookmark } from './BookmarkOfBook';
 import { ShelfItem } from './ShelfRow';
 export const Bookshelf = () => {
@@ -17,6 +27,8 @@ export const Bookshelf = () => {
 	const readerOperator = useRef(readerOp).current;
 	const [searchParam] = useSearchParams();
 	const [refresh, setRefresh] = useState(false);
+	const [inSelect, setInSelect] = useState(0);
+	const [, setDirMapVis] = useController(dirMapVisibleStore);
 	const page = parseInt(
 		searchParam.get('page') ? (searchParam.get('page') as string) : '1',
 		10
@@ -27,6 +39,7 @@ export const Bookshelf = () => {
 		});
 	}, []);
 	useEffect(() => {
+		document.querySelector('main')!.scrollTop = 0;
 		readerOperator.savePrevPage(window.location.href);
 		readerOperator.getPacks(page, window.location.href).then((res) => {
 			setBooks([...res[0]]);
@@ -39,12 +52,27 @@ export const Bookshelf = () => {
 				<Refresh util={readerOperator} />
 				<Add util={readerOperator} />
 				<ConfigBtn />
+				<Back inSelect={inSelect} setInSelect={setInSelect} />
 				<GotoGalleryBtn />
+				<SelectPacks
+					handleClick={() => {
+						if (dialogActive.active) {
+							return;
+						}
+						dialogActive.setActive(true);
+						setDirMapVis(true);
+					}}
+					inSelect={inSelect}
+				/>
 			</Sidebar>
 		);
+	}, [inSelect]);
+	const dirMap = useMemo(() => {
+		return <DirMap setInSelect={setInSelect} util={readerOperator} />;
 	}, []);
 	return (
 		<div className={styles['bookshelf'] + ' main-content'}>
+			{dirMap}
 			<SidebarContainer>
 				{topMenu} <Menu type="reader" />
 			</SidebarContainer>
@@ -54,8 +82,17 @@ export const Bookshelf = () => {
 					{books.map((e, i) => {
 						if (isBookmarkOfBook(e)) {
 							return <ShelfBookmark bookItem={e} key={i} />;
+						} else if (isBookDir(e)) {
+							return <ShelfBookFolder bookItem={e} key={i} />;
 						}
-						return <ShelfItem bookItem={e} key={i} />;
+						return (
+							<ShelfItem
+								bookItem={e}
+								inSelect={inSelect}
+								key={i}
+								setInSelect={setInSelect}
+							/>
+						);
 					})}
 				</div>
 			</main>
