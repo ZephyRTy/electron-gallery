@@ -1,5 +1,6 @@
 import React from 'react';
 import { Store } from 'syill';
+import { FileOperator } from './fileOperator';
 export const ImageStateStore = {
 	states: [] as React.Dispatch<React.SetStateAction<boolean>>[],
 	setState: (state: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -29,3 +30,6 @@ export const dialogActive = {
 };
 
 export const imageStateStore = { current: '' };
+export const currentOperator: { op: FileOperator<any, any, any> | null } = {
+	op: null
+};

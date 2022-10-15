@@ -8,7 +8,7 @@ import globalConfig, {
 	imageCountOfSinglePage
 } from '../../../types/constant';
 import {
-	Bookmark,
+	ImageBookmark,
 	ImageComponent,
 	ImageData,
 	Mode,
@@ -17,7 +17,7 @@ import {
 import {
 	compress,
 	hasExternalDriver,
-	isBookmark,
+	isImageBookmark,
 	isImageDir
 } from '../../../utils/functions';
 import { GalleryOperator } from '../../../utils/galleryOperator';
@@ -43,7 +43,7 @@ import { PageOfTotal } from '../PageOfTotal';
 import styles from '../style/img.module.scss';
 let index = 0;
 export const ImgContainer = (props: {
-	packs: NormalImage[] | Bookmark[];
+	packs: NormalImage[] | ImageBookmark[];
 	util: GalleryOperator;
 	inDir: boolean;
 	page: number;
@@ -107,7 +107,6 @@ export const ImgContainer = (props: {
 			];
 			let heights = [0, 0, 0, 0];
 			const buffer: { img: HTMLImageElement; data: NormalImage }[] = [];
-			//NOTE 预渲染图像
 			props.packs.forEach((v) => {
 				let img = new Image();
 				let imgPath =
@@ -116,7 +115,7 @@ export const ImgContainer = (props: {
 						? defaultCover
 						: ((v.path ?? '') + v.cover).replace(/\\/g, '/');
 				let coverPath = imgPath;
-				if (isBookmark(v)) {
+				if (isImageBookmark(v)) {
 					coverPath =
 						imgPath.split('/').slice(0, -1).join('/') +
 						'/' +
@@ -137,8 +136,8 @@ export const ImgContainer = (props: {
 						buffer
 							.sort((a, b) => {
 								if (
-									(isBookmark(a.data) &&
-										isBookmark(b.data)) ||
+									(isImageBookmark(a.data) &&
+										isImageBookmark(b.data)) ||
 									(isImageDir(a.data) && isImageDir(b.data))
 								) {
 									return b.data.timeStamp > a.data.timeStamp
@@ -182,7 +181,7 @@ export const ImgContainer = (props: {
 					);
 					console.error(err);
 					console.log(decodeURIComponent(img.src));
-					if (isBookmark(v)) {
+					if (isImageBookmark(v)) {
 						compress(
 							decodeURIComponent(v.path + v.cover),
 							getBookmarkThumb(v)
@@ -225,7 +224,7 @@ export const ImgContainer = (props: {
 		<>
 			<SidebarContainer>
 				{topMenu}
-				<Menu />
+				<Menu type="gallery" />
 			</SidebarContainer>
 			{dirMap}
 			<Config />
@@ -249,7 +248,7 @@ export const ImgContainer = (props: {
 												'图包' + ele.data.id.toString();
 										}
 										let Component: ImageComponent<any>;
-										if (isBookmark(ele.data)) {
+										if (isImageBookmark(ele.data)) {
 											Component = BookmarkItem;
 										} else if (isImageDir(ele.data)) {
 											Component = ImageDir;

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
 	CONTENT_RANGE,
 	DELTA_HEIGHT,
@@ -8,14 +9,16 @@ import {
 	OVERFLOW_NUM
 } from '../../../types/constant';
 import { TextLine } from '../../../types/global';
-import { BookDetail } from '../../../utils/book';
-import { readerOperator } from '../../../utils/readerOperator';
+import { BookDetail } from '../../../utils/BookDetail';
+import { readerOperator } from '../../../utils/galleryOperator';
 import { CatalogPortal } from '../../Dialog';
 import styles from '../style/reader.module.scss';
 import { Placeholder } from './Placeholder';
 export const BookContent = () => {
 	const article = useRef(null as HTMLDivElement | null);
+	let [searchParams] = useSearchParams();
 	const scrollTop = useRef(0);
+	let scroll = Number(searchParams.get('scroll') || '0');
 	const [top, setTop] = useState(0);
 	const [bottom, setBottom] = useState(0);
 	const [start, setStart] = useState(0);
@@ -27,10 +30,9 @@ export const BookContent = () => {
 		[book]
 	);
 	const updateWhenScrollLot = useCallback(
-		(eleScrollTop) => {
+		(eleScrollTop: number) => {
 			if (!book) return;
 			let lineNum = Math.ceil(eleScrollTop / LINE_HEIGHT);
-			console.log('lineNum', lineNum);
 			const startLine =
 				lineNum - DELTA_LINE - OVERFLOW_NUM > 0
 					? lineNum - DELTA_LINE - OVERFLOW_NUM
@@ -117,15 +119,19 @@ export const BookContent = () => {
 		};
 	}, [start, top, bottom]);
 	useEffect(() => {
-		readerOperator
-			.loadText('D:\\webDemo\\desktop-reader\\text.txt')
-			.then((res) => {
-				setBook(res);
-				//res.printCatalog();
-				setContent(res.getContent(start, start + CONTENT_RANGE));
-				setBottom((res.length - CONTENT_RANGE) * LINE_HEIGHT);
-			});
+		readerOperator.loadText().then((res) => {
+			setBook(res);
+			setContent(res.getContent(start, start + CONTENT_RANGE));
+			setBottom((res.length - CONTENT_RANGE) * LINE_HEIGHT);
+		});
 	}, []);
+	useEffect(() => {
+		if (scroll) {
+			(scrollEle.current as any).scrollTop = scroll;
+			scrollTop.current = scroll;
+			updateWhenScrollLot(scrollTop.current);
+		}
+	}, [book]);
 	useEffect(() => {
 		if (top >= 0) {
 			(scrollEle.current as any).scrollTop = scrollTop.current;

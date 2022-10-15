@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ReactComponent as RegExpIcon } from '../icon/regexp.svg';
 import { ReactComponent as SearchIcon } from '../icon/search.svg';
 import { setSearchParams } from '../utils/functions';
-import { GalleryOperator } from '../utils/galleryOperator';
+import { currentOperator } from '../utils/store';
 import styles from './style/header.module.scss';
 
 export const GallerySearch = () => {
@@ -16,12 +16,20 @@ export const GallerySearch = () => {
 				className={styles['header__input--search']}
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {
-						GalleryOperator.getInstance().reg = reg;
-						window.location.href = setSearchParams('#/gallery', {
-							search: (e.target as HTMLInputElement).value,
-							regexp: reg ? 'true' : '',
-							mode: GalleryOperator.getInstance().getMode()
-						});
+						if (!currentOperator.op) {
+							return false;
+						}
+						currentOperator.op.reg = reg;
+						window.location.href = setSearchParams(
+							window.location.href.includes('#/reader')
+								? '#/reader'
+								: '#/gallery',
+							{
+								search: (e.target as HTMLInputElement).value,
+								regexp: reg ? 'true' : '',
+								mode: currentOperator.op.getMode()
+							}
+						);
 						(e.target as HTMLInputElement).value = '';
 					}
 				}}

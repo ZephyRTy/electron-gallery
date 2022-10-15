@@ -1,8 +1,12 @@
 import { SPACE_CODE } from '../types/constant';
-import { TextLine } from '../types/global';
-import { BookDetail } from './book';
+import { Book, BookDirectory, BookmarkOfBook, Mode } from '../types/global';
+import { BookDetail } from './BookDetail';
+import { FileOperator } from './fileOperator';
+import { deleteUselessWords } from './functions';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs/promises');
+const iconv = window.require('iconv-lite');
+iconv.skipDecodeWarning = true;
 const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
 	let result: string[] = [];
@@ -11,14 +15,19 @@ const splitWords = (str: string, len: number) => {
 	}
 	return result;
 };
-
+export const isText = (file: string) => file.endsWith('.txt');
 // eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
-export class ReaderOperator {
+export class ReaderOperator extends FileOperator<
+	Book,
+	BookmarkOfBook,
+	BookDirectory
+> {
 	private static instance: ReaderOperator;
-	private contentSize = { start: 0, end: 0 };
-	private content: TextLine[] = [];
-	private constructor() {}
+	private currentBook: Book | null = null;
+	private constructor() {
+		super({ database: 'book', tableName: 'book_list' });
+	}
 	public static getInstance(): ReaderOperator {
 		if (!ReaderOperator.instance) {
 			ReaderOperator.instance = new ReaderOperator();
@@ -31,13 +40,17 @@ export class ReaderOperator {
 		return result;
 	}
 
-	async loadText(textPath: string) {
-		const text = await fs.readFile(textPath, 'utf-8');
-		let title = textPath.replaceAll('\\', '/').split('/').pop()!;
-		return this.parseBook(text, title);
+	async loadText() {
+		let text = await fs.readFile(this.currentBook!.path, 'utf-8');
+		if (this.isNotUtf8(text)) {
+			text = this.gbkToUtf8(
+				await fs.readFile(this.currentBook!.path, 'binary')
+			);
+		}
+		return this.parseBook(text);
 	}
-	private parseBook(text: string, title: string) {
-		const book = new BookDetail(title);
+	private parseBook(text: string) {
+		const book = new BookDetail(this.currentBook!);
 		const lines = text.split('\n');
 		let lineNum = 0;
 		for (let i = 0; i < lines.length; i++) {
@@ -60,9 +73,83 @@ export class ReaderOperator {
 		}
 		return book;
 	}
-	public load() {
-		mysqlOperator.checkConnection('book');
+
+	private isNotUtf8(str: string) {
+		if (str.includes('�')) {
+			return true;
+		}
+		return false;
+	}
+
+	private gbkToUtf8(str: string) {
+		return iconv.decode(str, 'gbk');
+	}
+	async addNewPack(
+		data:
+			| { path: string; cover?: string | undefined; title: string }
+			| { path: string; cover?: string | undefined; title: string }[],
+		duplicate: boolean
+	) {
+		if (!Array.isArray(data)) {
+			if (!data.path || !data.title || !isText(data.path)) {
+				return;
+			}
+			let newPack = {
+				path: data.path,
+				title: data.title,
+				stared: 0 as 0
+			};
+			await mysqlOperator.insertPack(newPack, duplicate);
+			this.switchMode(Mode.Init);
+			this.refresh();
+			return true;
+		}
+		let result = [] as string[];
+		let successCount = 0;
+		let success = [] as Promise<any>[];
+		data.forEach((e, i) => {
+			if (!e.path || !e.title || !isText(e.path)) {
+				return;
+			}
+
+			let newPack = {
+				path: e.path,
+				title: deleteUselessWords(
+					e.title,
+					'soushu2022.com@',
+					'[搜书吧]',
+					'-soushu2022.com-[搜书吧网址]',
+					'.txt'
+				),
+				stared: 0 as 0
+			};
+			success.push(
+				mysqlOperator.insertPack(newPack).then((res) => {
+					if (!res) {
+						result.push(`${e.title}:::重复`);
+					} else {
+						successCount++;
+					}
+
+					if (i === data.length - 1 && successCount) {
+						this.switchMode(Mode.Init);
+					}
+				})
+			);
+		});
+		return Promise.all(success).then(() => {
+			if (successCount) {
+				result.unshift(`${successCount}个文件:::成功`);
+			}
+			this.refresh();
+			return result;
+		});
+	}
+	// eslint-disable-next-line no-unused-vars
+	current() {
+		return this.currentBook;
+	}
+	mountBook(book: Book) {
+		this.currentBook = book;
 	}
 }
-
-export const readerOperator = ReaderOperator.getInstance();

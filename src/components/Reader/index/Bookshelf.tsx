@@ -1,51 +1,65 @@
-import { useState } from 'react';
-import { useOnce } from '../../../hooks/useOnce';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Book } from '../../../types/global';
-import { readerOperator } from '../../../utils/readerOperator';
-import { SidebarContainer } from '../../Menu';
-import { ReaderMenu } from '../ReaderMenu';
+import { isBookmarkOfBook } from '../../../utils/functions';
+import { readerOperator as readerOp } from '../../../utils/galleryOperator';
+import { Add, ConfigBtn, Refresh } from '../../Gallery/Buttons';
+import { FileDrop } from '../../Gallery/FileDrop';
+import { PageNav } from '../../Gallery/PageNav';
+import { Menu, Sidebar, SidebarContainer } from '../../Menu';
+import { GotoGalleryBtn } from '../Buttons';
 import styles from '../style/bookshelf.module.scss';
-import { ShelfRow } from './ShelfRow';
-const fs = window.require('fs');
-const path = window.require('path');
-const root = 'D:\\小说';
-const ROW_NUM = 5;
-const ITEM_NUM_OF_ROW = 4;
+import { ShelfBookmark } from './BookmarkOfBook';
+import { ShelfItem } from './ShelfRow';
 export const Bookshelf = () => {
-	const [rows, setRows] = useState(new Array(ROW_NUM).fill([]) as Book[][]);
-	useOnce(() => {
-		readerOperator.load();
-		fs.readdir(root, (err, files) => {
-			const list: string[] = files
-				.filter((file) => file.endsWith('.txt'))
-				.slice(0, ROW_NUM * ITEM_NUM_OF_ROW);
-			if (!err) {
-				const newRows = new Array(ROW_NUM);
-				for (let i = 0; i < ROW_NUM; i++) {
-					newRows[i] = [];
-				}
-				for (let i = 0; i < ROW_NUM * ITEM_NUM_OF_ROW; ++i) {
-					newRows[i % ROW_NUM].push({
-						title: list[i]
-							.replace('.txt', '')
-							.replace('soushu2022.com@', '')
-							.replace('-soushu555.org-[搜书吧网址]', '')
-							.replace('www.soushu555.org', ''),
-						path: path.join(root, list[i])
-					});
-				}
-				setRows([...newRows]);
-			}
+	const [books, setBooks] = useState([] as Book[]);
+	const [total, setTotal] = useState(0);
+	const readerOperator = useRef(readerOp).current;
+	const [searchParam] = useSearchParams();
+	const [refresh, setRefresh] = useState(false);
+	const page = parseInt(
+		searchParam.get('page') ? (searchParam.get('page') as string) : '1',
+		10
+	);
+	useEffect(() => {
+		readerOperator.switchMainTable('book_list').then(() => {
+			readerOperator.register(setRefresh);
 		});
+	}, []);
+	useEffect(() => {
+		readerOperator.savePrevPage(window.location.href);
+		readerOperator.getPacks(page, window.location.href).then((res) => {
+			setBooks([...res[0]]);
+			setTotal(res[1]);
+		});
+	}, [window.location.href, refresh]);
+	const topMenu = useMemo(() => {
+		return (
+			<Sidebar menuPosition="top">
+				<Refresh util={readerOperator} />
+				<Add util={readerOperator} />
+				<ConfigBtn />
+				<GotoGalleryBtn />
+			</Sidebar>
+		);
 	}, []);
 	return (
 		<div className={styles['bookshelf'] + ' main-content'}>
 			<SidebarContainer>
-				<ReaderMenu />
+				{topMenu} <Menu type="reader" />
 			</SidebarContainer>
-			{rows.map((e, i) => {
-				return <ShelfRow bookItems={e} key={i} />;
-			})}
+			<FileDrop itemType="file" operator={readerOperator} />
+			<main className={styles['bookshelf-container']}>
+				<div className={styles['bookshelf-grid']}>
+					{books.map((e, i) => {
+						if (isBookmarkOfBook(e)) {
+							return <ShelfBookmark bookItem={e} key={i} />;
+						}
+						return <ShelfItem bookItem={e} key={i} />;
+					})}
+				</div>
+			</main>
+			<PageNav current={page} total={Math.ceil(total / 20)} />
 		</div>
 	);
 };

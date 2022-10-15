@@ -10,20 +10,25 @@ export interface BasicData {
 	path: string;
 	parent?: number;
 }
-export interface NormalImage extends BasicData {
-	cover: string;
-}
-export interface ImageDirectory {
-	id: number;
-	title: string;
-	cover: string;
-	timeStamp: string;
-}
 
-export interface Bookmark extends NormalImage {
+export interface BasicBookmark extends BasicData {
 	timeStamp: string;
 	url: string;
 }
+
+export interface BasicFolder {
+	id: number;
+	title: string;
+	timeStamp: string;
+}
+export interface NormalImage extends BasicData {
+	cover: string;
+}
+export interface ImageDirectory extends BasicFolder {
+	cover: string;
+}
+
+export interface ImageBookmark extends NormalImage, BasicBookmark {}
 
 export interface DirectoryList {
 	[index: string]: DirectoryInfo;
@@ -66,9 +71,14 @@ export interface TextLine {
 	index: number;
 	content: string;
 }
-export type ImageData = NormalImage | ImageDirectory | Bookmark;
+export type ImageData = NormalImage | ImageDirectory | ImageBookmark;
 export interface Chapter {
 	title: string;
 	index: number;
 }
-export interface Book extends BasicData {}
+export interface Book extends BasicData {
+	reg: string;
+}
+
+export interface BookDirectory extends BasicFolder {}
+export interface BookmarkOfBook extends Book, BasicBookmark {}

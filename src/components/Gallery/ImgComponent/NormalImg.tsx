@@ -52,7 +52,6 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 		}, 700);
 	}, [props]);
 	const staredClick = useCallback(() => {
-		props.data.stared = !stared;
 		setStared((v) => !v);
 		props.util.staredUpdate(props.data);
 	}, [props.data, props.util, stared]);

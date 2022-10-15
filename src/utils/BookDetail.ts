@@ -1,13 +1,15 @@
-import { CATALOG_REG } from '../types/constant';
-import { Chapter, TextLine } from '../types/global';
+import { Book, Chapter, TextLine } from '../types/global';
+import { mysqlOperator } from './mysqlOperator';
 
 export class BookDetail {
-	private title: string;
+	private book: Book;
 	private contentSize = { start: 0, end: 0 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
-	constructor(title: string) {
-		this.title = title;
+	regExp: RegExp;
+	constructor(book: Book) {
+		this.book = book;
+		this.regExp = new RegExp(String.raw`${book.reg}`, 'g');
 	}
 
 	public addChapter(chapter: Chapter) {
@@ -15,7 +17,6 @@ export class BookDetail {
 	}
 	public getContent(start: number, end: number): TextLine[] {
 		this.contentSize = { start, end };
-		console.log(this.content.slice(start, end));
 		return this.content.slice(start, end);
 	}
 
@@ -31,8 +32,8 @@ export class BookDetail {
 		}
 	}
 
-	parseCatalog(line: TextLine) {
-		let title = line.content.match(CATALOG_REG)?.[0];
+	private parseCatalog(line: TextLine) {
+		let title = line.content.match(this.regExp)?.[0];
 		if (title) {
 			this.addChapter({
 				title,
@@ -41,6 +42,15 @@ export class BookDetail {
 		}
 	}
 
+	reParseCatalog(reg: string) {
+		this.book.reg = reg;
+		this.regExp = new RegExp(String.raw`${reg}`, 'g');
+		this.catalog = [];
+		for (let i = 0; i < this.content.length; i++) {
+			this.parseCatalog(this.content[i]);
+		}
+		mysqlOperator.updateReg(this.book.id, reg);
+	}
 	getCatalog() {
 		return this.catalog;
 	}
@@ -50,5 +60,9 @@ export class BookDetail {
 
 	get length() {
 		return this.content.length;
+	}
+
+	get reg() {
+		return this.book.reg;
 	}
 }

@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom';
 import { Store, useData } from 'syill';
 import globalConfig, { LINE_HEIGHT, translation } from '../types/constant';
 import { DirectoryInfo } from '../types/global';
-import { BookDetail } from '../utils/book';
+import { BookDetail } from '../utils/BookDetail';
 import { GalleryOperator } from '../utils/galleryOperator';
 import {
 	catalogVisibleStore,
@@ -447,16 +447,20 @@ const CatalogContent = (props: {
 	book: BookDetail;
 	scrollEle: HTMLElement;
 }) => {
+	const [reg, setReg] = useState(props.book?.reg || '');
+	const [catalog, setCatalog] = useState(props.book?.getCatalog() || []);
+	useEffect(() => {
+		setReg(props.book?.reg || '');
+	}, [props.book?.reg]);
 	return (
 		<>
 			<ul className={styles['catalog-list']}>
-				{props.book?.getCatalog().map((e) => {
+				{catalog.map((e) => {
 					return (
 						<li
 							className={styles['catalog-list-item']}
 							key={e.index}
 							onClick={() => {
-								console.log(e.index);
 								document.querySelector(
 									'#reader-scroll-ele'
 								)!.scrollTop = e.index * LINE_HEIGHT;
@@ -468,6 +472,13 @@ const CatalogContent = (props: {
 					);
 				})}
 			</ul>
+			<textarea
+				className={styles['catalog-reg-input']}
+				onChange={(e) => {
+					setReg(e.target.value);
+				}}
+				value={reg.toString()}
+			/>
 			<div className={styles['dialog-button-contain']}>
 				<button
 					className={
@@ -488,7 +499,10 @@ const CatalogContent = (props: {
 						' ' +
 						styles['dialog-button__confirm']
 					}
-					onClick={() => {}}
+					onClick={() => {
+						props.book.reParseCatalog(reg);
+						setCatalog(props.book.getCatalog());
+					}}
 				>
 					确认
 				</button>

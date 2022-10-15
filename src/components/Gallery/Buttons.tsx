@@ -18,10 +18,19 @@ import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
 import { ReactComponent as SettingIcon } from '../../icon/setting.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
 import globalConfig from '../../types/constant';
-import { Mode } from '../../types/global';
-import { GalleryOperator } from '../../utils/galleryOperator';
+import {
+	BasicBookmark,
+	BasicData,
+	BasicFolder,
+	Mode
+} from '../../types/global';
+import { FileOperator } from '../../utils/fileOperator';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
-export const HomePage = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const HomePage = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -29,7 +38,7 @@ export const HomePage = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery';
+				window.location.href = '#/' + props.type + '';
 			}}
 		>
 			<HomePageIcon />
@@ -58,7 +67,11 @@ export const Back = (props: {
 	);
 };
 
-export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const Stared = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -66,7 +79,8 @@ export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery?stared=true&page=1';
+				window.location.href =
+					'#/' + props.type + '?stared=true&page=1';
 			}}
 		>
 			<StaredIcon />
@@ -74,7 +88,13 @@ export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
 	);
 };
 
-export const Add = (props: { util: GalleryOperator }) => {
+export const Add = <
+	A extends BasicData,
+	B extends BasicBookmark,
+	C extends BasicFolder
+>(props: {
+	util: FileOperator<A, B, C>;
+}) => {
 	const [visible, setVisible] = useController(fileDropVisibleStore);
 	return (
 		<>
@@ -90,7 +110,11 @@ export const Add = (props: { util: GalleryOperator }) => {
 	);
 };
 
-export const BookmarkBtn = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const BookmarkBtn = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -98,14 +122,21 @@ export const BookmarkBtn = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery?bookmark=true&page=1';
+				window.location.href =
+					'#/' + props.type + '?bookmark=true&page=1';
 			}}
 		>
 			<BookmarkIcon />
 		</button>
 	);
 };
-export const Refresh = (props: { util: GalleryOperator }) => {
+export const Refresh = <
+	A extends BasicData,
+	B extends BasicBookmark,
+	C extends BasicFolder
+>(props: {
+	util: FileOperator<A, B, C>;
+}) => {
 	return (
 		<button
 			className="btn-refresh icon"
@@ -133,7 +164,11 @@ export const SelectPacks = (props: {
 	);
 };
 
-export const ShowDir = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const ShowDir = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -141,7 +176,8 @@ export const ShowDir = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery?show_dir=true&page=1';
+				window.location.href =
+					'#/' + props.type + '?show_dir=true&page=1';
 			}}
 		>
 			<ShowDirs />

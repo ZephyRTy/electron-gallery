@@ -189,10 +189,16 @@ export const PageNav = (props: {
 									});
 									return;
 								}
-								window.location.href = parseQueryString(
-									window.location.href,
-									parseInt(value)
+								const urlObj = new URLSearchParams(
+									parseUrlQuery(window.location.href)
 								);
+								urlObj.set('page', value);
+								window.location.href =
+									(window.location.hash || '#').split(
+										'?'
+									)[0] +
+									'?' +
+									urlObj.toString();
 								(e.target as HTMLInputElement).value = '';
 								(document.activeElement as HTMLElement).blur();
 							}

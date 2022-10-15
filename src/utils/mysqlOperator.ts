@@ -1,8 +1,10 @@
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
 import {
-	Bookmark,
+	BasicData,
+	BookmarkOfBook,
 	DirectoryInfo,
+	ImageBookmark,
 	ImageDirectory,
 	Mode,
 	NormalImage
@@ -24,44 +26,17 @@ export class MysqlOperator {
 	private mainTableName = 'pack_list';
 	count: number = 0;
 	private constructor() {
-		this.openConnection();
-	}
-
-	openConnection(database: string = 'GALLERY') {
 		this._config = {
 			host: 'localhost',
 			user: 'root',
 			password: '123456',
-			database: database,
+			database: 'GALLERY',
 			port: 3306,
 			connectionLimit: 10
 		};
 		this._pool = mysql.createPool(this._config);
 	}
 
-	reconnect(database: string) {
-		if (this.database !== database) {
-			this._pool.end();
-			this.openConnection(database);
-			this.database = database;
-			switch (database.toLocaleUpperCase()) {
-				case 'GALLERY':
-					this.mainTableName = 'pack_list';
-					break;
-				case 'BOOK':
-					this.mainTableName = 'book_list';
-					break;
-				default:
-					break;
-			}
-		}
-	}
-
-	checkConnection(databaseExpected: string) {
-		if (this.database !== databaseExpected) {
-			this.reconnect(databaseExpected);
-		}
-	}
 	static getInstance(): MysqlOperator {
 		if (!MysqlOperator._instance) {
 			MysqlOperator._instance = new MysqlOperator();
@@ -69,6 +44,26 @@ export class MysqlOperator {
 		return MysqlOperator._instance;
 	}
 
+	switchDatabase(database: string, tableName: string) {
+		if (database === this.database) {
+			return false;
+		}
+		this.database = database;
+		this.mainTableName = tableName;
+		if (this._pool) {
+			this._pool.end();
+		}
+		this._config = {
+			host: 'localhost',
+			user: 'root',
+			password: '123456',
+			database: this.database,
+			port: 3306,
+			connectionLimit: 10
+		};
+		this._pool = mysql.createPool(this._config);
+		return true;
+	}
 	async select<Pack = NormalImage, Folder = ImageDirectory>(
 		sqlParam: number[],
 		mode: Mode
@@ -108,6 +103,15 @@ export class MysqlOperator {
 					} bookmark.b_id = ${
 					this.mainTableName
 				}.id order by b_timeStamp desc`;
+				if (this.database === 'book') {
+					sql = `select id, title,path, b_url as url, reg,
+				 b_timeStamp as timeStamp, stared from bookmark, ${this.mainTableName} 
+				 where ${
+						this.hasExternalDriver ? '' : "path not like 'E%' and"
+					} bookmark.b_id = ${
+						this.mainTableName
+					}.id order by b_timeStamp desc`;
+				}
 				break;
 			default:
 				sql = `select * from ${this.mainTableName} where ${
@@ -133,7 +137,8 @@ export class MysqlOperator {
 										timeStamp: formatDate(
 											new Date(v.timeStamp).toString()
 										),
-										stared: Boolean(v.stared)
+										stared: Boolean(v.stared),
+										reg: v.reg
 									} as unknown as Pack;
 								})
 							);
@@ -164,7 +169,8 @@ export class MysqlOperator {
 									path: v.path ?? '',
 									cover: v.cover ?? v.dir_cover,
 									stared: Boolean(v.stared ?? v.dir_stared),
-									parent: v.parent
+									parent: v.parent,
+									reg: v.reg
 								} as unknown as Pack;
 							})
 						);
@@ -198,11 +204,11 @@ export class MysqlOperator {
 		this._pool.end();
 	}
 
-	async search(
+	async search<T extends BasicData>(
 		sqlParam: string,
 		mode: Mode,
 		reg: boolean
-	): Promise<NormalImage[]> {
+	): Promise<T[]> {
 		let sql = '';
 		let dirId = '';
 		let key = reg ? `regexp '${sqlParam}' ` : `like '%${sqlParam}%'`;
@@ -255,8 +261,9 @@ export class MysqlOperator {
 									path: v.path ?? '',
 									cover: v.cover ?? v.dir_cover,
 									stared: Boolean(v.stared ?? v.dir_stared),
-									parent: v.parent
-								} as NormalImage;
+									parent: v.parent,
+									reg: v.reg
+								} as unknown as T;
 							})
 						);
 					}
@@ -264,7 +271,7 @@ export class MysqlOperator {
 			});
 		});
 	}
-	async updateStar(data: NormalImage) {
+	async updateStar<T extends BasicData>(data: T) {
 		let sql = `update ${this.mainTableName} set stared = ? where id = ?`;
 		let sqlParam = [data.stared ? 1 : 0, data.id];
 		return new Promise((resolve, reject) => {
@@ -362,13 +369,16 @@ export class MysqlOperator {
 			title: string;
 			stared: 0 | 1;
 			path: string;
-			cover: string;
+			cover?: string;
 		},
 		duplicate: boolean = false
 	) {
 		let sql = `insert into ${this.mainTableName} set ?`;
 		return new Promise((resolve) => {
 			this._pool.getConnection((err: any, connection: any) => {
+				if (!newPack.cover) {
+					delete newPack.cover;
+				}
 				connection.query(sql, newPack, (err: any, res: any) => {
 					connection.release();
 					if (err && !duplicate) {
@@ -381,8 +391,8 @@ export class MysqlOperator {
 		});
 	}
 
-	updateBookmark(
-		bookmark: Bookmark,
+	updateGalleryBookmark(
+		bookmark: ImageBookmark,
 		marked: boolean,
 		mode: 'insert' | 'update'
 	) {
@@ -423,7 +433,63 @@ export class MysqlOperator {
 			});
 		});
 	}
-
+	updateBookmarkOfBook(
+		bookmark: BookmarkOfBook,
+		marked: boolean,
+		mode: 'insert' | 'update'
+	) {
+		let sql = marked
+			? mode === 'insert'
+				? 'insert into bookmark set ? '
+				: 'update bookmark set ? where b_id = ?'
+			: 'delete from bookmark where b_id = ?';
+		return new Promise((resolve, reject) => {
+			this._pool.getConnection((err: any, connection: any) => {
+				connection.query(
+					sql,
+					marked
+						? mode === 'insert'
+							? {
+									b_url: bookmark.url,
+									b_timeStamp: bookmark.timeStamp,
+									b_id: bookmark.id
+							  }
+							: [
+									{
+										b_url: bookmark.url,
+										b_timeStamp: bookmark.timeStamp
+									},
+									bookmark.id
+							  ]
+						: [bookmark.id],
+					(err: any, res: any) => {
+						connection.release();
+						if (err) {
+							reject(err);
+						}
+						resolve(res);
+					}
+				);
+			});
+		});
+	}
+	updateReg(id: number, reg: string) {
+		// assert(
+		// 	this.mainTableName === 'book_list',
+		// 	'only book_list can update reg'
+		// );
+		let sql = `update ${this.mainTableName} set reg = ? where id = ?`;
+		return new Promise((resolve, reject) => {
+			this._pool.getConnection((err: any, connection: any) => {
+				connection.query(sql, [reg, id], (err: any, res: any) => {
+					if (err) {
+						reject(err);
+					}
+					resolve(res);
+				});
+			});
+		});
+	}
 	renamePack(packID: number, title: string) {
 		let sql = `update ${this.mainTableName} set title = ? where id = ?`;
 		return new Promise((resolve, reject) => {
@@ -453,6 +519,10 @@ export class MysqlOperator {
 	}
 
 	changePackCover(packID: number, cover: string) {
+		// assert(
+		// 	this.mainTableName === 'pack_list',
+		// 	'only pack_list can update cover'
+		// );
 		let sql = `update ${this.mainTableName} set cover = ? where id = ?`;
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {

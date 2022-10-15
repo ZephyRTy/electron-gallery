@@ -1,4 +1,4 @@
-import { Bookmark } from './global';
+import { ImageBookmark } from './global';
 
 /* eslint-disable no-unused-vars */
 const fs = window.require('fs');
@@ -34,7 +34,7 @@ export {
 	domainOf24fa,
 	proxyEnabled
 };
-export const getBookmarkThumb = (bookmark: Bookmark) => {
+export const getBookmarkThumb = (bookmark: ImageBookmark) => {
 	return `bookmark-thumb-${new Date(bookmark.timeStamp).getTime()}.jpg`;
 };
 export default globalConfig;

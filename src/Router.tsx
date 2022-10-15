@@ -17,7 +17,7 @@ export const MainRouter = () => {
 			<Routes>
 				<Route element={<Gallery />} path="gallery" />
 				<Route element={<Bookshelf />} path="reader" />
-				<Route element={<Reader />} path="reader/content/:bookID" />
+				<Route element={<Reader />} path="reader/book/:bookID" />
 				<Route
 					element={<PackDetail />}
 					path="gallery/pack/:pack"

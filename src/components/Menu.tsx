@@ -45,7 +45,7 @@ export const TopMenu = (props: { children: ReactChild[] }) => {
 	);
 };
 
-export const Menu = () => {
+export const Menu = (props: { type: 'reader' | 'gallery' }) => {
 	const [mode, setMode] = useState(Mode.Normal);
 	useEffect(() => {
 		let { directory, stared, bookmark, show_dir, search } = parseUrlQuery(
@@ -66,10 +66,26 @@ export const Menu = () => {
 	}, [window.location.href]);
 	return (
 		<Sidebar menuPosition="middle">
-			<HomePage activeMode={Mode.Normal} currentMode={mode} />
-			<Stared activeMode={Mode.Stared} currentMode={mode} />
-			<BookmarkBtn activeMode={Mode.Bookmark} currentMode={mode} />
-			<ShowDir activeMode={Mode.ShowDir} currentMode={mode} />
+			<HomePage
+				activeMode={Mode.Normal}
+				currentMode={mode}
+				type={props.type}
+			/>
+			<Stared
+				activeMode={Mode.Stared}
+				currentMode={mode}
+				type={props.type}
+			/>
+			<BookmarkBtn
+				activeMode={Mode.Bookmark}
+				currentMode={mode}
+				type={props.type}
+			/>
+			<ShowDir
+				activeMode={Mode.ShowDir}
+				currentMode={mode}
+				type={props.type}
+			/>
 		</Sidebar>
 	);
 };
