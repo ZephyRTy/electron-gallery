@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { readerOperator } from '../../../utils/galleryOperator';
 import { Toast } from '../../Gallery/Toast';
 import { Sidebar, SidebarContainer } from '../../Menu';
-import { AddBookmark, Back, CatalogBtn } from '../Buttons';
+import { AddBookmark, Back, CatalogBtn, Find } from '../Buttons';
 import styles from '../style/reader.module.scss';
 import { BookContent } from './Content';
 export const Reader = () => {
@@ -15,6 +15,7 @@ export const Reader = () => {
 					<Back />
 					<CatalogBtn />
 					<AddBookmark bookmarkToast={bookmarkToast} />
+					<Find />
 				</Sidebar>
 			</SidebarContainer>
 		);

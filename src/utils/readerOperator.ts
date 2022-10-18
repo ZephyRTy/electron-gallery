@@ -65,14 +65,16 @@ export class ReaderOperator extends FileOperator<
 					splitWords(line, this.lettersOfEachLine).map((item) => {
 						return {
 							index: lineNum++,
-							content: `<p class="text-line">${item}</p>`
+							content: `${item}`,
+							tag: ['<p class="text-line">', '</p>']
 						};
 					})
 				);
 			}
 			book.addContent({
 				index: lineNum++,
-				content: '<p class="text-br"></p>'
+				content: '',
+				tag: ['<p class="text-br">', '</p>']
 			});
 		}
 		return book;

@@ -1,13 +1,14 @@
-import { MutableRefObject } from 'react';
+import { MutableRefObject, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useController } from 'syill';
 import { ReactComponent as AddBookmarkIcon } from '../../icon/addBookmark.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as CatalogIcon } from '../../icon/catalog.svg';
+import { ReactComponent as FindIcon } from '../../icon/find.svg';
 import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
 import { formatDate, parseUrlQuery } from '../../utils/functions';
 import { readerOperator } from '../../utils/galleryOperator';
-import { catalogVisibleStore } from '../../utils/store';
+import { catalogVisibleStore, cursorStore, findStore } from '../../utils/store';
 export const CatalogBtn = () => {
 	const [, setVis] = useController(catalogVisibleStore);
 	return (
@@ -76,6 +77,36 @@ export const AddBookmark = (props: {
 			}}
 		>
 			<AddBookmarkIcon />
+		</button>
+	);
+};
+
+export const Find = () => {
+	const [, setVis] = useController(findStore);
+	const [, setCursorStore] = useController(cursorStore);
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.ctrlKey) {
+				if (e.key === 'f') {
+					setVis((v) => !v);
+					setCursorStore([]);
+				}
+			}
+		};
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, []);
+	return (
+		<button
+			className={'btn-find icon'}
+			onClick={() => {
+				setVis((v) => !v);
+				setCursorStore([]);
+			}}
+		>
+			<FindIcon />
 		</button>
 	);
 };

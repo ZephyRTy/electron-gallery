@@ -13,6 +13,7 @@ import { BookDetail } from '../../../utils/BookDetail';
 import { readerOperator } from '../../../utils/galleryOperator';
 import { CatalogPortal } from '../../Dialog';
 import styles from '../style/reader.module.scss';
+import { FindDialog, FindMaskContainer } from './FindDialog';
 import { Placeholder } from './Placeholder';
 export const BookContent = () => {
 	const article = useRef(null as HTMLDivElement | null);
@@ -54,6 +55,22 @@ export const BookContent = () => {
 			);
 		},
 		[book]
+	);
+	// eslint-disable-next-line no-unused-vars
+	const scrollToLineNum = useCallback(
+		(lineNum: number) => {
+			const eleScrollTop = lineNum * LINE_HEIGHT;
+			if (
+				Math.abs(eleScrollTop - (scrollEle.current as any).scrollTop) <
+				800
+			)
+				return;
+			(scrollEle.current as any).scrollTop = eleScrollTop;
+			scrollTop.current = eleScrollTop;
+			updateWhenScrollLot(eleScrollTop);
+			(scrollEle.current as any).scrollTop -= 400;
+		},
+		[updateWhenScrollLot]
 	);
 	const beforeScrollTop = useRef(0);
 	const handleScroll = useMemo(() => {
@@ -137,26 +154,40 @@ export const BookContent = () => {
 			(scrollEle.current as any).scrollTop = scrollTop.current;
 		}
 	}, [top, bottom]);
+	const mainContent = useMemo(() => {
+		return (
+			<>
+				<Placeholder height={top} />
+				<article
+					className={styles['reader-content']}
+					dangerouslySetInnerHTML={{
+						__html: content
+							.map((e) => `${e.tag[0]}${e.content}${e.tag[1]}`)
+							.join('')
+					}}
+					ref={article}
+				></article>
+				<Placeholder height={bottom} />
+			</>
+		);
+	}, [content, top, bottom]);
 	return (
-		<div
-			className={styles['scroll-content']}
-			id="reader-scroll-ele"
-			onScroll={handleScroll}
-			ref={scrollEle}
-		>
-			<Placeholder height={top} />
-			<article
-				className={styles['reader-content']}
-				dangerouslySetInnerHTML={{
-					__html: content.map((e) => e.content).join('')
-				}}
-				ref={article}
-			></article>
-			<CatalogPortal
-				book={book}
-				scrollEle={scrollEle as any as HTMLElement}
-			/>
-			<Placeholder height={bottom} />
-		</div>
+		<>
+			<div
+				className={styles['scroll-content']}
+				id="reader-scroll-ele"
+				onScroll={handleScroll}
+				ref={scrollEle}
+			>
+				<FindMaskContainer />
+				<div className={styles['find-mask']}></div>
+				{mainContent}
+				<CatalogPortal
+					book={book}
+					scrollEle={scrollEle as any as HTMLElement}
+				/>
+			</div>
+			<FindDialog book={book} scrollToLine={scrollToLineNum} />
+		</>
 	);
 };

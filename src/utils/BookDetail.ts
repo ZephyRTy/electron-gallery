@@ -54,6 +54,46 @@ export class BookDetail {
 	getCatalog() {
 		return this.catalog;
 	}
+
+	find(key: string) {
+		let result = [] as {
+			index: number;
+			offset: number;
+			length: number;
+		}[][];
+		let offsetInKey = 0;
+		let tempRes = [] as { index: number; offset: number; length: number }[];
+		for (let i = 0; i < this.content.length; i++) {
+			let content = this.content[i].content;
+			const res = { index: i, offset: -1, length: 0 };
+			for (let j = 0; j < content.length; ++j) {
+				if (content[j] === key[offsetInKey]) {
+					++offsetInKey;
+					res.length++;
+					if (res.offset === -1) {
+						res.offset = j;
+					}
+					if (
+						j === content.length - 1 ||
+						offsetInKey === key.length
+					) {
+						tempRes.push({ ...res });
+						res.length = 0;
+						res.offset = -1;
+						if (offsetInKey === key.length) {
+							offsetInKey = 0;
+							result.push(tempRes);
+							tempRes = [];
+						}
+					}
+				} else {
+					offsetInKey = 0;
+					res.offset = -1;
+				}
+			}
+		}
+		return result;
+	}
 	get start() {
 		return this.contentSize.start;
 	}
@@ -64,5 +104,12 @@ export class BookDetail {
 
 	get reg() {
 		return this.book.reg;
+	}
+
+	contain(lineIndex: number) {
+		return (
+			lineIndex >= this.contentSize.start &&
+			lineIndex < this.contentSize.end
+		);
 	}
 }
