@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as Console } from '../icon/console.svg';
 import { GalleryOperator } from '../utils/galleryOperator';
 import { mysqlOperator } from '../utils/mysqlOperator';
+import { ReaderOperator } from '../utils/readerOperator';
 import { GallerySearch } from './Search';
 import styles from './style/header.module.scss';
 const { ipcRenderer } = window.require('electron');
@@ -42,7 +43,8 @@ const WindowButtons = () => {
 };
 export const Header = () => {
 	const [title, setTitle] = useState('Porn Gallery');
-	const fileOperator = useRef(GalleryOperator.getInstance()).current;
+	const galleryOperator = useRef(GalleryOperator.getInstance()).current;
+	const readerOperator = useRef(ReaderOperator.getInstance()).current;
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
 		if (e.ctrlKey) {
 			let page = Number(
@@ -69,8 +71,9 @@ export const Header = () => {
 		}
 	}, []);
 	useEffect(() => {
-		fileOperator.register(setTitle, true);
-	}, [fileOperator]);
+		galleryOperator.register(setTitle, true);
+		readerOperator.register(setTitle, true);
+	}, [galleryOperator]);
 	useEffect(() => {
 		document.addEventListener('keydown', handleKeyDown);
 		return () => {

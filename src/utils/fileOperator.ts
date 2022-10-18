@@ -114,7 +114,6 @@ export abstract class FileOperator<
 
 	//搜索图包
 	protected async searchPacks(key: string, page: number) {
-		this.titleWillUpdate('Search=' + this.searchCache.key);
 		if (this.searchCache.key === key && this.searchCache.valid) {
 			return this.searchCache.res.slice(
 				(page - 1) * packCountOfSinglePage,
@@ -124,6 +123,7 @@ export abstract class FileOperator<
 		this.searchCache.valid = true;
 		this.searchCache.key = key;
 		this.searchCache.res = [];
+		this.titleWillUpdate('Search=' + this.searchCache.key);
 		let result = [] as normal[];
 		if (this.mode === Mode.InDir) {
 			result = this.currentPacks.filter((v) => v.title.includes(key));

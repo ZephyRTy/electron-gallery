@@ -42,6 +42,7 @@ export const Bookshelf = () => {
 		document.querySelector('main')!.scrollTop = 0;
 		readerOperator.savePrevPage(window.location.href);
 		readerOperator.getPacks(page, window.location.href).then((res) => {
+			readerOperator.titleUpdate();
 			setBooks([...res[0]]);
 			setTotal(res[1]);
 		});

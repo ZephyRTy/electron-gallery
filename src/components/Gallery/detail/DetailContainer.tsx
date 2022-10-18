@@ -54,13 +54,13 @@ const ImgDetail = (props: {
 		</div>
 	);
 };
-
+const zoomStore = { current: -1 };
 //const WIDTH = document.body.clientWidth * 0.7 * 0.65;
 export const DetailContainer = (props: {
 	images: HTMLImageElement[];
 	total: number;
 }) => {
-	const [current, setCurrent] = useState(-1);
+	const [current, setCurrent] = useState(zoomStore.current);
 	const currentZoom = useRef(imageStateStore);
 	let [searchParams, setParams] = useSearchParams();
 	let page = Number(searchParams.get('page') || '1');
@@ -97,6 +97,7 @@ export const DetailContainer = (props: {
 		}
 	}, [page]);
 	useLayoutEffect(() => {
+		zoomStore.current = current;
 		if (current < 0) {
 			currentZoom.current.current = '';
 			return;
