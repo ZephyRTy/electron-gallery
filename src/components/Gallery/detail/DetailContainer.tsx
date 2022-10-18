@@ -8,7 +8,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as SetCover } from '../../../icon/cover.svg';
 import { imageCountOfSinglePage } from '../../../types/constant';
-import { FileOperator } from '../../../utils/fileOperator';
+import { GalleryOperator } from '../../../utils/galleryOperator';
 import { imageStateStore } from '../../../utils/store';
 import { Toast } from '../Toast';
 import { ImageZoomIn } from './ZoomIn';
@@ -32,7 +32,7 @@ const ImgDetail = (props: {
 			<SetCover
 				className="set-cover"
 				onClick={() => {
-					FileOperator.getInstance()
+					GalleryOperator.getInstance()
 						.changePackCover(
 							window.location.href
 								.split('?')[0]
@@ -54,13 +54,13 @@ const ImgDetail = (props: {
 		</div>
 	);
 };
-
+const zoomStore = { current: -1 };
 //const WIDTH = document.body.clientWidth * 0.7 * 0.65;
 export const DetailContainer = (props: {
 	images: HTMLImageElement[];
 	total: number;
 }) => {
-	const [current, setCurrent] = useState(-1);
+	const [current, setCurrent] = useState(zoomStore.current);
 	const currentZoom = useRef(imageStateStore);
 	let [searchParams, setParams] = useSearchParams();
 	let page = Number(searchParams.get('page') || '1');
@@ -97,6 +97,7 @@ export const DetailContainer = (props: {
 		}
 	}, [page]);
 	useLayoutEffect(() => {
+		zoomStore.current = current;
 		if (current < 0) {
 			currentZoom.current.current = '';
 			return;

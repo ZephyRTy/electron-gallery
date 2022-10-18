@@ -6,20 +6,31 @@ import { getImgFrom24fa } from '../../crawler/fa24';
 import { ReactComponent as AddIcon } from '../../icon/add.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as BookmarkIcon } from '../../icon/bookmark.svg';
+import { ReactComponent as GotoReaderIcon } from '../../icon/books.svg';
 import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as OpenInExplorerIcon } from '../../icon/folder-open.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
+
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
 import { ReactComponent as SettingIcon } from '../../icon/setting.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
 import globalConfig from '../../types/constant';
-import { Mode } from '../../types/global';
+import {
+	BasicBookmark,
+	BasicData,
+	BasicFolder,
+	Mode
+} from '../../types/global';
 import { FileOperator } from '../../utils/fileOperator';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
-export const HomePage = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const HomePage = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -27,7 +38,7 @@ export const HomePage = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery';
+				window.location.href = '#/' + props.type + '';
 			}}
 		>
 			<HomePageIcon />
@@ -56,7 +67,11 @@ export const Back = (props: {
 	);
 };
 
-export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const Stared = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -64,7 +79,8 @@ export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery?stared=true&page=1';
+				window.location.href =
+					'#/' + props.type + '?stared=true&page=1';
 			}}
 		>
 			<StaredIcon />
@@ -72,7 +88,13 @@ export const Stared = (props: { activeMode: Mode; currentMode: Mode }) => {
 	);
 };
 
-export const Add = (props: { util: FileOperator }) => {
+export const Add = <
+	A extends BasicData,
+	B extends BasicBookmark,
+	C extends BasicFolder
+>(props: {
+	util: FileOperator<A, B, C>;
+}) => {
 	const [visible, setVisible] = useController(fileDropVisibleStore);
 	return (
 		<>
@@ -88,7 +110,11 @@ export const Add = (props: { util: FileOperator }) => {
 	);
 };
 
-export const BookmarkBtn = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const BookmarkBtn = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -96,14 +122,21 @@ export const BookmarkBtn = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery?bookmark=true&page=1';
+				window.location.href =
+					'#/' + props.type + '?bookmark=true&page=1';
 			}}
 		>
 			<BookmarkIcon />
 		</button>
 	);
 };
-export const Refresh = (props: { util: FileOperator }) => {
+export const Refresh = <
+	A extends BasicData,
+	B extends BasicBookmark,
+	C extends BasicFolder
+>(props: {
+	util: FileOperator<A, B, C>;
+}) => {
 	return (
 		<button
 			className="btn-refresh icon"
@@ -131,7 +164,11 @@ export const SelectPacks = (props: {
 	);
 };
 
-export const ShowDir = (props: { activeMode: Mode; currentMode: Mode }) => {
+export const ShowDir = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
 	return (
 		<button
 			className={
@@ -139,7 +176,8 @@ export const ShowDir = (props: { activeMode: Mode; currentMode: Mode }) => {
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
-				window.location.href = '#/gallery?show_dir=true&page=1';
+				window.location.href =
+					'#/' + props.type + '?show_dir=true&page=1';
 			}}
 		>
 			<ShowDirs />
@@ -225,6 +263,19 @@ export const OpenInExplorerBtn = (props: { handleClick: () => void }) => {
 			}}
 		>
 			<OpenInExplorerIcon />
+		</button>
+	);
+};
+
+export const GotoReaderBtn = () => {
+	return (
+		<button
+			className={'btn-goto-reader icon goto-btn'}
+			onClick={() => {
+				window.location.href = '#/reader';
+			}}
+		>
+			<GotoReaderIcon />
 		</button>
 	);
 };

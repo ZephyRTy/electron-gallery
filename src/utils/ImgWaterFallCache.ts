@@ -1,5 +1,5 @@
-import { Bookmark, ImageData } from '../types/global';
-import { isBookmark } from './functions';
+import { ImageBookmark, ImageData } from '../types/global';
+import { isImageBookmark } from './functions';
 
 // 缓存进入图片时的页面，保证前后页面排列的一致性
 export class ImgWaterfallCache {
@@ -39,8 +39,8 @@ export class ImgWaterfallCache {
 		return data;
 	}
 
-	isNeeded(sample: ImageData[] | Bookmark[]) {
-		if (isBookmark(sample[0])) {
+	isNeeded(sample: ImageData[] | ImageBookmark[]) {
+		if (isImageBookmark(sample[0])) {
 			this.cacheNeeded = false;
 		} else if (this.count !== sample.length) {
 			this.cacheNeeded = false;

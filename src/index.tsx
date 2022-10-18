@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './App.css';
-import { Header } from './components/Gallery/Header';
+import { Header } from './components/Header';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { MainRouter } from './Router';

@@ -2,10 +2,12 @@
 /* eslint-disable camelcase */
 import {
 	BasicData,
-	Bookmark,
-	DirData,
+	BookmarkOfBook,
 	DirectoryInfo,
-	Mode
+	ImageBookmark,
+	ImageDirectory,
+	Mode,
+	NormalImage
 } from '../types/global';
 import { formatDate, hasExternalDriver } from './functions';
 
@@ -20,6 +22,8 @@ export class MysqlOperator {
 	private _searchRes = { param: '', result: [] as string[] };
 	private hasExternalDriver: boolean = hasExternalDriver;
 	private init = false;
+	private database: string = 'GALLERY';
+	private mainTableName = 'pack_list';
 	count: number = 0;
 	private constructor() {
 		this._config = {
@@ -40,31 +44,51 @@ export class MysqlOperator {
 		return MysqlOperator._instance;
 	}
 
-	async select(
+	switchDatabase(database: string, tableName: string) {
+		if (database === this.database) {
+			return false;
+		}
+		this.database = database;
+		this.mainTableName = tableName;
+		if (this._pool) {
+			this._pool.end();
+		}
+		this._config = {
+			host: 'localhost',
+			user: 'root',
+			password: '123456',
+			database: this.database,
+			port: 3306,
+			connectionLimit: 10
+		};
+		this._pool = mysql.createPool(this._config);
+		return true;
+	}
+	async select<Pack = NormalImage, Folder = ImageDirectory>(
 		sqlParam: number[],
 		mode: Mode
-	): Promise<BasicData[] | Bookmark[]> {
+	): Promise<Pack[] | Folder[]> {
 		if (mode === Mode.Normal && sqlParam.length !== 2) {
 			throw new Error('sqlParam is not correct');
 		}
-		let sql = `select * from pack_list where ${
+		let sql = `select * from ${this.mainTableName} where ${
 			this.hasExternalDriver ? '' : "path not like 'E%' and"
 		} parent is null order by id desc limit ? ,?`;
 		let dirId = '';
 		switch (mode) {
 			case Mode.Normal:
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} parent is null order by id desc limit ? ,?`;
 				break;
 			case Mode.Stared:
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} stared = 1 order by id desc`;
 				break;
 			case Mode.InDir:
 				dirId = window.location.href.match(/directory=([0-9]+)/)![1];
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} parent = ${dirId} order by id desc`;
 				break;
@@ -73,13 +97,24 @@ export class MysqlOperator {
 				break;
 			case Mode.Bookmark:
 				sql = `select id, title,path, b_cover as cover, b_url as url,
-				 b_timeStamp as timeStamp, stared from bookmark, pack_list 
+				 b_timeStamp as timeStamp, stared from bookmark, ${this.mainTableName} 
 				 where ${
 						this.hasExternalDriver ? '' : "path not like 'E%' and"
-					} bookmark.b_id = pack_list.id order by b_timeStamp desc`;
+					} bookmark.b_id = ${
+					this.mainTableName
+				}.id order by b_timeStamp desc`;
+				if (this.database === 'book') {
+					sql = `select id, title,path, b_url as url, reg,
+				 b_timeStamp as timeStamp, stared from bookmark, ${this.mainTableName} 
+				 where ${
+						this.hasExternalDriver ? '' : "path not like 'E%' and"
+					} bookmark.b_id = ${
+						this.mainTableName
+					}.id order by b_timeStamp desc`;
+				}
 				break;
 			default:
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} parent is not null order by id desc limit ? ,?`;
 		}
@@ -102,8 +137,9 @@ export class MysqlOperator {
 										timeStamp: formatDate(
 											new Date(v.timeStamp).toString()
 										),
-										stared: Boolean(v.stared)
-									} as BasicData;
+										stared: Boolean(v.stared),
+										reg: v.reg
+									} as unknown as Pack;
 								})
 							);
 							return;
@@ -120,7 +156,7 @@ export class MysqlOperator {
 													v.update_time
 												).toString()
 											) ?? ''
-									} as DirData;
+									} as unknown as Folder;
 								})
 							);
 							return;
@@ -133,8 +169,9 @@ export class MysqlOperator {
 									path: v.path ?? '',
 									cover: v.cover ?? v.dir_cover,
 									stared: Boolean(v.stared ?? v.dir_stared),
-									parent: v.parent
-								} as BasicData;
+									parent: v.parent,
+									reg: v.reg
+								} as unknown as Pack;
 							})
 						);
 					}
@@ -143,7 +180,7 @@ export class MysqlOperator {
 		});
 	}
 	getCount(): Promise<number> {
-		let sql = `select count(*) as count from pack_list where ${
+		let sql = `select count(*) as count from ${this.mainTableName} where ${
 			this.hasExternalDriver ? '' : "path not like 'E%' and"
 		} parent is null`;
 		return new Promise((resolve, reject) => {
@@ -167,28 +204,28 @@ export class MysqlOperator {
 		this._pool.end();
 	}
 
-	async search(
+	async search<T extends BasicData>(
 		sqlParam: string,
 		mode: Mode,
 		reg: boolean
-	): Promise<BasicData[]> {
+	): Promise<T[]> {
 		let sql = '';
 		let dirId = '';
 		let key = reg ? `regexp '${sqlParam}' ` : `like '%${sqlParam}%'`;
 		switch (mode) {
 			case Mode.Normal:
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} title ${key} order by id desc`;
 				break;
 			case Mode.Stared:
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} stared = 1 and title ${key} order by id desc`;
 				break;
 			case Mode.InDir:
 				dirId = window.location.href.match(/directory=([0-9]+)/)![1];
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} parent = ${dirId} and title ${key} order by id desc`;
 				break;
@@ -198,12 +235,14 @@ export class MysqlOperator {
 				} dir_title ${key} order by update_time desc`;
 				break;
 			case Mode.Bookmark:
-				sql = `select * from bookmark, pack_list where b_id = id and ${
+				sql = `select * from bookmark, ${
+					this.mainTableName
+				} where b_id = id and ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} title ${key} order by b_timeStamp desc`;
 				break;
 			default:
-				sql = `select * from pack_list where ${
+				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} title ${key} order by id desc`;
 		}
@@ -222,8 +261,9 @@ export class MysqlOperator {
 									path: v.path ?? '',
 									cover: v.cover ?? v.dir_cover,
 									stared: Boolean(v.stared ?? v.dir_stared),
-									parent: v.parent
-								} as BasicData;
+									parent: v.parent,
+									reg: v.reg
+								} as unknown as T;
 							})
 						);
 					}
@@ -231,8 +271,8 @@ export class MysqlOperator {
 			});
 		});
 	}
-	async updateStar(data: BasicData) {
-		let sql = 'update pack_list set stared = ? where id = ?';
+	async updateStar<T extends BasicData>(data: T) {
+		let sql = `update ${this.mainTableName} set stared = ? where id = ?`;
 		let sqlParam = [data.stared ? 1 : 0, data.id];
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection(async (err: any, connection: any) => {
@@ -253,7 +293,7 @@ export class MysqlOperator {
 		status: 0 | 1,
 		cover?: string
 	) {
-		let sql = 'update pack_list set  parent = ? where id = ?';
+		let sql = `update ${this.mainTableName} set  parent = ? where id = ?`;
 		let sqlParam = [status ? dirId : null, packId] as [
 			number | null,
 			number
@@ -286,7 +326,7 @@ export class MysqlOperator {
 	}
 
 	mapDir(): Promise<Map<string, DirectoryInfo>> {
-		let sql = `select dir_id as id, dir_title as title , count(parent) as count from directory left outer join pack_list on(dir_id = parent )
+		let sql = `select dir_id as id, dir_title as title , count(parent) as count from directory left outer join ${this.mainTableName} on(dir_id = parent )
 			  group by dir_id ;`;
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
@@ -329,13 +369,16 @@ export class MysqlOperator {
 			title: string;
 			stared: 0 | 1;
 			path: string;
-			cover: string;
+			cover?: string;
 		},
 		duplicate: boolean = false
 	) {
-		let sql = 'insert into pack_list set ?';
+		let sql = `insert into ${this.mainTableName} set ?`;
 		return new Promise((resolve) => {
 			this._pool.getConnection((err: any, connection: any) => {
+				if (!newPack.cover) {
+					delete newPack.cover;
+				}
 				connection.query(sql, newPack, (err: any, res: any) => {
 					connection.release();
 					if (err && !duplicate) {
@@ -348,8 +391,8 @@ export class MysqlOperator {
 		});
 	}
 
-	updateBookmark(
-		bookmark: Bookmark,
+	updateGalleryBookmark(
+		bookmark: ImageBookmark,
 		marked: boolean,
 		mode: 'insert' | 'update'
 	) {
@@ -390,9 +433,65 @@ export class MysqlOperator {
 			});
 		});
 	}
-
+	updateBookmarkOfBook(
+		bookmark: BookmarkOfBook,
+		marked: boolean,
+		mode: 'insert' | 'update'
+	) {
+		let sql = marked
+			? mode === 'insert'
+				? 'insert into bookmark set ? '
+				: 'update bookmark set ? where b_id = ?'
+			: 'delete from bookmark where b_id = ?';
+		return new Promise((resolve, reject) => {
+			this._pool.getConnection((err: any, connection: any) => {
+				connection.query(
+					sql,
+					marked
+						? mode === 'insert'
+							? {
+									b_url: bookmark.url,
+									b_timeStamp: bookmark.timeStamp,
+									b_id: bookmark.id
+							  }
+							: [
+									{
+										b_url: bookmark.url,
+										b_timeStamp: bookmark.timeStamp
+									},
+									bookmark.id
+							  ]
+						: [bookmark.id],
+					(err: any, res: any) => {
+						connection.release();
+						if (err) {
+							reject(err);
+						}
+						resolve(res);
+					}
+				);
+			});
+		});
+	}
+	updateReg(id: number, reg: string) {
+		// assert(
+		// 	this.mainTableName === 'book_list',
+		// 	'only book_list can update reg'
+		// );
+		let sql = `update ${this.mainTableName} set reg = ? where id = ?`;
+		return new Promise((resolve, reject) => {
+			this._pool.getConnection((err: any, connection: any) => {
+				connection.query(sql, [reg, id], (err: any, res: any) => {
+					if (err) {
+						reject(err);
+					}
+					resolve(res);
+				});
+			});
+		});
+	}
 	renamePack(packID: number, title: string) {
-		let sql = 'update pack_list set title = ? where id = ?';
+		let sql = `update ${this.mainTableName} set title = ? where id = ?`;
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [title, packID], (err: any, res: any) => {
@@ -420,7 +519,11 @@ export class MysqlOperator {
 	}
 
 	changePackCover(packID: number, cover: string) {
-		let sql = 'update pack_list set cover = ? where id = ?';
+		// assert(
+		// 	this.mainTableName === 'pack_list',
+		// 	'only pack_list can update cover'
+		// );
+		let sql = `update ${this.mainTableName} set cover = ? where id = ?`;
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [cover, packID], (err: any, res: any) => {
@@ -434,7 +537,7 @@ export class MysqlOperator {
 	}
 
 	delete(packID: number) {
-		let sql = 'delete from pack_list where id = ?';
+		let sql = `delete from ${this.mainTableName} where id = ?`;
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [packID], (err: any, res: any) => {

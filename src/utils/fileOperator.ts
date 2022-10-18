@@ -8,17 +8,24 @@ import {
 	getBookmarkThumb,
 	packCountOfSinglePage
 } from '../types/constant';
-import { BasicData, Bookmark, DirectoryInfo, Mode } from '../types/global';
+import {
+	BasicBookmark,
+	BasicData,
+	BasicFolder,
+	DirectoryInfo,
+	Mode
+} from '../types/global';
 import {
 	compress,
 	convertJsRegToMysqlReg,
 	endsWith,
+	hasCover,
 	notMoreThanOne,
 	parseUrlQuery
 } from './functions';
-import { ImgWaterfallCache } from './ImgWaterFallCache';
-import { bookmarkModel, selectionModel, starModel } from './models';
+import { createBookmarkModel, createStarModel, selectionModel } from './models';
 import { mysqlOperator } from './mysqlOperator';
+import { currentOperator } from './store';
 const fs = window.require('fs');
 const isImage = (v: string) =>
 	endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg', 'webp');
@@ -27,62 +34,60 @@ const checkImageSize = (path: string) => {
 	return size;
 };
 // 对文件进行操作，可与数据进行交互
-export class FileOperator {
-	private directories: BasicData[] = [];
-	private fileCache = {
+export abstract class FileOperator<
+	normal extends BasicData,
+	bookmark extends BasicBookmark,
+	folder extends BasicFolder
+> {
+	protected directories: normal[] = [];
+	protected fileCache = {
 		startPage: 0,
-		data: [] as BasicData[]
+		data: [] as normal[]
 	};
-	private prevPage = '';
-	private refreshFn: React.Dispatch<React.SetStateAction<boolean>> = (
+	protected prevPage = '';
+	protected refreshFn: React.Dispatch<React.SetStateAction<boolean>> = (
 		v: any
 	) => {};
-	private setTitleFn: React.Dispatch<React.SetStateAction<string>> = (
+	protected setTitleFn: React.Dispatch<React.SetStateAction<string>> = (
 		v: any
 	) => {};
-	private static instance: FileOperator;
-	static getInstance(): FileOperator {
-		if (!FileOperator.instance) {
-			FileOperator.instance = new FileOperator();
-		}
-		return FileOperator.instance;
-	}
 
-	private mode: Mode = Mode.Init;
-	private total = 0;
-	private currentPacks = [] as BasicData[];
+	protected mode: Mode = Mode.Init;
+	protected total = 0;
+	protected currentPacks = [] as normal[];
 	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
-	private readonly starModel = starModel;
-	private readonly bookmarkModel = bookmarkModel;
-	private selection = selectionModel;
-	private nextTitle = '';
-	private searchCache = {
+	protected readonly starModel = createStarModel<normal>();
+	protected readonly bookmarkModel = createBookmarkModel<bookmark>();
+	protected selection = selectionModel;
+	protected nextTitle = '';
+	protected searchCache = {
 		key: '',
 		mode: Mode.Normal,
-		res: [] as BasicData[],
+		res: [] as normal[],
 		total: 0,
 		reg: false,
 		valid: false
 	};
-
-	private constructor() {
+	protected constructor(
+		protected databaseConfig: { database: string; tableName: string }
+	) {
 		mysqlOperator.getCount().then((res) => {
 			this.total = res;
 		});
-		mysqlOperator.select([], Mode.Stared).then((res) => {
-			this.starModel.data = res;
+		mysqlOperator.select<normal, folder>([], Mode.Stared).then((res) => {
+			this.starModel.data = res as normal[];
 		});
-		mysqlOperator.select([], Mode.Bookmark).then((res) => {
-			this.bookmarkModel.data = res as Bookmark[];
+		mysqlOperator.select<normal, folder>([], Mode.Bookmark).then((res) => {
+			this.bookmarkModel.data = res as unknown as bookmark[];
 		});
-		mysqlOperator.select([], Mode.ShowDir).then((res) => {
-			this.directories = res;
+		mysqlOperator.select<normal, folder>([], Mode.ShowDir).then((res) => {
+			this.directories = res as normal[];
 		});
 		mysqlOperator.mapDir().then((res) => {
 			this.dirMap = Map(res);
 		});
 	} //获取图包
-	private async getPacksNormally(page: number) {
+	protected async getPacksNormally(page: number) {
 		let res = this.fileCache.data;
 		if (
 			this.switchMode(Mode.Normal) ||
@@ -108,8 +113,7 @@ export class FileOperator {
 	}
 
 	//搜索图包
-	private async searchPacks(key: string, page: number) {
-		this.titleWillUpdate('Search=' + this.searchCache.key);
+	protected async searchPacks(key: string, page: number) {
 		if (this.searchCache.key === key && this.searchCache.valid) {
 			return this.searchCache.res.slice(
 				(page - 1) * packCountOfSinglePage,
@@ -119,7 +123,8 @@ export class FileOperator {
 		this.searchCache.valid = true;
 		this.searchCache.key = key;
 		this.searchCache.res = [];
-		let result = [] as BasicData[];
+		this.titleWillUpdate('Search=' + this.searchCache.key);
+		let result = [] as normal[];
 		if (this.mode === Mode.InDir) {
 			result = this.currentPacks.filter((v) => v.title.includes(key));
 		} else {
@@ -140,7 +145,7 @@ export class FileOperator {
 	}
 
 	//获取星标图包
-	private getStared(page: number) {
+	protected getStared(page: number) {
 		this.switchMode(Mode.Stared);
 		this.currentPacks = this.starModel.data;
 		return this.currentPacks.slice(
@@ -149,9 +154,9 @@ export class FileOperator {
 		);
 	}
 
-	private getBookmarks(page: number): [BasicData[], number] {
+	protected getBookmarks(page: number): [normal[], number] {
 		this.switchMode(Mode.Bookmark);
-		this.currentPacks = this.bookmarkModel.data;
+		this.currentPacks = this.bookmarkModel.data as unknown as normal[];
 		return [
 			this.currentPacks.slice(
 				(page - 1) * packCountOfSinglePage,
@@ -161,7 +166,7 @@ export class FileOperator {
 		];
 	}
 	//模式切换
-	private switchMode(mode: Mode) {
+	protected switchMode(mode: Mode) {
 		if (mode !== Mode.Detail) {
 			this.titleWillUpdate(this.modeType(mode));
 		}
@@ -174,10 +179,10 @@ export class FileOperator {
 		return true;
 	}
 
-	private async getDirContent(
+	protected async getDirContent(
 		index: number,
 		page: number
-	): Promise<[BasicData[], number]> {
+	): Promise<[normal[], number]> {
 		if (this.switchMode(Mode.InDir)) {
 			this.currentPacks = await mysqlOperator.select([], Mode.InDir);
 		}
@@ -190,7 +195,7 @@ export class FileOperator {
 		];
 	}
 
-	private get bookmarks() {
+	protected get bookmarks() {
 		return this.bookmarkModel.data;
 	}
 
@@ -205,103 +210,30 @@ export class FileOperator {
 		}
 	}
 
-	async addNewPack(
+	abstract addNewPack(
 		data:
 			| { path: string; cover?: string; title: string }
 			| { path: string; cover?: string; title: string }[],
-		duplicate: boolean = false
-	) {
-		if (!Array.isArray(data)) {
-			if (!data.path || !data.title) {
-				return;
-			}
-			let cover = data.cover;
-			if (!cover || !isImage(cover)) {
-				cover = fs
-					.readdirSync(data.path)
-					.find((v: string) => isImage(v));
-			}
-			if (!cover) {
-				console.warn(data.title, 'no image found');
-				return;
-			}
-			let newPack = {
-				path: data.path,
-				cover: cover.startsWith('/') ? cover : '/' + cover,
-				title: data.title,
-				stared: 0 as 0
-			};
-			await mysqlOperator.insertPack(newPack, duplicate);
-			const img = newPack.path + newPack.cover;
-			await compress(img);
-			this.switchMode(Mode.Init);
-			this.refresh();
-			return true;
-		}
-		let result = [] as string[];
-		let successCount = 0;
-		let success = [] as Promise<any>[];
-		data.forEach((e, i) => {
-			if (!e.path || !e.title) {
-				return;
-			}
-			let cover =
-				e.cover ||
-				fs.readdirSync(e.path).find((v: string) => isImage(v));
-			if (!cover) {
-				console.warn(e.title, 'no image found');
-				result.push(`${e.title}:::未找到图片`);
-				return;
-			}
-			let newPack = {
-				path: e.path,
-				cover: cover.startsWith('/') ? cover : '/' + cover,
-				title: e.title,
-				stared: 0 as 0
-			};
-			const img = newPack.path + newPack.cover;
-			success.push(
-				mysqlOperator.insertPack(newPack).then((res) => {
-					if (!res) {
-						result.push(`${e.title}:::重复`);
-					} else {
-						successCount++;
-					}
+		duplicate: boolean
+	);
 
-					if (i === data.length - 1 && successCount) {
-						this.switchMode(Mode.Init);
-						compress(img).then(() => {
-							this.refresh();
-						});
-					}
-				})
-			);
-		});
-		return Promise.all(success).then(() => {
-			if (successCount) {
-				result.unshift(`${successCount}个图包:::成功`);
-			}
-
-			return result;
-		});
-	}
-
-	staredUpdate(newStar: BasicData) {
+	staredUpdate(newStar: normal) {
+		newStar.stared = !newStar.stared;
 		this.starModel.update(newStar);
 	}
-	async showDir(page: number): Promise<[BasicData[], number]> {
+	async showDir(page: number): Promise<[normal[], number]> {
 		this.switchMode(Mode.ShowDir);
-		let res = await mysqlOperator.select([], Mode.ShowDir);
-		this.currentPacks = res;
+		let res = await mysqlOperator.select<normal, folder>([], Mode.ShowDir);
+		this.currentPacks = res as normal[];
 		return [
 			res.slice(
 				(page - 1) * packCountOfSinglePage,
 				page * packCountOfSinglePage
-			),
+			) as unknown as normal[],
 			res.length
 		];
 	}
-	async getPacks(page: number, url: string): Promise<[BasicData[], number]> {
+	async getPacks(page: number, url: string): Promise<[normal[], number]> {
 		let query: {
 			search?: string;
 			directory?: string;
@@ -341,7 +273,7 @@ export class FileOperator {
 		];
 	}
 	//修改窗口标题
-	private titleWillUpdate(title: string) {
+	protected titleWillUpdate(title: string) {
 		this.nextTitle = title;
 	}
 
@@ -365,25 +297,15 @@ export class FileOperator {
 	}
 
 	//获取当前要打开的页面
-	current(packId: number, change: boolean = true) {
-		this.switchMode(Mode.Detail);
-		let res: BasicData = null as any;
-		if (this.mode === Mode.Bookmark) {
-			res = this.bookmarks.find((v) => v.id === packId)!;
-		} else {
-			res = this.currentPacks.find((v) => v.id === packId)!;
-		}
-		if (change) {
-			this.titleWillUpdate(res.title);
-		}
-		return res;
-	}
+	abstract current(packId: number, change: boolean);
 
-	async bookmarksUpdate(newBookmark: Bookmark, marked: boolean = true) {
-		await compress(
-			newBookmark.path + newBookmark.cover,
-			getBookmarkThumb(newBookmark)
-		);
+	async bookmarksUpdate(newBookmark: bookmark, marked: boolean = true) {
+		if (hasCover(newBookmark)) {
+			await compress(
+				newBookmark.path + newBookmark.cover,
+				getBookmarkThumb(newBookmark)
+			);
+		}
 		this.bookmarkModel.update(newBookmark, marked);
 	}
 
@@ -400,8 +322,10 @@ export class FileOperator {
 		let count = 0;
 		this.currentPacks.forEach((e, i) => {
 			if (this.selection.selected.has(e.id)) {
-				if (count === 0) {
-					cover = e.path + e.cover;
+				if (hasCover(e)) {
+					if (count === 0) {
+						cover = e.path + e.cover;
+					}
 				}
 				++count;
 				e.parent = dirIndex;
@@ -440,15 +364,22 @@ export class FileOperator {
 	}
 	removeFileFromDir(packId: number, dirId: number) {
 		let e = this.currentPacks.find((e) => e.id !== packId);
-		mysqlOperator
-			.updateDir(dirId, packId, 0, e ? e.path + e.cover : defaultCover)
-			.then((e) => {
-				this.dirMap.get(dirId.toString())!.count--;
-				this.currentPacks = this.currentPacks.filter(
-					(v) => v.id !== packId
-				);
-				this.refresh();
-			});
+		if (hasCover(e)) {
+			mysqlOperator
+				.updateDir(
+					dirId,
+					packId,
+					0,
+					e ? e.path + e.cover : defaultCover
+				)
+				.then((e) => {
+					this.dirMap.get(dirId.toString())!.count--;
+					this.currentPacks = this.currentPacks.filter(
+						(v) => v.id !== packId
+					);
+					this.refresh();
+				});
+		}
 		this.switchMode(Mode.Init);
 	}
 
@@ -475,8 +406,8 @@ export class FileOperator {
 		}
 	}
 
-	private renameTarget = { id: -1, oldTitle: '' };
-	private async renamePack(title: string) {
+	protected renameTarget = { id: -1, oldTitle: '' };
+	protected async renamePack(title: string) {
 		try {
 			await mysqlOperator.renamePack(this.renameTarget.id, title);
 			let target = this.currentPacks.find(
@@ -503,7 +434,7 @@ export class FileOperator {
 	get oldTitle() {
 		return this.renameTarget.oldTitle;
 	}
-	private async renameDir(title: string) {
+	protected async renameDir(title: string) {
 		try {
 			await mysqlOperator.renameDir(this.renameTarget.id, title);
 			this.dirMap.get(this.renameTarget.id.toString())!.title = title;
@@ -527,17 +458,6 @@ export class FileOperator {
 	}
 	async getTotal() {
 		return mysqlOperator.getCount();
-	}
-
-	async changePackCover(packId: string, cover: string, fullPath: string) {
-		compress(fullPath);
-		let e = this.currentPacks.find((e) => e.id === parseInt(packId))!;
-		await mysqlOperator.changePackCover(e?.id, cover);
-		e.cover = cover;
-		if (e.stared) {
-			this.starModel.update();
-		}
-		ImgWaterfallCache.getInstance().updateCover(e);
 	}
 
 	deletePack(packId: number) {
@@ -564,6 +484,48 @@ export class FileOperator {
 	getMode() {
 		return this.mode;
 	}
-}
 
-export const fileOperator = FileOperator.getInstance();
+	protected async load() {
+		let promises = [] as Promise<any>[];
+		promises.push(mysqlOperator.mapDir());
+		promises.push(mysqlOperator.getCount());
+		promises.push(mysqlOperator.select<normal, folder>([], Mode.Stared));
+		promises.push(mysqlOperator.select<normal, folder>([], Mode.Bookmark));
+		promises.push(mysqlOperator.select<normal, folder>([], Mode.ShowDir));
+		let [dirMap, total, stared, bookmark, showDir] = await Promise.all(
+			promises
+		);
+		this.dirMap = Map(dirMap);
+		this.total = total;
+		this.starModel.data = stared;
+		this.bookmarkModel.data = bookmark;
+		this.directories = showDir;
+		return true;
+		// mysqlOperator.getCount().then((res) => {
+		// 	this.total = res;
+		// });
+		// mysqlOperator.select<normal, folder>([], Mode.Stared).then((res) => {
+		// 	this.starModel.data = res as normal[];
+		// });
+		// mysqlOperator.select<normal, folder>([], Mode.Bookmark).then((res) => {
+		// 	this.bookmarkModel.data = res as unknown as bookmark[];
+		// });
+		// mysqlOperator.select<normal, folder>([], Mode.ShowDir).then((res) => {
+		// 	this.directories = res as normal[];
+		// });
+		// mysqlOperator.mapDir().then((res) => {
+		// 	this.dirMap = Map(res);
+		// });
+	}
+	async switchMainTable(name: string) {
+		currentOperator.op = this;
+		if (
+			mysqlOperator.switchDatabase(
+				this.databaseConfig.database,
+				this.databaseConfig.tableName
+			)
+		) {
+			await this.load();
+		}
+	}
+}

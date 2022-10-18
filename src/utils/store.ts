@@ -1,5 +1,6 @@
 import React from 'react';
 import { Store } from 'syill';
+import { FileOperator } from './fileOperator';
 export const ImageStateStore = {
 	states: [] as React.Dispatch<React.SetStateAction<boolean>>[],
 	setState: (state: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -17,6 +18,7 @@ export const fileDropVisibleStore = new Store(false);
 export const dirMapVisibleStore = new Store(false);
 export const renameVisibleStore = new Store(false);
 export const configVisibleStore = new Store(false);
+export const catalogVisibleStore = new Store(false);
 export const dialogActive = {
 	active: false,
 	setActive: (active: boolean) => {
@@ -28,3 +30,6 @@ export const dialogActive = {
 };
 
 export const imageStateStore = { current: '' };
+export const currentOperator: { op: FileOperator<any, any, any> | null } = {
+	op: null
+};

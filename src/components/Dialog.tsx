@@ -4,36 +4,29 @@
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { Store, useData } from 'syill';
-import globalConfig, { translation } from '../../types/constant';
-import { DirectoryInfo } from '../../types/global';
-import { FileOperator } from '../../utils/fileOperator';
+import globalConfig, { LINE_HEIGHT, translation } from '../types/constant';
+import { DirectoryInfo } from '../types/global';
+import { BookDetail } from '../utils/BookDetail';
+import { FileOperator } from '../utils/fileOperator';
+import { GalleryOperator } from '../utils/galleryOperator';
 import {
+	catalogVisibleStore,
 	configVisibleStore,
 	dialogActive,
 	dirMapVisibleStore,
 	renameVisibleStore
-} from '../../utils/store';
+} from '../utils/store';
 import styles from './style/dialog.module.scss';
 const fs = window.require('fs');
 const { dialog } = window.require('@electron/remote');
 const { ipcRenderer } = window.require('electron');
-const longestCommonString = (s1: string, s2: string) => {
-	let common = '';
-	let len = Math.min(s1.length, s2.length);
-	for (let i = 0; i < len; ++i) {
-		if (s1[i] === s2[i]) {
-			common += s1[i];
-		} else {
-			return common;
-		}
-	}
-};
 function createDialog<T>(
-	Component: (props: T) => JSX.Element,
+	Component: (props: T & { setVisible: any }) => JSX.Element,
 	store: Store<boolean>
 ) {
-	return (props) => {
+	return (props: Omit<T, 'setVisible'>) => {
 		const [visible, setVisible] = useData(store);
 		return (
 			<div
@@ -83,8 +76,8 @@ const sortCNAndEN = (
 		0
 	);
 };
-export const DirMapContent = (props: {
-	util: FileOperator;
+const DirMapContent = (props: {
+	util: FileOperator<any, any, any>;
 	setInSelect: React.Dispatch<React.SetStateAction<number>>;
 	setVisible: (v: boolean) => void;
 	visible?: boolean;
@@ -226,8 +219,8 @@ export const DirMapContent = (props: {
 		</>
 	);
 };
-export const RenameContent = (props: {
-	util: FileOperator;
+const RenameContent = (props: {
+	util: GalleryOperator;
 	setVisible: (v: boolean) => void;
 }) => {
 	const [newTitle, setNewTitle] = useState('');
@@ -287,7 +280,7 @@ export const RenameContent = (props: {
 	);
 };
 
-export const configContent = (props: { setVisible: (v: boolean) => void }) => {
+const configContent = (props: { setVisible: (v: boolean) => void }) => {
 	const newConfig = useRef({ ...globalConfig });
 	const [confirmed, setConfirmed] = useState(false);
 	return (
@@ -340,7 +333,7 @@ export const configContent = (props: { setVisible: (v: boolean) => void }) => {
 	);
 };
 
-export const ConfigItem = (props: {
+const ConfigItem = (props: {
 	itemKey: string;
 	confirmed: boolean;
 	value: boolean | string | number;
@@ -441,6 +434,94 @@ export const ConfigItem = (props: {
 		</li>
 	);
 };
+
+const CatalogItem = (props: { title: string }) => {
+	return (
+		<div>
+			<span>{props.title}</span>
+		</div>
+	);
+};
+
+const CatalogContent = (props: {
+	setVisible: (v: boolean) => void;
+	book: BookDetail;
+	scrollEle: HTMLElement;
+}) => {
+	const [reg, setReg] = useState(props.book?.reg || '');
+	const [catalog, setCatalog] = useState(props.book?.getCatalog() || []);
+	useEffect(() => {
+		setReg(props.book?.reg || '');
+	}, [props.book?.reg]);
+	return (
+		<>
+			<ul className={styles['catalog-list']}>
+				{catalog.map((e) => {
+					return (
+						<li
+							className={styles['catalog-list-item']}
+							key={e.index}
+							onClick={() => {
+								document.querySelector(
+									'#reader-scroll-ele'
+								)!.scrollTop = e.index * LINE_HEIGHT;
+							}}
+							title={e.title}
+						>
+							<span>{e.title}</span>
+						</li>
+					);
+				})}
+			</ul>
+			<textarea
+				className={styles['catalog-reg-input']}
+				onChange={(e) => {
+					setReg(e.target.value);
+				}}
+				value={reg.toString()}
+			/>
+			<div className={styles['dialog-button-contain']}>
+				<button
+					className={
+						styles['dialog-button'] +
+						' ' +
+						styles['dialog-button__back']
+					}
+					onClick={() => {
+						dialogActive.setActive(false);
+						props.setVisible(false);
+					}}
+				>
+					返回
+				</button>
+				<button
+					className={
+						styles['dialog-button'] +
+						' ' +
+						styles['dialog-button__confirm']
+					}
+					onClick={() => {
+						props.book.reParseCatalog(reg);
+						setCatalog(props.book.getCatalog());
+					}}
+				>
+					确认
+				</button>
+			</div>
+		</>
+	);
+};
 export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
 export const Rename = createDialog(RenameContent, renameVisibleStore);
 export const Config = createDialog(configContent, configVisibleStore);
+
+const Catalog = createDialog(CatalogContent, catalogVisibleStore);
+export const CatalogPortal = (props: {
+	book: BookDetail;
+	scrollEle: HTMLElement;
+}) => {
+	return ReactDOM.createPortal(
+		<Catalog book={props.book} scrollEle={props.scrollEle} />,
+		document.querySelector('main')!
+	);
+};

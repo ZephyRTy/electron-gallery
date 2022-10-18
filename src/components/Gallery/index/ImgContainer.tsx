@@ -1,49 +1,49 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useController } from 'syill';
-import { useEffectOnChange } from '../../../hooks/useEffectOnChange';
 import globalConfig, {
 	defaultCover,
 	getBookmarkThumb,
 	imageCountOfSinglePage
 } from '../../../types/constant';
 import {
-	BasicData,
-	Bookmark,
-	DirData,
+	ImageBookmark,
 	ImageComponent,
-	Mode
+	ImageData,
+	Mode,
+	NormalImage
 } from '../../../types/global';
-import { FileOperator } from '../../../utils/fileOperator';
 import {
 	compress,
 	hasExternalDriver,
-	isBookmark,
-	isDirData
+	isImageBookmark,
+	isImageDir
 } from '../../../utils/functions';
+import { GalleryOperator } from '../../../utils/galleryOperator';
 import { ImgWaterfallCache } from '../../../utils/ImgWaterFallCache';
 import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
+import { Config, DirMap, Rename } from '../../Dialog';
+import { Menu, Sidebar, SidebarContainer } from '../../Menu';
 import {
 	Add,
 	Back,
 	ConfigBtn,
 	CrawlerBtn,
+	GotoReaderBtn,
 	Refresh,
 	SelectPacks
 } from '../Buttons';
-import { Config, DirMap, Rename } from '../Dialog';
 import BookmarkItem from '../ImgComponent/Bookmarks';
-import ImageDir from '../ImgComponent/Directory';
+import { ImageDir } from '../ImgComponent/Directory';
 import NormalImg, { minIndex } from '../ImgComponent/NormalImg';
 import { Loading } from '../Loading';
-import { Menu, Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
 import { PageOfTotal } from '../PageOfTotal';
 import styles from '../style/img.module.scss';
 let index = 0;
 export const ImgContainer = (props: {
-	packs: BasicData[] | Bookmark[];
-	util: FileOperator;
+	packs: NormalImage[] | ImageBookmark[];
+	util: GalleryOperator;
 	inDir: boolean;
 	page: number;
 	total: number;
@@ -51,7 +51,7 @@ export const ImgContainer = (props: {
 }) => {
 	const [images, setImages] = useState([[], [], [], []] as {
 		img: HTMLImageElement;
-		data: BasicData | Bookmark | DirData;
+		data: ImageData;
 	}[][]);
 	const length = useRef({ value: 0, loaded: 0 }).current;
 	const waterfallCache = useRef(ImgWaterfallCache.getInstance()).current;
@@ -60,12 +60,13 @@ export const ImgContainer = (props: {
 	const [ready, setReady] = useState(false);
 	const topMenu = useMemo(() => {
 		return (
-			<Sidebar className="top-menu">
+			<Sidebar menuPosition="top">
 				<Back inSelect={inSelect} setInSelect={setInSelect} />
 				<Refresh util={props.util} />
 				<Add util={props.util} />
 				<CrawlerBtn />
 				<ConfigBtn />
+				<GotoReaderBtn />
 				<SelectPacks
 					handleClick={() => {
 						if (dialogActive.active) {
@@ -87,7 +88,7 @@ export const ImgContainer = (props: {
 	const dirMap = useMemo(() => {
 		return <DirMap setInSelect={setInSelect} util={props.util} />;
 	}, [props.util]);
-	useEffectOnChange(() => {
+	useEffect(() => {
 		if (props.packs.length === 0) {
 			setReady(true);
 			return;
@@ -97,15 +98,14 @@ export const ImgContainer = (props: {
 			setImages(waterfallCache.load());
 		} else {
 			length.value = props.packs.length;
-			let waterfall: { img: HTMLImageElement; data: BasicData }[][] = [
+			let waterfall: { img: HTMLImageElement; data: NormalImage }[][] = [
 				[],
 				[],
 				[],
 				[]
 			];
 			let heights = [0, 0, 0, 0];
-			const buffer: { img: HTMLImageElement; data: BasicData }[] = [];
-			//NOTE 预渲染图像
+			const buffer: { img: HTMLImageElement; data: NormalImage }[] = [];
 			props.packs.forEach((v) => {
 				let img = new Image();
 				let imgPath =
@@ -114,7 +114,7 @@ export const ImgContainer = (props: {
 						? defaultCover
 						: ((v.path ?? '') + v.cover).replace(/\\/g, '/');
 				let coverPath = imgPath;
-				if (isBookmark(v)) {
+				if (isImageBookmark(v)) {
 					coverPath =
 						imgPath.split('/').slice(0, -1).join('/') +
 						'/' +
@@ -135,9 +135,9 @@ export const ImgContainer = (props: {
 						buffer
 							.sort((a, b) => {
 								if (
-									(isBookmark(a.data) &&
-										isBookmark(b.data)) ||
-									(isDirData(a.data) && isDirData(b.data))
+									(isImageBookmark(a.data) &&
+										isImageBookmark(b.data)) ||
+									(isImageDir(a.data) && isImageDir(b.data))
 								) {
 									return b.data.timeStamp > a.data.timeStamp
 										? 1
@@ -147,10 +147,10 @@ export const ImgContainer = (props: {
 							})
 							.forEach((v, i) => {
 								let min = minIndex(heights);
-								if (isDirData(v.data)) {
+								if (isImageDir(v.data)) {
 									min = i % 4;
 								}
-								let height = isDirData(v)
+								let height = isImageDir(v)
 									? 100
 									: Math.ceil(
 											180 *
@@ -180,7 +180,7 @@ export const ImgContainer = (props: {
 					);
 					console.error(err);
 					console.log(decodeURIComponent(img.src));
-					if (isBookmark(v)) {
+					if (isImageBookmark(v)) {
 						compress(
 							decodeURIComponent(v.path + v.cover),
 							getBookmarkThumb(v)
@@ -223,7 +223,7 @@ export const ImgContainer = (props: {
 		<>
 			<SidebarContainer>
 				{topMenu}
-				<Menu />
+				<Menu type="gallery" />
 			</SidebarContainer>
 			{dirMap}
 			<Config />
@@ -247,9 +247,9 @@ export const ImgContainer = (props: {
 												'图包' + ele.data.id.toString();
 										}
 										let Component: ImageComponent<any>;
-										if (isBookmark(ele.data)) {
+										if (isImageBookmark(ele.data)) {
 											Component = BookmarkItem;
-										} else if (isDirData(ele.data)) {
+										} else if (isImageDir(ele.data)) {
 											Component = ImageDir;
 										} else {
 											Component = NormalImg;

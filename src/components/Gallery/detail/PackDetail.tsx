@@ -9,11 +9,11 @@ import globalConfig, {
 	defaultCover,
 	imageCountOfSinglePage
 } from '../../../types/constant';
-import { FileOperator } from '../../../utils/fileOperator';
 import { openInExplorer } from '../../../utils/functions';
+import { GalleryOperator } from '../../../utils/galleryOperator';
+import { Sidebar, SidebarContainer } from '../../Menu';
 import { OpenInExplorerBtn } from '../Buttons';
 import { Loading } from '../Loading';
-import { Sidebar, SidebarContainer } from '../Menu';
 import { PageNav } from '../PageNav';
 import { PageOfTotal } from '../PageOfTotal';
 import '../style/PackDetail.scss';
@@ -37,7 +37,7 @@ const endsWith = (str: string, ...arg: string[]) => {
 // 图包详情页面外层组件
 export const PackDetail = () => {
 	const { pack } = useParams();
-	const fileOperator = useRef(FileOperator.getInstance()).current;
+	const fileOperator = useRef(GalleryOperator.getInstance()).current;
 	const currentPath = useRef(fileOperator.current(parseInt(pack!))?.path);
 	let [searchParams] = useSearchParams();
 	let page = searchParams.get('page')
@@ -167,7 +167,7 @@ export const PackDetail = () => {
 		<div className="pack-detail-container">
 			<PageOfTotal current={page} total={totalPage} />
 			<SidebarContainer>
-				<Sidebar className="menu">
+				<Sidebar menuPosition="middle">
 					<button
 						className="btn-homepage detail-icon"
 						onClick={() => {

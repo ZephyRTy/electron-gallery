@@ -1,4 +1,4 @@
-import { Bookmark, DirData } from '../types/global';
+import { BookmarkOfBook, ImageBookmark, ImageDirectory } from '../types/global';
 const fs = window.require('fs');
 const path = window.require('path');
 const Buffer = window.require('buffer').Buffer;
@@ -38,11 +38,18 @@ export const notMoreThanOne = (...arr: any[]) => {
 	return count <= 1;
 };
 
-export const isBookmark = (data: any): data is Bookmark => {
-	return Boolean((data as Bookmark).url);
+export const isImageBookmark = (data: any): data is ImageBookmark => {
+	return Boolean(data.url) && data.cover;
 };
-export const isDirData = (data: any): data is DirData => {
-	return !data.url && data.timeStamp;
+export const isBookmarkOfBook = (data: any): data is BookmarkOfBook => {
+	return Boolean(data.url) && !data.cover;
+};
+export const isImageDir = (data: any): data is ImageDirectory => {
+	return !data.url && !!data.timeStamp && !!data.cover;
+};
+
+export const isBookDir = (data: any): data is ImageDirectory => {
+	return !data.url && !!data.timeStamp && !data.cover;
 };
 export const parseUrlQuery = (url: string) => {
 	const query = decodeURIComponent(url.split('?')[1]);
@@ -51,7 +58,9 @@ export const parseUrlQuery = (url: string) => {
 		const queryArr = query.split('&');
 		queryArr.forEach((item) => {
 			const [key, value] = item.split('=');
-			queryObj[key] = value;
+			if (typeof value === 'string') {
+				queryObj[key] = value;
+			}
 		});
 		return queryObj;
 	}
@@ -266,4 +275,19 @@ export const compress = async (src: string, thumbName = 'thumb.jpg') => {
 
 export const openInExplorer = (path: string) => {
 	window.require('child_process').exec(`start "" "${path}"`);
+};
+
+export const hasCover = (data: any): data is { cover: string } => {
+	return data.cover !== undefined;
+};
+
+export const deleteUselessWords = (str: string, ...useless: string[]) => {
+	useless.forEach((v) => {
+		str = str.replace(v, '');
+	});
+	return str;
+};
+
+export const gotoHash = (hash: string) => {
+	window.location.hash = hash;
 };

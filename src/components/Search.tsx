@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
-import { ReactComponent as SearchIcon } from '../../icon/search.svg';
-import { FileOperator } from '../../utils/fileOperator';
-import { setSearchParams } from '../../utils/functions';
+import { ReactComponent as RegExpIcon } from '../icon/regexp.svg';
+import { ReactComponent as SearchIcon } from '../icon/search.svg';
+import { setSearchParams } from '../utils/functions';
+import { currentOperator } from '../utils/store';
 import styles from './style/header.module.scss';
 
-export const WindowSearch = () => {
+export const GallerySearch = () => {
 	const [reg, setReg] = useState(false);
 	return (
 		<div className={styles['search']}>
@@ -16,12 +16,20 @@ export const WindowSearch = () => {
 				className={styles['header__input--search']}
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {
-						FileOperator.getInstance().reg = reg;
-						window.location.href = setSearchParams('#/gallery', {
-							search: (e.target as HTMLInputElement).value,
-							regexp: reg ? 'true' : '',
-							mode: FileOperator.getInstance().getMode()
-						});
+						if (!currentOperator.op) {
+							return false;
+						}
+						currentOperator.op.reg = reg;
+						window.location.href = setSearchParams(
+							window.location.href.includes('#/reader')
+								? '#/reader'
+								: '#/gallery',
+							{
+								search: (e.target as HTMLInputElement).value,
+								regexp: reg ? 'true' : '',
+								mode: currentOperator.op.getMode()
+							}
+						);
 						(e.target as HTMLInputElement).value = '';
 					}
 				}}

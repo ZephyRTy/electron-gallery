@@ -1,0 +1,39 @@
+.reader {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	position: relative;
+	overflow-y: auto;
+	height: fit-content !important;
+	&-content {
+		font-size: 16px;
+		display: block;
+		padding: 0 20px;
+		line-height: 1.5;
+		margin-left: 50px;
+		height: fit-content;
+		user-select: all;
+		&-title {
+			font-size: 20px;
+			font-weight: bold;
+			margin: 20px 0;
+		}
+		&-text {
+			font-size: 16px;
+			line-height: 1.5;
+			margin-bottom: 20px;
+		}
+	}
+}
+
+.space {
+	display: block;
+	width: 100%;
+}
+
+.scroll-content {
+	overflow-y: auto;
+	height: 96vh;
+	position: relative;
+	width: 100%;
+}
