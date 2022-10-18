@@ -20,6 +20,8 @@ const splitWords = (str: string, len: number) => {
 export const isText = (file: string) => file.endsWith('.txt');
 // eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
+
+//TODO 文本搜索
 export class ReaderOperator extends FileOperator<
 	Book,
 	BookmarkOfBook,
@@ -121,6 +123,7 @@ export class ReaderOperator extends FileOperator<
 					'soushu2022.com@',
 					'[搜书吧]',
 					'-soushu2022.com-[搜书吧网址]',
+					'-soushu555.org-[搜书吧网址]',
 					'.txt'
 				),
 				stared: 0 as 0
@@ -162,11 +165,12 @@ export class ReaderOperator extends FileOperator<
 		}
 		return -1;
 	}
-	// eslint-disable-next-line no-unused-vars
+
 	current() {
 		return this.currentBook;
 	}
 	mountBook(book: Book) {
+		this.titleWillUpdate(book.title);
 		this.currentBook = book;
 	}
 }

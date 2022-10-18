@@ -1,11 +1,9 @@
 /* eslint-disable camelcase */
 /* eslint-disable new-cap */
 /* eslint-disable no-unused-vars */
-import { fromJS, Map } from 'immutable';
-import React from 'react';
+import { Map } from 'immutable';
 import { defaultCover } from '../types/constant';
 import {
-	DirectoryInfo,
 	ImageBookmark,
 	ImageDirectory,
 	Mode,
@@ -25,18 +23,6 @@ export class GalleryOperator extends FileOperator<
 	ImageBookmark,
 	ImageDirectory
 > {
-	protected override directories: NormalImage[] = [];
-	protected fileCache = {
-		startPage: 0,
-		data: [] as NormalImage[]
-	};
-	protected prevPage = '';
-	protected refreshFn: React.Dispatch<React.SetStateAction<boolean>> = (
-		v: any
-	) => {};
-	protected setTitleFn: React.Dispatch<React.SetStateAction<string>> = (
-		v: any
-	) => {};
 	protected static instance: GalleryOperator;
 	static getInstance(): GalleryOperator {
 		if (!GalleryOperator.instance) {
@@ -44,21 +30,6 @@ export class GalleryOperator extends FileOperator<
 		}
 		return GalleryOperator.instance;
 	}
-
-	protected mode: Mode = Mode.Init;
-	protected total = 0;
-	protected currentPacks = [] as NormalImage[];
-	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
-
-	protected nextTitle = '';
-	protected searchCache = {
-		key: '',
-		mode: Mode.Normal,
-		res: [] as NormalImage[],
-		total: 0,
-		reg: false,
-		valid: false
-	};
 
 	protected constructor() {
 		super({ database: 'GALLERY', tableName: 'pack_list' });
