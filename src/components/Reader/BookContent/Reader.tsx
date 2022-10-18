@@ -1,4 +1,5 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { readerOperator } from '../../../utils/galleryOperator';
 import { Toast } from '../../Gallery/Toast';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { AddBookmark, Back, CatalogBtn } from '../Buttons';
@@ -18,6 +19,9 @@ export const Reader = () => {
 			</SidebarContainer>
 		);
 	}, []);
+	useEffect(() => {
+		readerOperator.titleUpdate();
+	}, [readerOperator.current()]);
 	return (
 		<main className={styles['reader'] + ' main-content'}>
 			{menu}

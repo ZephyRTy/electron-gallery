@@ -7,7 +7,10 @@ import { ShelfBookTitle } from './ShelfRow';
 export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 	const [marked, setMarked] = useState(true);
 	return (
-		<div className={styles['bookshelf-row-item']}>
+		<div
+			className={styles['bookshelf-row-item']}
+			title={props.bookItem.title}
+		>
 			<div
 				className={
 					styles['bookshelf-row-cover'] +

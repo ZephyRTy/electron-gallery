@@ -24,7 +24,7 @@ export const CatalogBtn = () => {
 export const GotoGalleryBtn = () => {
 	return (
 		<button
-			className={'btn-goto-gallery icon'}
+			className={'btn-goto-gallery icon goto-btn'}
 			onClick={() => {
 				window.location.href = '#/gallery';
 			}}

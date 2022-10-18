@@ -270,7 +270,7 @@ export const OpenInExplorerBtn = (props: { handleClick: () => void }) => {
 export const GotoReaderBtn = () => {
 	return (
 		<button
-			className={'btn-goto-reader icon'}
+			className={'btn-goto-reader icon goto-btn'}
 			onClick={() => {
 				window.location.href = '#/reader';
 			}}

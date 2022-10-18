@@ -3,7 +3,10 @@ import styles from '../style/bookshelf.module.scss';
 import { ShelfBookTitle } from './ShelfRow';
 export const ShelfBookFolder = (props: { bookItem: BookDirectory }) => {
 	return (
-		<div className={styles['bookshelf-row-item']}>
+		<div
+			className={styles['bookshelf-row-item']}
+			title={props.bookItem.title}
+		>
 			<div
 				className={
 					styles['bookshelf-row-cover'] +

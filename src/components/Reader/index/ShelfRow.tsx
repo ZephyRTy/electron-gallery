@@ -63,7 +63,10 @@ export const ShelfItem = (props: {
 		return null;
 	}
 	return (
-		<div className={styles['bookshelf-row-item']}>
+		<div
+			className={styles['bookshelf-row-item']}
+			title={props.bookItem.title}
+		>
 			<div
 				className={
 					styles['bookshelf-row-cover'] +

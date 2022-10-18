@@ -167,3 +167,12 @@ svg {
 		user-select: initial;
 	}
 }
+
+button.goto-btn {
+	svg {
+		fill: #f1b01ffa;
+		&:hover {
+			fill: #ef881e;
+		}
+	}
+}

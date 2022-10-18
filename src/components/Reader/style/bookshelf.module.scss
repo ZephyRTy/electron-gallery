@@ -1,5 +1,6 @@
 $cover-width: 130px;
 $bg-color: #3c5b7a;
+$bar-color: #80ffad;
 .bookshelf {
 	display: flex;
 	&-container {
@@ -47,7 +48,7 @@ $bg-color: #3c5b7a;
 				position: relative;
 				width: $cover-width;
 				height: 5px;
-				background: #77fff8;
+				background: $bar-color;
 			}
 			&:hover {
 				color: #77fff8;
