@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { readerOperator } from '../../../utils/galleryOperator';
+import { OpenInExplorerBtn } from '../../Gallery/Buttons';
 import { Toast } from '../../Gallery/Toast';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { AddBookmark, Back, CatalogBtn, Find } from '../Buttons';
@@ -8,7 +9,7 @@ import { BookContent } from './Content';
 export const Reader = () => {
 	// eslint-disable-next-line no-unused-vars
 	const bookmarkToast = useRef((arg: boolean) => {});
-	const menu = useMemo(() => {
+	const menu = useCallback((fn) => {
 		return (
 			<SidebarContainer>
 				<Sidebar menuPosition="middle">
@@ -16,6 +17,7 @@ export const Reader = () => {
 					<CatalogBtn />
 					<AddBookmark bookmarkToast={bookmarkToast} />
 					<Find />
+					<OpenInExplorerBtn handleClick={fn} />
 				</Sidebar>
 			</SidebarContainer>
 		);
@@ -25,9 +27,8 @@ export const Reader = () => {
 	}, [readerOperator.current()]);
 	return (
 		<main className={styles['reader'] + ' main-content'}>
-			{menu}
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
-			<BookContent />
+			<BookContent render={(fn) => menu(fn)} />
 		</main>
 	);
 };

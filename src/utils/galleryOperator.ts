@@ -108,13 +108,12 @@ export class GalleryOperator extends FileOperator<
 					} else {
 						successCount++;
 					}
-
-					if (i === data.length - 1 && successCount) {
-						this.switchMode(Mode.Init);
-						compress(img).then(() => {
+					compress(img).then(() => {
+						if (i === data.length - 1 && successCount) {
+							this.switchMode(Mode.Init);
 							this.refresh();
-						});
-					}
+						}
+					});
 				})
 			);
 		});

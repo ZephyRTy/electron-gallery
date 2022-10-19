@@ -386,7 +386,7 @@ export abstract class FileOperator<
 	modeType(mode: Mode) {
 		switch (mode) {
 			case Mode.Init:
-				return 'Gallery';
+				return 'Integration';
 			case Mode.Detail:
 				return 'Detail';
 			case Mode.Bookmark:
@@ -402,7 +402,7 @@ export abstract class FileOperator<
 					)?.title ?? 'Directories'
 				);
 			default:
-				return 'Gallery';
+				return 'Integration';
 		}
 	}
 

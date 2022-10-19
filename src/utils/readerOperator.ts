@@ -21,7 +21,6 @@ export const isText = (file: string) => file.endsWith('.txt');
 // eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
 
-//TODO 文本搜索
 export class ReaderOperator extends FileOperator<
 	Book,
 	BookmarkOfBook,

@@ -262,7 +262,8 @@ export class MysqlOperator {
 									cover: v.cover ?? v.dir_cover,
 									stared: Boolean(v.stared ?? v.dir_stared),
 									parent: v.parent,
-									reg: v.reg
+									reg: v.reg,
+									timeStamp: v.update_time
 								} as unknown as T;
 							})
 						);
@@ -482,6 +483,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [reg, id], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -495,6 +497,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [title, packID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -509,6 +512,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [title, dirID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -527,6 +531,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [cover, packID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -541,6 +546,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [packID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}

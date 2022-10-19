@@ -42,7 +42,7 @@ const WindowButtons = () => {
 	);
 };
 export const Header = () => {
-	const [title, setTitle] = useState('Porn Gallery');
+	const [title, setTitle] = useState('Integration');
 	const galleryOperator = useRef(GalleryOperator.getInstance()).current;
 	const readerOperator = useRef(ReaderOperator.getInstance()).current;
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -83,7 +83,9 @@ export const Header = () => {
 	return (
 		<header className={styles['header']} id="header">
 			<WindowButtons />
-			<span className={styles['app-title']}>{title}</span>
+			<span className={styles['app-title']} title={title}>
+				{title}
+			</span>
 			<GallerySearch />
 		</header>
 	);

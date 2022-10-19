@@ -1,5 +1,6 @@
 import { BookmarkOfBook, ImageBookmark, ImageDirectory } from '../types/global';
 const fs = window.require('fs');
+const fsp = window.require('fs').promises;
 const path = window.require('path');
 const Buffer = window.require('buffer').Buffer;
 export function formatDate(

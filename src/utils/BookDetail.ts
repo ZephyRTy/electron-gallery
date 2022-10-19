@@ -106,6 +106,9 @@ export class BookDetail {
 		return this.book.reg;
 	}
 
+	get path() {
+		return this.book.path;
+	}
 	contain(lineIndex: number) {
 		return (
 			lineIndex >= this.contentSize.start &&
