@@ -1,6 +1,5 @@
 import { BookmarkOfBook, ImageBookmark, ImageDirectory } from '../types/global';
 const fs = window.require('fs');
-const fsp = window.require('fs').promises;
 const path = window.require('path');
 const Buffer = window.require('buffer').Buffer;
 export function formatDate(
@@ -291,4 +290,24 @@ export const deleteUselessWords = (str: string, ...useless: string[]) => {
 
 export const gotoHash = (hash: string) => {
 	window.location.hash = hash;
+};
+export const rmDir = async (dirPath: string) => {
+	let files = [];
+	try {
+		files = fs.readdirSync(dirPath);
+	} catch (e) {
+		return false;
+	}
+	if (files.length > 0)
+		for (let i = 0; i < files.length; i++) {
+			let filePath = dirPath + '/' + files[i];
+			if (fs.statSync(filePath).isFile()) fs.unlinkSync(filePath);
+			else rmDir(filePath);
+		}
+	await fs.rmdir(dirPath, (err) => {
+		if (err) {
+			console.error(err);
+		}
+	});
+	return true;
 };

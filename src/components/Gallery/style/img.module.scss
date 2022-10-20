@@ -131,6 +131,17 @@ svg.icon--rename {
 		fill: #2578b5;
 	}
 }
+svg.icon--trash {
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	&:hover {
+		fill: rgb(241, 60, 60);
+	}
+	&--confirmed {
+		fill: #ff0000;
+	}
+}
 svg.cross {
 	fill: #ff4d4d;
 }

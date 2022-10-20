@@ -38,7 +38,7 @@ export const ShelfItem = (props: {
 		[props.bookItem.id, props.inSelect]
 	);
 	const down = useCallback(() => {
-		if (readerOperator.getMode() === Mode.InDir) {
+		if (readerOperator.getMode() === Mode.DirContent) {
 			return;
 		}
 		flag.current.isDown = true;

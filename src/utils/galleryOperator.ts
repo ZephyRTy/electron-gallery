@@ -10,7 +10,7 @@ import {
 	NormalImage
 } from '../types/global';
 import { FileOperator } from './fileOperator';
-import { compress, endsWith } from './functions';
+import { compress, endsWith, rmDir } from './functions';
 import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { mysqlOperator } from './mysqlOperator';
 import { ReaderOperator } from './readerOperator';
@@ -156,6 +156,26 @@ export class GalleryOperator extends FileOperator<
 			this.titleWillUpdate(res.title);
 		}
 		return res;
+	}
+
+	removePack(pack: NormalImage, shouldDelete = false) {
+		if (pack.parent) {
+			this.removeFileFromDir(pack.id, pack.parent);
+		}
+		this.deletePack(pack.id);
+		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
+		this.starModel.remove(pack.id);
+		this.bookmarkModel.remove(pack.id);
+		this.searchCache.res = this.searchCache.res.filter(
+			(e) => e.id !== pack.id
+		);
+		if (shouldDelete) {
+			rmDir(pack.path).then(() => {
+				this.refresh();
+			});
+		} else {
+			this.refresh();
+		}
 	}
 }
 

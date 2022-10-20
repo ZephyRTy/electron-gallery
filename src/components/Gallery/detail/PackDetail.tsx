@@ -193,12 +193,12 @@ export const PackDetail = () => {
 				</Sidebar>
 			</SidebarContainer>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
+			<DetailContainer
+				images={images}
+				total={Math.ceil(total / imageCountOfSinglePage)}
+			/>
 			{images.length ? (
 				<>
-					<DetailContainer
-						images={images}
-						total={Math.ceil(total / imageCountOfSinglePage)}
-					/>
 					<PageNav
 						current={page}
 						pack={pack}

@@ -11,12 +11,12 @@ import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as OpenInExplorerIcon } from '../../icon/folder-open.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
-
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
 import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
 import { ReactComponent as SettingIcon } from '../../icon/setting.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
+import { ReactComponent as TrashIcon } from '../../icon/trash.svg';
 import globalConfig from '../../types/constant';
 import {
 	BasicBookmark,
@@ -276,6 +276,14 @@ export const GotoReaderBtn = () => {
 			}}
 		>
 			<GotoReaderIcon />
+		</button>
+	);
+};
+
+export const TrashBtn = () => {
+	return (
+		<button className={'btn-trash icon'} onClick={() => {}}>
+			<TrashIcon />
 		</button>
 	);
 };

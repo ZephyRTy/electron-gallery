@@ -1,11 +1,15 @@
 /* eslint-disable no-undefined */
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useController } from 'syill';
 import { ReactComponent as Cross } from '../../../icon/cross.svg';
 import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
 import { ReactComponent as Star } from '../../../icon/star.svg';
+import { ReactComponent as TrashIcon } from '../../../icon/trash.svg';
 import { ImageComponent, Mode, NormalImage } from '../../../types/global';
-import { GalleryOperator } from '../../../utils/galleryOperator';
+import {
+	galleryOperator,
+	GalleryOperator
+} from '../../../utils/galleryOperator';
 import { dialogActive, renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
 export const minIndex = (arr: number[]) => {
@@ -26,6 +30,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 }) => {
 	const [stared, setStared] = useState(props.data.stared);
 	const [, setVis] = useController(renameVisibleStore);
+	const [confirmed, setConfirmed] = useState(0);
 	const flag = useRef({ id: null as any, isDown: false, holding: false });
 	const up = useCallback(
 		(e: any) => {
@@ -39,7 +44,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 		[props.data.id, props.inSelect]
 	);
 	const down = useCallback(() => {
-		if (props.util.getMode() === Mode.InDir) {
+		if (props.util.getMode() === Mode.DirContent) {
 			return;
 		}
 		flag.current.isDown = true;
@@ -68,6 +73,22 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 		},
 		[props.data.id, props.util]
 	);
+	const image = useMemo(() => {
+		return (
+			<div
+				className={
+					styles['img-wrapper'] +
+					(props.inSelect ? ' ' + styles['in-select'] : '')
+				}
+				onMouseDown={down}
+				onMouseUp={up}
+			>
+				<label htmlFor={props.data.id.toString()}>
+					<img alt="" src={props.src}></img>
+				</label>
+			</div>
+		);
+	}, [props.data.id, props.inSelect, props.src, down, up]);
 	return (
 		<div className={styles.img}>
 			<input
@@ -85,18 +106,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 				}
 				type="checkbox"
 			/>
-			<div
-				className={
-					styles['img-wrapper'] +
-					(props.inSelect ? ' ' + styles['in-select'] : '')
-				}
-				onMouseDown={down}
-				onMouseUp={up}
-			>
-				<label htmlFor={props.data.id.toString()}>
-					<img alt="" src={props.src}></img>
-				</label>
-			</div>
+			{image}
 			<a
 				className={styles['pack-title']}
 				href={'#/gallery/pack/' + props.data.id + '?page=1'}
@@ -118,6 +128,23 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 						staredClick();
 					}}
 				/>
+				<TrashIcon
+					className={
+						styles['icon--trash'] +
+						' ' +
+						(confirmed ? styles['icon--trash--confirmed'] : '')
+					}
+					onClick={() => {
+						if (confirmed === 1) {
+							galleryOperator.removePack(props.data, true);
+						} else {
+							setConfirmed((v) => v + 1);
+							setTimeout(() => {
+								setConfirmed(0);
+							}, 2000);
+						}
+					}}
+				/>
 				<RenameIcon
 					className={styles['icon--rename']}
 					onClick={() => {
@@ -132,7 +159,8 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 						};
 					}}
 				/>
-				{props.util.inDir || props.util.modeOfSearch === Mode.InDir ? (
+				{props.util.inDir ||
+				props.util.modeOfSearch === Mode.DirContent ? (
 					<Cross className={styles['cross']} onClick={removePack} />
 				) : null}
 			</span>

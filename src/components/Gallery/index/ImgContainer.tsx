@@ -143,7 +143,7 @@ export const ImgContainer = (props: {
 										? 1
 										: -1;
 								}
-								return b.data.id - a.data.id;
+								return b.data.id > a.data.id ? 1 : -1;
 							})
 							.forEach((v, i) => {
 								let min = minIndex(heights);
@@ -189,7 +189,7 @@ export const ImgContainer = (props: {
 						compress(decodeURIComponent(v.path + v.cover)).catch(
 							(err) => {
 								console.log('compress failed');
-								props.util.deletePack(v.id);
+								props.util.removePack(v);
 							}
 						);
 					}
@@ -204,8 +204,8 @@ export const ImgContainer = (props: {
 	}, [props.packs]);
 	useEffect(() => {
 		if (
-			props.util.getMode() === Mode.ShowDir ||
-			props.util.getMode() === Mode.InDir
+			props.util.getMode() === Mode.ShowDirs ||
+			props.util.getMode() === Mode.DirContent
 		) {
 			setInSelect(0);
 		}

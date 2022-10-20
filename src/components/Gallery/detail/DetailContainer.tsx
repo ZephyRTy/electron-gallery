@@ -90,6 +90,11 @@ export const DetailContainer = (props: {
 		currentZoom.current.current = props.images[current + 1].src;
 	}, [current, props.images.length, props.total, page, setParams]);
 	useEffect(() => {
+		return () => {
+			zoomStore.current = -1;
+		};
+	}, []);
+	useEffect(() => {
 		if (current > 0) {
 			setCurrent(0);
 		} else if (current === 0) {
@@ -116,26 +121,30 @@ export const DetailContainer = (props: {
 	}, [props.images.length, scroll]);
 	return (
 		<>
-			<Toast handler={renameToast} message="更改封面成功！" />
-			<main className="pack-detail-list" ref={scrollingElement}>
-				{props.images.map((v, i) => {
-					return (
-						<ImgDetail
-							index={i}
-							key={i + v.src.slice(0, 5) + i}
-							renameToastHandler={renameToast}
-							setCurrent={setCurrent}
-							src={v.src}
-						/>
-					);
-				})}
-			</main>
-			<ImageZoomIn
-				next={next}
-				prev={prev}
-				setCurrent={setCurrent}
-				src={current >= 0 ? props.images[current]?.src : ''}
-			/>
+			{!!props.images.length && (
+				<>
+					<Toast handler={renameToast} message="更改封面成功！" />
+					<main className="pack-detail-list" ref={scrollingElement}>
+						{props.images.map((v, i) => {
+							return (
+								<ImgDetail
+									index={i}
+									key={i + v.src.slice(0, 5) + i}
+									renameToastHandler={renameToast}
+									setCurrent={setCurrent}
+									src={v.src}
+								/>
+							);
+						})}
+					</main>
+					<ImageZoomIn
+						next={next}
+						prev={prev}
+						setCurrent={setCurrent}
+						src={current >= 0 ? props.images[current]?.src : ''}
+					/>
+				</>
+			)}
 		</>
 	);
 };
