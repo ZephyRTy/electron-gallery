@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // 引入electron并创建一个BrowserWindow
 
 const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
@@ -32,7 +33,7 @@ function createWindow() {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
-				pathname: path.join(__dirname, 'build', 'index.html'),
+				pathname: path.join(__dirname, 'dist', 'index.html'),
 				protocol: 'file:',
 				slashes: true
 			})

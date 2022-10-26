@@ -30,6 +30,8 @@
 		"dotenv": "^10.0.0",
 		"dotenv-expand": "^5.1.0",
 		"electron-drag": "^2.0.0",
+		"esbuild": "^0.15.12",
+		"esbuild-plugin-sass": "^1.0.1",
 		"eslint-config-react-app": "^7.0.0",
 		"eslint-webpack-plugin": "^3.1.1",
 		"file-loader": "^6.2.0",
@@ -79,8 +81,10 @@
 		"dev": "node scripts/start.js",
 		"dev:electron": "electron .",
 		"build": "node scripts/build.js",
+		"esbuild": "node scripts/es_build.js",
 		"test": "node scripts/test.js",
-		"package": "node scripts/build.js && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite"
+		"package": "npm run build && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
+		"package:esbuild": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -121,6 +125,9 @@
 		"electron": "^17.1.2",
 		"electron-builder": "^22.14.13",
 		"electron-devtools-installer": "^3.2.0",
+		"esbuild-plugin-svg": "^0.1.0",
+		"esbuild-plugin-svgr": "^1.0.1",
+		"esbuild-scss-modules-plugin": "^1.1.0",
 		"eslint": "^8.18.0",
 		"eslint-config-airbnb": "^19.0.4",
 		"eslint-plugin-import": "^2.26.0",
