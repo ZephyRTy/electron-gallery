@@ -96,6 +96,9 @@ const cmdOrder = {
 		`wmic logicaldisk where name="${drive}:" get volumename`
 };
 
+export const externalDriver = {
+	value: false
+};
 /**
  * 获取电脑中所有盘符及其名称
  * @returns 电脑中所有盘符及其名称
@@ -171,10 +174,6 @@ export async function getAllDrive(): Promise<
 
 	return result;
 }
-
-export const hasExternalDriver = Boolean(
-	(await getAllDrive()).find((e) => e.name === 'BigHouse' && e.drive === 'E')
-);
 
 export const setSearchParams = (head: string, params: any) => {
 	let search = '';

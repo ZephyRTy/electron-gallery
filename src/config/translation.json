@@ -6,5 +6,10 @@
 	"r18": "R18",
 	"proxy": "代理地址",
 	"proxyEnabled": "启用代理",
-	"domainOf24fa": "24fa的域名"
+	"domainOf24fa": "24fa的域名",
+	"lineHeight": "行高",
+	"deltaLine": "更新行数",
+	"contentRange": "内容范围",
+	"overflowNum": "溢出数量",
+	"distanceToUpdate": "更新距离"
 }

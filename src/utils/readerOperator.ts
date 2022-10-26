@@ -1,7 +1,13 @@
 /* eslint-disable camelcase */
 import { Map } from 'immutable';
 import { SPACE_CODE } from '../types/constant';
-import { Book, BookDirectory, BookmarkOfBook, Mode } from '../types/global';
+import {
+	Book,
+	BookDirectory,
+	BookmarkOfBook,
+	Mode,
+	TextLine
+} from '../types/global';
 import { BookDetail } from './BookDetail';
 import { FileOperator } from './fileOperator';
 import { deleteUselessWords } from './functions';
@@ -56,24 +62,38 @@ export class ReaderOperator extends FileOperator<
 		const book = new BookDetail(this.currentBook!);
 		const lines = text.split('\n');
 		let lineNum = 0;
+		let paragraphIndex = 0;
+		let continuousBlankLine = 0;
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
 			let len = line.length;
-			if (len) {
-				book.addContent(
-					splitWords(line, this.lettersOfEachLine).map((item) => {
-						return {
-							index: lineNum++,
-							content: `${item}`,
-							tag: ['<p class="text-line">', '</p>']
-						};
-					})
-				);
+			if (len && line !== DOUBLE_SPACE) {
+				continuousBlankLine = 0;
+				const words = [] as TextLine[];
+				const arr = splitWords(line, this.lettersOfEachLine);
+				for (let i = 0; i < arr.length; i++) {
+					const item = arr[i];
+					words.push({
+						index: lineNum++,
+						content: `${item}`,
+						tag: ['<p class="text-line">', '</p>'],
+						paragraphIndex:
+							item.length < this.lettersOfEachLine
+								? paragraphIndex
+								: paragraphIndex++
+					});
+				}
+				book.addContent(words);
+			}
+			++continuousBlankLine;
+			if (continuousBlankLine === 2) {
+				continue;
 			}
 			book.addContent({
 				index: lineNum++,
 				content: '',
-				tag: ['<p class="text-br">', '</p>']
+				tag: ['<p class="text-br">', '</p>'],
+				paragraphIndex: -1
 			});
 		}
 		return book;

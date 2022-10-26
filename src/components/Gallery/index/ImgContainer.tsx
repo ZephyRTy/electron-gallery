@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useController } from 'syill';
-import globalConfig, {
+import galleryConfig, {
 	defaultCover,
 	getBookmarkThumb,
 	imageCountOfSinglePage
@@ -15,7 +15,6 @@ import {
 } from '../../../types/global';
 import {
 	compress,
-	hasExternalDriver,
 	isImageBookmark,
 	isImageDir
 } from '../../../utils/functions';
@@ -106,11 +105,12 @@ export const ImgContainer = (props: {
 			];
 			let heights = [0, 0, 0, 0];
 			const buffer: { img: HTMLImageElement; data: NormalImage }[] = [];
-			props.packs.forEach((v) => {
+			props.packs.forEach(async (v) => {
 				let img = new Image();
+				let hasExternalDriver = props.util.external;
 				let imgPath =
 					(!hasExternalDriver && v.cover.startsWith('E')) ||
-					!globalConfig.r18
+					!galleryConfig.r18
 						? defaultCover
 						: ((v.path ?? '') + v.cover).replace(/\\/g, '/');
 				let coverPath = imgPath;
@@ -226,7 +226,7 @@ export const ImgContainer = (props: {
 				<Menu type="gallery" />
 			</SidebarContainer>
 			{dirMap}
-			<Config />
+			<Config oldConfig={galleryConfig} type="gallery" />
 			<Rename util={props.util} />
 			{ready ? (
 				<>
@@ -242,7 +242,7 @@ export const ImgContainer = (props: {
 									key={index++}
 								>
 									{v.map((ele) => {
-										if (!globalConfig.r18) {
+										if (!galleryConfig.r18) {
 											ele.data.title =
 												'图包' + ele.data.id.toString();
 										}

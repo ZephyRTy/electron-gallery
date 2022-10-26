@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-	CONTENT_RANGE,
+	contentRange,
+	deltaLine,
 	DELTA_HEIGHT,
-	DELTA_LINE,
-	DISTANCE_2_UPDATE,
-	LINE_HEIGHT,
-	OVERFLOW_NUM
+	distanceToUpdate,
+	lineHeight,
+	overflowNum
 } from '../../../types/constant';
 import { TextLine } from '../../../types/global';
 import { BookDetail } from '../../../utils/BookDetail';
@@ -32,30 +32,29 @@ export const BookContent = (props: {
 	const [content, setContent] = useState([] as TextLine[]);
 	const scrollEle = useRef(null);
 	const initBottom = useMemo(
-		() => (book ? (book.length - CONTENT_RANGE) * LINE_HEIGHT : 0),
+		() => (book ? (book.length - contentRange) * lineHeight : 0),
 		[book]
 	);
 	const updateWhenScrollLot = useCallback(
 		(eleScrollTop: number) => {
 			if (!book) return;
-			let lineNum = Math.ceil(eleScrollTop / LINE_HEIGHT);
+			let lineNum = Math.ceil(eleScrollTop / lineHeight);
 			let startLine =
-				lineNum - DELTA_LINE - OVERFLOW_NUM > 0
-					? lineNum - DELTA_LINE - OVERFLOW_NUM
+				lineNum - deltaLine - overflowNum > 0
+					? lineNum - deltaLine - overflowNum
 					: 0;
-			if (startLine + CONTENT_RANGE >= book.length)
-				startLine = book.length - CONTENT_RANGE;
+			if (startLine + contentRange >= book.length)
+				startLine = book.length - contentRange;
 			let bottom = 0,
 				top = 0;
 			if (
 				startLine > 0 &&
-				lineNum - DELTA_LINE - OVERFLOW_NUM + CONTENT_RANGE <=
-					book.length
+				lineNum - deltaLine - overflowNum + contentRange <= book.length
 			) {
 				bottom =
 					initBottom -
-					(eleScrollTop - (DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT);
-				top = eleScrollTop - (DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT;
+					(eleScrollTop - (deltaLine + overflowNum) * lineHeight);
+				top = eleScrollTop - (deltaLine + overflowNum) * lineHeight;
 			} else if (startLine === 0) {
 				bottom = initBottom;
 				top = 0;
@@ -63,7 +62,7 @@ export const BookContent = (props: {
 				bottom = 0;
 				top = initBottom;
 			}
-			setContent(book.getContent(startLine, startLine + CONTENT_RANGE));
+			setContent(book.getContent(startLine, startLine + contentRange));
 			setStart(startLine);
 			setTop(top);
 			setBottom(bottom);
@@ -73,7 +72,7 @@ export const BookContent = (props: {
 	// eslint-disable-next-line no-unused-vars
 	const scrollToLineNum = useCallback(
 		(lineNum: number) => {
-			const eleScrollTop = lineNum * LINE_HEIGHT;
+			const eleScrollTop = lineNum * lineHeight;
 			if (
 				Math.abs(eleScrollTop - (scrollEle.current as any).scrollTop) <
 				800
@@ -108,21 +107,22 @@ export const BookContent = (props: {
 						let distance = (
 							article.current as HTMLElement
 						).getBoundingClientRect().bottom;
-						if (start + CONTENT_RANGE >= book.length) {
+						if (start + contentRange >= book.length) {
 							return;
 						}
 						if (distance < 0) {
 							updateWhenScrollLot(eleScrollTop);
-						} else if (distance < DISTANCE_2_UPDATE) {
+						} else if (distance < distanceToUpdate) {
 							setContent(
 								book.getContent(
-									start + DELTA_LINE,
-									start + DELTA_LINE + CONTENT_RANGE
+									start + deltaLine,
+									start + deltaLine + contentRange
 								)
 							);
-							setStart(start + DELTA_LINE);
-							setTop(top + DELTA_HEIGHT);
-							setBottom(bottom - DELTA_HEIGHT);
+							let v = Math.min(top + DELTA_HEIGHT, initBottom);
+							setStart(start + deltaLine);
+							setTop(v);
+							setBottom(initBottom - v);
 						}
 					} else {
 						let distance = (
@@ -133,18 +133,17 @@ export const BookContent = (props: {
 						}
 						if (distance > 0) {
 							updateWhenScrollLot(eleScrollTop);
-						} else if (distance > -DISTANCE_2_UPDATE) {
+						} else if (distance > -distanceToUpdate) {
 							setContent(
 								book.getContent(
-									start - DELTA_LINE,
-									start - DELTA_LINE + CONTENT_RANGE
+									start - deltaLine,
+									start - deltaLine + contentRange
 								)
 							);
-							setStart(start - DELTA_LINE);
-							setTop((v) =>
-								v - DELTA_HEIGHT > 0 ? v - DELTA_HEIGHT : 0
-							);
-							setBottom((v) => v + DELTA_HEIGHT);
+							let v = Math.max(top - DELTA_HEIGHT, 0);
+							setStart(start - deltaLine);
+							setTop(v);
+							setBottom(initBottom - v);
 						}
 					}
 				}
@@ -154,8 +153,8 @@ export const BookContent = (props: {
 	useEffect(() => {
 		readerOperator.loadText().then((res) => {
 			setBook(res);
-			setContent(res.getContent(start, start + CONTENT_RANGE));
-			setBottom((res.length - CONTENT_RANGE) * LINE_HEIGHT);
+			setContent(res.getContent(start, start + contentRange));
+			setBottom((res.length - contentRange) * lineHeight);
 		});
 	}, []);
 	useEffect(() => {

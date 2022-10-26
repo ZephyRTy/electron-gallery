@@ -1,6 +1,6 @@
 import { MutableRefObject, useCallback, useRef } from 'react';
 import { ReactComponent as AddBookmarkIcon } from '../../../icon/addBookmark.svg';
-import globalConfig from '../../../types/constant';
+import galleryConfig from '../../../types/constant';
 import { NormalImage } from '../../../types/global';
 import { formatDate, parseUrlQuery } from '../../../utils/functions';
 import { GalleryOperator } from '../../../utils/galleryOperator';
@@ -87,7 +87,7 @@ export function AddBookmark(props: {
 	return (
 		<button
 			className="add-bookmark detail-icon"
-			disabled={!globalConfig.r18}
+			disabled={!galleryConfig.r18}
 			onClick={handleClick}
 		>
 			<AddBookmarkIcon />

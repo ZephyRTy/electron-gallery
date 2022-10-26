@@ -17,7 +17,7 @@ import { ReactComponent as SelectPacksIcon } from '../../icon/select.svg';
 import { ReactComponent as SettingIcon } from '../../icon/setting.svg';
 import { ReactComponent as StaredIcon } from '../../icon/stared.svg';
 import { ReactComponent as TrashIcon } from '../../icon/trash.svg';
-import globalConfig from '../../types/constant';
+import galleryConfig from '../../types/constant';
 import {
 	BasicBookmark,
 	BasicData,
@@ -192,7 +192,7 @@ export const RenameBtn = (props: {
 	return (
 		<button
 			className="btn-rename icon"
-			disabled={!globalConfig.r18}
+			disabled={!galleryConfig.r18}
 			onClick={props.handleClick}
 			style={{ display: props.inRename ? 'initial' : 'none' }}
 		>
@@ -223,7 +223,7 @@ export const CrawlerBtn = (props: {}) => {
 	return (
 		<button
 			className={'btn-crawler icon'}
-			disabled={!globalConfig.r18}
+			disabled={!galleryConfig.r18}
 			onClick={() => {
 				if (active) {
 					return;

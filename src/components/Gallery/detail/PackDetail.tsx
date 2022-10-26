@@ -5,7 +5,7 @@ import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Back } from '../../../icon/back.svg';
 import { ReactComponent as HomePage } from '../../../icon/home.svg';
-import globalConfig, {
+import galleryConfig, {
 	defaultCover,
 	imageCountOfSinglePage
 } from '../../../types/constant';
@@ -66,7 +66,7 @@ export const PackDetail = () => {
 			return;
 		}
 		const fileList: string[] = fs.readdirSync(filePath);
-		if (!globalConfig.r18) {
+		if (!galleryConfig.r18) {
 			imgList.current = fileList.map((v, i) => ({
 				src: defaultCover,
 				index: i

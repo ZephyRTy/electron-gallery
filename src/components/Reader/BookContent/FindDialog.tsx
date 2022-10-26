@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useController, useData } from 'syill';
 import { ReactComponent as LeftArrow } from '../../../icon/leftArrow.svg';
 import { ReactComponent as RightArrow } from '../../../icon/rightArrow.svg';
-import { LINE_HEIGHT } from '../../../types/constant';
+import { lineHeight } from '../../../types/constant';
 import { BookDetail } from '../../../utils/BookDetail';
 import { cursorStore, findStore } from '../../../utils/store';
 import styles from '../style/reader.module.scss';
@@ -87,7 +87,7 @@ export const FindDialog = (props: {
 		for (let i = 0; i < result.current[cursor].length; i++) {
 			let value = result.current[cursor][i];
 			arr.push({
-				top: value.index * LINE_HEIGHT - 3,
+				top: value.index * lineHeight - 3,
 				offset: 70 + value.offset * 16,
 				width: 16 * value.length
 			});

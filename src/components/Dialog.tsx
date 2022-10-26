@@ -3,10 +3,14 @@
 /* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Store, useData } from 'syill';
-import globalConfig, { LINE_HEIGHT, translation } from '../types/constant';
+import galleryConfig, {
+	lineHeight,
+	readerConfig,
+	translation
+} from '../types/constant';
 import { DirectoryInfo } from '../types/global';
 import { BookDetail } from '../utils/BookDetail';
 import { FileOperator } from '../utils/fileOperator';
@@ -112,17 +116,21 @@ const DirMapContent = (props: {
 			}
 		}
 	}, [checked, props.visible]);
-	return (
-		<>
+	const dirList = useMemo(() => {
+		return (
 			<ul className={styles['dir-map-list']} ref={ul}>
 				{dirs.map((dir: [string, DirectoryInfo], v) => {
 					const dirIndex = dir[0];
 					return (
-						<li className={styles['dir-map-item']} key={dirIndex}>
+						<li
+							className={styles['dir-map-item']}
+							id={'input-' + dirIndex}
+							key={dirIndex}
+						>
 							<input
 								checked={checked === dirIndex}
 								className={styles['dir-map-checkbox']}
-								disabled={!globalConfig.r18}
+								disabled={!galleryConfig.r18}
 								id={'checkbox-' + dirIndex}
 								onClick={() => {
 									if (checked === dirIndex) {
@@ -139,7 +147,7 @@ const DirMapContent = (props: {
 							<label htmlFor={'checkbox-' + dirIndex}>
 								<div className={styles['dir-map-item-content']}>
 									<span>
-										{globalConfig.r18
+										{galleryConfig.r18
 											? dir[1].title
 											: `文件夹${v}`}
 									</span>
@@ -154,11 +162,16 @@ const DirMapContent = (props: {
 					);
 				})}
 			</ul>
+		);
+	}, [dirs, checked]);
+	return (
+		<>
+			{dirList}
 			<input
 				className={`${styles['dir-map-input']} ${
 					err ? styles['dir-map-input--error'] : ''
 				}`}
-				disabled={!globalConfig.r18}
+				disabled={!galleryConfig.r18}
 				onChange={(e) => {
 					if (err) {
 						setErr(false);
@@ -175,6 +188,11 @@ const DirMapContent = (props: {
 									setDestination(dirIndex.toString());
 								} else {
 									setErr(true);
+									document
+										.querySelector(`#input-${-dirIndex}`)!
+										.scrollIntoView();
+									setChecked(dirIndex);
+									setDestination(dirIndex);
 								}
 							});
 					}
@@ -202,7 +220,7 @@ const DirMapContent = (props: {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
-						if (destination.length === 0 || !globalConfig.r18) {
+						if (destination.length === 0 || !galleryConfig.r18) {
 							return;
 						} else if (isNaN(parseInt(destination))) {
 							throw new Error('Wrong destination directory');
@@ -258,7 +276,7 @@ const RenameContent = (props: {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
-						if (!globalConfig.r18) {
+						if (!galleryConfig.r18) {
 							dialogActive.setActive(false);
 							props.setVisible(false);
 							return;
@@ -280,7 +298,12 @@ const RenameContent = (props: {
 	);
 };
 
-const configContent = (props: { setVisible: (v: boolean) => void }) => {
+const configContent = (props: {
+	setVisible: (v: boolean) => void;
+	oldConfig: object;
+	type: 'gallery' | 'reader';
+}) => {
+	const { oldConfig: globalConfig } = props;
 	const newConfig = useRef({ ...globalConfig });
 	const [confirmed, setConfirmed] = useState(false);
 	return (
@@ -319,9 +342,14 @@ const configContent = (props: { setVisible: (v: boolean) => void }) => {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
+						let obj = {
+							gallery: galleryConfig,
+							reader: readerConfig
+						};
+						obj[props.type] = newConfig.current;
 						fs.writeFileSync(
 							'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
-							JSON.stringify(newConfig.current)
+							JSON.stringify(obj)
 						);
 						ipcRenderer.send('relaunch');
 					}}
@@ -464,7 +492,7 @@ const CatalogContent = (props: {
 							onClick={() => {
 								document.querySelector(
 									'#reader-scroll-ele'
-								)!.scrollTop = e.index * LINE_HEIGHT;
+								)!.scrollTop = e.index * lineHeight;
 							}}
 							title={e.title}
 						>

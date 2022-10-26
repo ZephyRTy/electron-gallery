@@ -9,7 +9,7 @@ import {
 	Mode,
 	NormalImage
 } from '../types/global';
-import { formatDate, hasExternalDriver } from './functions';
+import { formatDate, getAllDrive } from './functions';
 
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');
@@ -20,12 +20,14 @@ export class MysqlOperator {
 	private _pool: any;
 	private _config: any;
 	private _searchRes = { param: '', result: [] as string[] };
-	private hasExternalDriver: boolean = hasExternalDriver;
+	private hasExternalDriver: boolean = false;
+	private loaded = false;
 	private init = false;
 	private database: string = 'GALLERY';
 	private mainTableName = 'pack_list';
 	count: number = 0;
 	private constructor() {
+		this.checkExternalDriver();
 		this._config = {
 			host: 'localhost',
 			user: 'root',
@@ -44,6 +46,17 @@ export class MysqlOperator {
 		return MysqlOperator._instance;
 	}
 
+	async checkExternalDriver() {
+		if (this.loaded) {
+			return;
+		}
+		const res = await getAllDrive();
+		this.hasExternalDriver = !!res.find(
+			(e) => e.name === 'BigHouse' && e.drive === 'E'
+		);
+		this.loaded = true;
+		return this.hasExternalDriver;
+	}
 	switchDatabase(database: string, tableName: string) {
 		if (database === this.database) {
 			return false;
@@ -265,8 +278,8 @@ export class MysqlOperator {
 						resolve(
 							result.map((v: any) => {
 								return {
-									id: v.id ?? v.dir_id,
-									title: v.title ?? v.dir_title,
+									id: v.dir_id ?? v.id,
+									title: v.dir_title ?? v.title,
 									path: mode === Mode.ShowDirs ? '' : v.path,
 									cover:
 										mode === Mode.ShowDirs

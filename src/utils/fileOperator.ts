@@ -39,6 +39,7 @@ export abstract class FileOperator<
 	bookmark extends BasicBookmark,
 	folder extends BasicFolder
 > {
+	external = false;
 	protected directories: normal[] = [];
 	protected fileCache = {
 		startPage: 0,
@@ -234,6 +235,7 @@ export abstract class FileOperator<
 		];
 	}
 	async getPacks(page: number, url: string): Promise<[normal[], number]> {
+		this.external = !!(await mysqlOperator.checkExternalDriver());
 		let query: {
 			search?: string;
 			directory?: string;
@@ -346,22 +348,7 @@ export abstract class FileOperator<
 		});
 	}
 
-	async addNewDir(dirName: string) {
-		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
-			return -1;
-		}
-		let newDirectory = {
-			dir_title: dirName,
-			dir_cover: defaultCover
-		};
-		let res = await mysqlOperator.insertDir(newDirectory);
-		if (res) {
-			this.dirMap = Map(await mysqlOperator.mapDir());
-			this.switchMode(Mode.Init);
-			return res;
-		}
-		return -1;
-	}
+	abstract addNewDir(dirName: string);
 	removeFileFromDir(packId: number, dirId: number) {
 		let e = this.currentPacks.find((e) => e.id !== packId);
 		if (hasCover(e)) {

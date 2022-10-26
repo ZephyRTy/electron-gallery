@@ -2,7 +2,6 @@
 /* eslint-disable new-cap */
 /* eslint-disable no-unused-vars */
 import { Map } from 'immutable';
-import { defaultCover } from '../types/constant';
 import {
 	ImageBookmark,
 	ImageDirectory,
@@ -126,12 +125,16 @@ export class GalleryOperator extends FileOperator<
 		});
 	}
 	async addNewDir(dirName: string) {
-		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
-			return -1;
+		// if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
+		// 	return -1;
+		// }
+		for (let key of this.dirMap.keys()) {
+			if (this.dirMap.get(key)!.title === dirName) {
+				return -Number(key);
+			}
 		}
 		let newDirectory = {
-			dir_title: dirName,
-			dir_cover: defaultCover
+			dir_title: dirName
 		};
 		let res = await mysqlOperator.insertDir(newDirectory);
 		if (res) {

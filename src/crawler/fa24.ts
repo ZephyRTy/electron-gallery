@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import globalConfig, {
+import galleryConfig, {
 	domainOf24fa,
 	downloadPath,
 	proxyEnabled
@@ -109,11 +108,11 @@ export const getImgFrom24fa = async () => {
 				}
 				title = title.replace(/[\\/:*?"<>|]/g, '_');
 				if (mode !== 'new') {
-					if (!_.includes(missing, title)) {
+					if (!missing.includes(title)) {
 						return;
 					}
 				} else {
-					if (_.includes(recentCatalog, title)) {
+					if (recentCatalog.includes(title)) {
 						return;
 					}
 					newPacks.push({
@@ -143,7 +142,7 @@ export const getImgFrom24fa = async () => {
 		{ max: 1 }
 	);
 	Req.options = {
-		proxy: proxyEnabled ? globalConfig.proxy : undefined,
+		proxy: proxyEnabled ? galleryConfig.proxy : undefined,
 		headers
 	};
 

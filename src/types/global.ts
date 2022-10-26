@@ -72,6 +72,7 @@ export interface TextLine {
 	index: number;
 	content: string;
 	tag: [string, string];
+	paragraphIndex: number;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;
 export interface Chapter {
