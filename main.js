@@ -28,7 +28,7 @@ function createWindow() {
 	remote.enable(mainWindow.webContents);
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
-		mainWindow.loadURL('http://localhost:8097/');
+		mainWindow.loadURL('http://localhost:3000/');
 	} else {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(

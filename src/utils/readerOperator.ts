@@ -14,6 +14,7 @@ import { deleteUselessWords } from './functions';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs/promises');
 const iconv = window.require('iconv-lite');
+const path = window.require('path');
 iconv.skipDecodeWarning = true;
 const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
@@ -136,7 +137,15 @@ export class ReaderOperator extends FileOperator<
 			if (!e.path || !e.title || !isText(e.path)) {
 				return;
 			}
-
+			const novelPath = path.resolve('D:/小说', path.basename(e.path));
+			if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
+				fs.rename(e.path, novelPath, (err) => {
+					if (err) {
+						console.error(err);
+					}
+				});
+				e.path = novelPath;
+			}
 			let newPack = {
 				path: e.path,
 				title: deleteUselessWords(
@@ -187,7 +196,7 @@ export class ReaderOperator extends FileOperator<
 		return -1;
 	}
 
-	current() {
+	packWillOpen() {
 		return this.currentBook;
 	}
 	mountBook(book: Book) {

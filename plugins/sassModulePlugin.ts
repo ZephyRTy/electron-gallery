@@ -10,9 +10,9 @@ import * as postcssModules from 'postcss-modules';
 import * as sass from 'sass';
 const path = require('path');
 const crypto = require('crypto');
-const fs = require('fs/promises');
+const fsp = require('fs/promises');
 const PLUGIN = 'esbuild-scss-modules-plugin';
-
+const chalk = require('chalk');
 type CssModulesOptions = Parameters<postcssModules>[0];
 export type PluginOptions = {
 	inject: boolean;
@@ -41,15 +41,14 @@ async function buildScss(
 	scssFullPath: string,
 	sassOptions: sass.Options<'sync'>
 ): Promise<sass.CompileResult> {
-	console.log(`Compiling ${scssFullPath}...`);
-
+	console.log(chalk.green(`Compiling ${scssFullPath}...`));
 	return await sass.compile(scssFullPath);
 }
 
 async function buildScssModulesJS(
 	scssFullPath: string,
 	options: PluginOptions
-): Promise<string> {
+): Promise<{ className: string; style: string }> {
 	const css = (await buildScss(scssFullPath, options.scssOptions)).css;
 	let cssModulesJSON = {};
 	const result = await postcss([
@@ -80,27 +79,19 @@ async function buildScssModulesJS(
 
 	const hash = crypto.createHash('sha256');
 	hash.update(result.css);
+	if (result.css.startsWith('@charset')) {
+		result.css = result.css.replace(/^@charset[^;]*;/, '');
+	}
 	const digest = hash.digest('hex');
-	return `
+	return {
+		className: `
 	const digest = '${digest}';
 	const classes = ${classNames};
-	const css = \`${result.css}\`;
-	${
-		options.inject &&
-		`
-	(function() {
-	  if (!document.getElementById(digest)) {
-	    var ele = document.createElement('style');
-	    ele.id = digest;
-	    ele.textContent = css;
-	    document.head.appendChild(ele);
-	  }
-	})();
-	`
-	}
 	export default classes;
-	export { css, digest, classes };
-	  `;
+	export { digest, classes };
+	  `,
+		style: result.css
+	};
 }
 
 export const ScssModulesPlugin = (options: Partial<PluginOptions> = {}) =>
@@ -168,12 +159,10 @@ export const ScssModulesPlugin = (options: Partial<PluginOptions> = {}) =>
 								sourceFullPath,
 								fullOptions
 							);
-							await fs.mkdir(path.dirname(target), {
+							await fsp.mkdir(path.dirname(target), {
 								recursive: true
 							});
-							console.log(`Writing ${target}...`);
-
-							await fs.writeFile(target, jsContent);
+							await fsp.writeFile(target, jsContent);
 						}
 
 						return {
@@ -192,10 +181,21 @@ export const ScssModulesPlugin = (options: Partial<PluginOptions> = {}) =>
 				{ filter: /\.modules?\.scss$/, namespace: PLUGIN },
 				async (args) => {
 					const { sourceFullPath } = args.pluginData;
-					const contents = await buildScssModulesJS(
-						sourceFullPath,
-						fullOptions
-					);
+					const { className: contents, style } =
+						await buildScssModulesJS(sourceFullPath, fullOptions);
+					const cssOutPath = path.resolve(outdir, '_modules.css');
+					try {
+						await fsp.appendFile(
+							path.resolve(outdir, '_modules.css'),
+							style
+						);
+					} catch {
+						await fsp.writeFile(
+							cssOutPath,
+							'@charset "UTF-8";' + style
+						);
+					}
+
 					return {
 						contents,
 						loader: 'js',

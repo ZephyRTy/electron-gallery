@@ -60,11 +60,12 @@ export const AddBookmark = (props: {
 				let urlObj = parseUrlQuery(window.location.href);
 				delete urlObj['undefined'];
 				urlObj['scroll'] = ele!.scrollTop;
+				const id = readerOperator.packWillOpen()!.id;
 				let url =
-					`#/reader/book/${readerOperator.current()!.id}?` +
+					`#/reader/book/${id}?` +
 					new URLSearchParams(urlObj).toString();
 				readerOperator.bookmarksUpdate({
-					...readerOperator.current()!,
+					...readerOperator.packWillOpen()!,
 					url,
 					timeStamp: formatDate(new Date())
 				});

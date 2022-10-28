@@ -299,7 +299,7 @@ export abstract class FileOperator<
 	}
 
 	//获取当前要打开的页面
-	abstract current(packId: number, change: boolean);
+	abstract packWillOpen(packId: number, change: boolean);
 
 	async bookmarksUpdate(newBookmark: bookmark, marked: boolean = true) {
 		if (hasCover(newBookmark)) {

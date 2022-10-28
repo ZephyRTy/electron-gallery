@@ -38,7 +38,9 @@ const endsWith = (str: string, ...arg: string[]) => {
 export const PackDetail = () => {
 	const { pack } = useParams();
 	const fileOperator = useRef(GalleryOperator.getInstance()).current;
-	const currentPath = useRef(fileOperator.current(parseInt(pack!))?.path);
+	const currentPath = useRef(
+		fileOperator.packWillOpen(parseInt(pack!))?.path
+	);
 	let [searchParams] = useSearchParams();
 	let page = searchParams.get('page')
 		? parseInt(searchParams.get('page') as string, 10)

@@ -24,7 +24,7 @@ export const Reader = () => {
 	}, []);
 	useEffect(() => {
 		readerOperator.titleUpdate();
-	}, [readerOperator.current()]);
+	}, [readerOperator.packWillOpen()]);
 	return (
 		<main className={styles['reader'] + ' main-content'}>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />

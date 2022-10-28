@@ -57,6 +57,37 @@ export class MysqlOperator {
 		this.loaded = true;
 		return this.hasExternalDriver;
 	}
+
+	getPackById(id: number) {
+		const sql = `select * from ${this.mainTableName} where id = ?`;
+		return new Promise((resolve, reject) => {
+			if (this.count !== 0) {
+				resolve(this.count);
+			}
+			this._pool.getConnection((err: any, connection: any) => {
+				connection?.query(sql, [id], (err: any, result: any) => {
+					connection.release();
+					if (err) {
+						reject(err);
+					} else {
+						if (result.length !== 1) {
+							reject('查询结果不为1');
+						}
+						const v = result[0];
+						resolve({
+							id: v.id ?? v.dir_id,
+							title: v.title ?? v.dir_title,
+							path: v.path ?? '',
+							cover: v.cover ?? v.dir_cover,
+							stared: Boolean(v.stared ?? v.dir_stared),
+							parent: v.parent,
+							reg: v.reg
+						});
+					}
+				});
+			});
+		});
+	}
 	switchDatabase(database: string, tableName: string) {
 		if (database === this.database) {
 			return false;

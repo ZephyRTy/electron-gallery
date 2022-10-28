@@ -48,7 +48,7 @@ export function AddBookmark(props: {
 				}
 				imgSrc = '/' + elements[imgIndex].src.split('/').pop();
 			}
-			let data = fileOperator.current(
+			let data = fileOperator.packWillOpen(
 				parseInt(pack!),
 				false
 			) as NormalImage;
@@ -67,7 +67,7 @@ export function AddBookmark(props: {
 			if (!urlObj.page) {
 				url += 'page=1&';
 			}
-			url += `scroll=${top}&`;
+			url += `scroll=${top + 1}&`;
 			fileOperator.bookmarksUpdate({
 				...data,
 				cover: imgSrc,

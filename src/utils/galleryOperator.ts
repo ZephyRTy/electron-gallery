@@ -145,7 +145,7 @@ export class GalleryOperator extends FileOperator<
 		return -1;
 	}
 	//获取当前要打开的页面
-	current(packId: number, change: boolean = true) {
+	override packWillOpen(packId: number, change: boolean = true) {
 		this.switchMode(Mode.Detail);
 		let res: NormalImage = null as any;
 		if (this.mode === Mode.Bookmark) {
@@ -154,6 +154,11 @@ export class GalleryOperator extends FileOperator<
 			)! as unknown as NormalImage;
 		} else {
 			res = this.currentPacks.find((v) => v.id === packId)!;
+		}
+		if (res) {
+			window.sessionStorage.setItem('current', JSON.stringify(res));
+		} else {
+			res = JSON.parse(window.sessionStorage.getItem('current')!);
 		}
 		if (change) {
 			this.titleWillUpdate(res.title);

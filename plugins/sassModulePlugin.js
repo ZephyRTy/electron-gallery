@@ -67,8 +67,9 @@ var postcssModules = require("postcss-modules");
 var sass = require("sass");
 var path = require('path');
 var crypto = require('crypto');
-var fs = require('fs/promises');
+var fsp = require('fs/promises');
 var PLUGIN = 'esbuild-scss-modules-plugin';
+var chalk = require('chalk');
 var DefaultOptions = {
     inject: true,
     minify: false,
@@ -83,7 +84,7 @@ function buildScss(scssFullPath, sassOptions) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log("Compiling ".concat(scssFullPath, "..."));
+                    console.log(chalk.green("Compiling ".concat(scssFullPath, "...")));
                     return [4 /*yield*/, sass.compile(scssFullPath)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
@@ -129,9 +130,14 @@ function buildScssModulesJS(scssFullPath, options) {
                     classNames = JSON.stringify(cssModulesJSON);
                     hash = crypto.createHash('sha256');
                     hash.update(result.css);
+                    if (result.css.startsWith('@charset')) {
+                        result.css = result.css.replace(/^@charset[^;]*;/, '');
+                    }
                     digest = hash.digest('hex');
-                    return [2 /*return*/, "\n\tconst digest = '".concat(digest, "';\n\tconst classes = ").concat(classNames, ";\n\tconst css = `").concat(result.css, "`;\n\t").concat(options.inject &&
-                            "\n\t(function() {\n\t  if (!document.getElementById(digest)) {\n\t    var ele = document.createElement('style');\n\t    ele.id = digest;\n\t    ele.textContent = css;\n\t    document.head.appendChild(ele);\n\t  }\n\t})();\n\t", "\n\texport default classes;\n\texport { css, digest, classes };\n\t  ")];
+                    return [2 /*return*/, {
+                            className: "\n\tconst digest = '".concat(digest, "';\n\tconst classes = ").concat(classNames, ";\n\texport default classes;\n\texport { digest, classes };\n\t  "),
+                            style: result.css
+                        }];
             }
         });
     });
@@ -186,13 +192,12 @@ var ScssModulesPlugin = function (options) {
                                                 return [4 /*yield*/, buildScssModulesJS(sourceFullPath, fullOptions)];
                                             case 1:
                                                 jsContent = _a.sent();
-                                                return [4 /*yield*/, fs.mkdir(path.dirname(target), {
+                                                return [4 /*yield*/, fsp.mkdir(path.dirname(target), {
                                                         recursive: true
                                                     })];
                                             case 2:
                                                 _a.sent();
-                                                console.log("Writing ".concat(target, "..."));
-                                                return [4 /*yield*/, fs.writeFile(target, jsContent)];
+                                                return [4 /*yield*/, fsp.writeFile(target, jsContent)];
                                             case 3:
                                                 _a.sent();
                                                 _a.label = 4;
@@ -213,19 +218,33 @@ var ScssModulesPlugin = function (options) {
                 });
             }); });
             build.onLoad({ filter: /\.modules?\.scss$/, namespace: PLUGIN }, function (args) { return __awaiter(_this, void 0, void 0, function () {
-                var sourceFullPath, contents;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
+                var sourceFullPath, _a, contents, style, cssOutPath, _b;
+                return __generator(this, function (_c) {
+                    switch (_c.label) {
                         case 0:
                             sourceFullPath = args.pluginData.sourceFullPath;
                             return [4 /*yield*/, buildScssModulesJS(sourceFullPath, fullOptions)];
                         case 1:
-                            contents = _a.sent();
-                            return [2 /*return*/, {
-                                    contents: contents,
-                                    loader: 'js',
-                                    watchFiles: [sourceFullPath]
-                                }];
+                            _a = _c.sent(), contents = _a.className, style = _a.style;
+                            cssOutPath = path.resolve(outdir, '_modules.css');
+                            _c.label = 2;
+                        case 2:
+                            _c.trys.push([2, 4, , 6]);
+                            return [4 /*yield*/, fsp.appendFile(path.resolve(outdir, '_modules.css'), style)];
+                        case 3:
+                            _c.sent();
+                            return [3 /*break*/, 6];
+                        case 4:
+                            _b = _c.sent();
+                            return [4 /*yield*/, fsp.writeFile(cssOutPath, '@charset "UTF-8";' + style)];
+                        case 5:
+                            _c.sent();
+                            return [3 /*break*/, 6];
+                        case 6: return [2 /*return*/, {
+                                contents: contents,
+                                loader: 'js',
+                                watchFiles: [sourceFullPath]
+                            }];
                     }
                 });
             }); });

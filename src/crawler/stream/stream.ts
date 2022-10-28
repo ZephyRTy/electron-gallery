@@ -146,7 +146,7 @@ class Stream<IN, MID, OUT> extends StreamEntry<IN, MID, OUT> {
 			| HasProperty<MID, 'url', string>[]
 			? T
 			: never;
-		if ((typeof value as Check<IN>) === 'never' && !this.preprocessor) {
+		if (!this.preprocessor) {
 			throw new Error('preprocessor is not defined');
 		}
 		let v = this.preprocessor ? this.preprocessor(value) : (value as any);
