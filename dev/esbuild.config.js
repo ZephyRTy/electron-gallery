@@ -19,7 +19,11 @@ console.log(path.join(__dirname));
 // 使用静态服务
 app.use(serve(path.join(__dirname)));
 const logLocalhostUrl = () => {
-	console.log(chalk.bold.italic.rgb(80, 255, 229)('http://localhost:3000/'));
+	console.log(chalk.bold.underline.cyanBright('http://localhost:3000/'));
+};
+
+const logBuildSuccess = (message) => {
+	console.log(chalk.bgRgb(37, 120, 181).bold(message));
 };
 esbuild
 	.build({
@@ -33,11 +37,16 @@ esbuild
 		outdir: './dev',
 		// 启动轮询的监听模式
 		watch: {
-			onRebuild(error, result) {
-				if (error) console.error(chalk.red.bold('watch build failed:'));
-				else {
+			onRebuild(error) {
+				console.clear();
+				if (error) {
+					console.log(error.errors);
+					console.log(chalk`{red.bold *} {bold.bgRed Build failed:}`);
+					console.log(chalk.white.bold(error.message));
+					console.log(error.stack);
+				} else {
 					// 这里来自动打开浏览器并且更新浏览器
-					console.log(chalk.blueBright('watch build succeeded'));
+					logBuildSuccess('watch build succeeded');
 					logLocalhostUrl();
 				}
 			}
@@ -62,7 +71,7 @@ esbuild
 		]
 	})
 	.then(async () => {
-		console.log(chalk.bold.blueBright('build succeeded'));
+		logBuildSuccess('build succeeded');
 		const fileName = path.join('./dev/index.html');
 		// 创建文件，如果文件不存在直接创建，存在不做任何事情
 		await fse.ensureFile(fileName);
@@ -95,4 +104,7 @@ esbuild
 		app.listen(3000, () => {
 			logLocalhostUrl();
 		});
+	})
+	.catch((e) => {
+		console.log(e);
 	});

@@ -28760,13 +28760,14 @@
     }
     async checkExternalDriver() {
       if (this.loaded) {
-        return;
+        return this.hasExternalDriver;
       }
       const res = await getAllDrive();
       this.hasExternalDriver = !!res.find(
         (e2) => e2.name === "BigHouse" && e2.drive === "E"
       );
       this.loaded = true;
+      console.log("hasExternalDriver", this.hasExternalDriver);
       return this.hasExternalDriver;
     }
     getPackById(id) {
@@ -31750,7 +31751,7 @@
         }
         return;
       }
-      if (!this.preprocessor) {
+      if (typeof value === "never" && !this.preprocessor) {
         throw new Error("preprocessor is not defined");
       }
       let v2 = this.preprocessor ? this.preprocessor(value) : value;

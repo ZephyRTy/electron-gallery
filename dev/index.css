@@ -77,7 +77,7 @@ code {
     monospace;
 }
 
-/* C:/Users/Yang/AppData/Local/Temp/tmp-15704-bRA2VcjVQUot/desktop-reader/src/components/Gallery/style/nav.css */
+/* C:/Users/Yang/AppData/Local/Temp/tmp-26596-nVsBSHHWREvJ/desktop-reader/src/components/Gallery/style/nav.css */
 .page-nav {
   font-size: 20px;
   list-style: none;
@@ -163,7 +163,7 @@ a.page-link.disable svg {
   outline: none;
 }
 
-/* C:/Users/Yang/AppData/Local/Temp/tmp-15704-bRA2VcjVQUot/desktop-reader/src/components/Gallery/style/PackDetail.css */
+/* C:/Users/Yang/AppData/Local/Temp/tmp-26596-nVsBSHHWREvJ/desktop-reader/src/components/Gallery/style/PackDetail.css */
 .header {
   -webkit-app-region: drag;
   display: flex;
@@ -445,7 +445,7 @@ a.page-link.disable svg {
   margin: 6px;
 }
 
-/* C:/Users/Yang/AppData/Local/Temp/tmp-15704-bRA2VcjVQUot/desktop-reader/src/components/Gallery/style/gallery.css */
+/* C:/Users/Yang/AppData/Local/Temp/tmp-26596-nVsBSHHWREvJ/desktop-reader/src/components/Gallery/style/gallery.css */
 .header {
   -webkit-app-region: drag;
   display: flex;
@@ -768,6 +768,9 @@ svg {
   height: 30px;
   margin: 0;
   user-select: initial;
+}
+.chapter-title {
+  font-weight: bold;
 }
 button.goto-btn svg {
   fill: #f1b01ffa;

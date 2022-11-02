@@ -28760,7 +28760,7 @@
     }
     async checkExternalDriver() {
       if (this.loaded) {
-        return;
+        return this.hasExternalDriver;
       }
       const res = await getAllDrive();
       this.hasExternalDriver = !!res.find(
@@ -29876,6 +29876,7 @@
     contentSize = { start: 0, end: 0 };
     content = [];
     catalog = [];
+    currentChapter = 0;
     regExp;
     constructor(book) {
       this.book = book;
@@ -29886,7 +29887,9 @@
     }
     getContent(start, end) {
       this.contentSize = { start, end };
-      return this.content.slice(start, end);
+      return this.content.slice(start, end).map((line) => {
+        return `<p ${line.className.length > 0 ? 'class="' + line.className.join(" ") + '"' : ""}>${line.content} </p>`;
+      });
     }
     addContent(content) {
       if (Array.isArray(content)) {
@@ -29902,11 +29905,46 @@
     parseCatalog(line) {
       let title = line.content.match(this.regExp)?.[0];
       if (title) {
+        if (!line.className.includes("chapter-title")) {
+          line.className.push("chapter-title");
+        }
         this.addChapter({
           title,
           index: line.index
         });
+      } else {
+        line.className = line.className.filter(
+          (className) => className !== "chapter-title"
+        );
       }
+    }
+    updateCurrentChapter(lineIndex, method = "scroll", direction = "down") {
+      let chapter = this.currentChapter;
+      if (this.currentChapter >= this.catalog.length) {
+        return -1;
+      }
+      if (method === "drag") {
+        let num = this.getChapter(chapter).index < lineIndex ? this.currentChapter : 0;
+        for (let i2 = num; i2 < this.catalog.length; i2++) {
+          if (this.catalog[i2].index > lineIndex) {
+            break;
+          }
+          chapter = i2;
+        }
+      } else if (direction === "down") {
+        if (this.currentChapter < this.catalog.length - 1) {
+          if (this.getChapter(this.currentChapter + 1).index <= lineIndex) {
+            chapter = this.currentChapter + 1;
+          }
+        }
+      } else if (direction === "up") {
+        if (this.currentChapter > 0) {
+          if (this.getChapter(this.currentChapter).index > lineIndex) {
+            chapter = this.currentChapter - 1;
+          }
+        }
+      }
+      return chapter;
     }
     reParseCatalog(reg) {
       this.book.reg = reg;
@@ -29945,6 +29983,7 @@
               }
             }
           } else {
+            tempRes = [];
             offsetInKey = 0;
             res.offset = -1;
           }
@@ -29966,6 +30005,9 @@
     }
     contain(lineIndex) {
       return lineIndex >= this.contentSize.start && lineIndex < this.contentSize.end;
+    }
+    getChapter(index2) {
+      return this.catalog[index2];
     }
   };
 
@@ -30001,6 +30043,11 @@
       return result;
     }
     async loadText() {
+      if (!this.currentBook) {
+        this.currentBook = JSON.parse(
+          window.sessionStorage.getItem("currentBook")
+        );
+      }
       let text = await fs4.readFile(this.currentBook.path, "utf-8");
       if (this.isNotUtf8(text)) {
         text = this.gbkToUtf8(
@@ -30027,7 +30074,7 @@
             words.push({
               index: lineNum++,
               content: `${item}`,
-              tag: ['<p class="text-line">', "</p>"],
+              className: ["text-line"],
               paragraphIndex: item.length < this.lettersOfEachLine ? paragraphIndex : paragraphIndex++
             });
           }
@@ -30040,7 +30087,7 @@
         book.addContent({
           index: lineNum++,
           content: "",
-          tag: ['<p class="text-br">', "</p>"],
+          className: ["text-br"],
           paragraphIndex: -1
         });
       }
@@ -30138,6 +30185,7 @@
       return this.currentBook;
     }
     mountBook(book) {
+      window.sessionStorage.setItem("currentBook", JSON.stringify(book));
       this.titleWillUpdate(book.title);
       this.currentBook = book;
     }
@@ -31750,7 +31798,7 @@
         }
         return;
       }
-      if (!this.preprocessor) {
+      if (typeof value === "never" && !this.preprocessor) {
         throw new Error("preprocessor is not defined");
       }
       let v2 = this.preprocessor ? this.preprocessor(value) : value;
@@ -31985,6 +32033,7 @@
       "utf-8"
     )
   );
+  var getNewPacks;
   var getImgFrom24fa = async () => {
     let connection = mysql2.createConnection({
       host: "localhost",
@@ -32011,7 +32060,7 @@
     connection.end();
     let recentCatalog = catalog.map((e2) => e2.title);
     let newPacks = [];
-    let getNewPacks = new Circuit(
+    getNewPacks = new Circuit(
       (body) => {
         let $ = cheerio.load(body);
         let images = $('a[title^="\u540E\u9875"]');
@@ -33445,10 +33494,9 @@
 
   // src/components/Dialog.tsx
   var import_react15 = __toESM(require_react());
-  var import_react_dom = __toESM(require_react_dom());
 
   // esbuild-scss-modules-plugin:./style/dialog.module.scss
-  var classes5 = { "dialog": "_dialog_cgxnu_1", "dialog-button": "_dialog-button_cgxnu_15", "dialogButton": "_dialog-button_cgxnu_15", "dialog-button-contain": "_dialog-button-contain_cgxnu_24", "dialogButtonContain": "_dialog-button-contain_cgxnu_24", "dialog-button__confirm": "_dialog-button__confirm_cgxnu_28", "dialogButton__confirm": "_dialog-button__confirm_cgxnu_28", "dialog-button__back": "_dialog-button__back_cgxnu_36", "dialogButton__back": "_dialog-button__back_cgxnu_36", "dialog-cover": "_dialog-cover_cgxnu_43", "dialogCover": "_dialog-cover_cgxnu_43", "dir-map-list": "_dir-map-list_cgxnu_54", "dirMapList": "_dir-map-list_cgxnu_54", "dir-map-item": "_dir-map-item_cgxnu_74", "dirMapItem": "_dir-map-item_cgxnu_74", "dir-map-item-content": "_dir-map-item-content_cgxnu_80", "dirMapItemContent": "_dir-map-item-content_cgxnu_80", "dir-map-item-count": "_dir-map-item-count_cgxnu_105", "dirMapItemCount": "_dir-map-item-count_cgxnu_105", "dir-map-checkbox": "_dir-map-checkbox_cgxnu_117", "dirMapCheckbox": "_dir-map-checkbox_cgxnu_117", "dir-map-input": "_dir-map-input_cgxnu_123", "dirMapInput": "_dir-map-input_cgxnu_123", "dir-map-input--error": "_dir-map-input--error_cgxnu_131", "dirMapInputError": "_dir-map-input--error_cgxnu_131", "rename-contain": "_rename-contain_cgxnu_135", "renameContain": "_rename-contain_cgxnu_135", "rename-input": "_rename-input_cgxnu_144", "renameInput": "_rename-input_cgxnu_144", "config-container": "_config-container_cgxnu_153", "configContainer": "_config-container_cgxnu_153", "config-list": "_config-list_cgxnu_156", "configList": "_config-list_cgxnu_156", "config-item": "_config-item_cgxnu_161", "configItem": "_config-item_cgxnu_161", "config-file-label": "_config-file-label_cgxnu_172", "configFileLabel": "_config-file-label_cgxnu_172", "hidden": "_hidden_cgxnu_195", "catalog-list": "_catalog-list_cgxnu_199", "catalogList": "_catalog-list_cgxnu_199", "catalog-list-item": "_catalog-list-item_cgxnu_211", "catalogListItem": "_catalog-list-item_cgxnu_211", "catalog-container": "_catalog-container_cgxnu_241", "catalogContainer": "_catalog-container_cgxnu_241", "catalog-reg-input": "_catalog-reg-input_cgxnu_247", "catalogRegInput": "_catalog-reg-input_cgxnu_247" };
+  var classes5 = { "dialog": "_dialog_hc5ur_1", "dialog-button": "_dialog-button_hc5ur_15", "dialogButton": "_dialog-button_hc5ur_15", "dialog-button-contain": "_dialog-button-contain_hc5ur_24", "dialogButtonContain": "_dialog-button-contain_hc5ur_24", "dialog-button__confirm": "_dialog-button__confirm_hc5ur_28", "dialogButton__confirm": "_dialog-button__confirm_hc5ur_28", "dialog-button__back": "_dialog-button__back_hc5ur_36", "dialogButton__back": "_dialog-button__back_hc5ur_36", "dialog-cover": "_dialog-cover_hc5ur_43", "dialogCover": "_dialog-cover_hc5ur_43", "dir-map-list": "_dir-map-list_hc5ur_54", "dirMapList": "_dir-map-list_hc5ur_54", "dir-map-item": "_dir-map-item_hc5ur_74", "dirMapItem": "_dir-map-item_hc5ur_74", "dir-map-item-content": "_dir-map-item-content_hc5ur_80", "dirMapItemContent": "_dir-map-item-content_hc5ur_80", "dir-map-item-count": "_dir-map-item-count_hc5ur_105", "dirMapItemCount": "_dir-map-item-count_hc5ur_105", "dir-map-checkbox": "_dir-map-checkbox_hc5ur_117", "dirMapCheckbox": "_dir-map-checkbox_hc5ur_117", "dir-map-input": "_dir-map-input_hc5ur_123", "dirMapInput": "_dir-map-input_hc5ur_123", "dir-map-input--error": "_dir-map-input--error_hc5ur_131", "dirMapInputError": "_dir-map-input--error_hc5ur_131", "rename-contain": "_rename-contain_hc5ur_135", "renameContain": "_rename-contain_hc5ur_135", "rename-input": "_rename-input_hc5ur_144", "renameInput": "_rename-input_hc5ur_144", "config-container": "_config-container_hc5ur_153", "configContainer": "_config-container_hc5ur_153", "config-list": "_config-list_hc5ur_156", "configList": "_config-list_hc5ur_156", "config-item": "_config-item_hc5ur_161", "configItem": "_config-item_hc5ur_161", "config-file-label": "_config-file-label_hc5ur_172", "configFileLabel": "_config-file-label_hc5ur_172", "hidden": "_hidden_hc5ur_195", "catalog-list": "_catalog-list_hc5ur_199", "catalogList": "_catalog-list_hc5ur_199", "catalog-list-item": "_catalog-list-item_hc5ur_211", "catalogListItem": "_catalog-list-item_hc5ur_211", "catalog-container": "_catalog-container_hc5ur_241", "catalogContainer": "_catalog-container_hc5ur_241", "catalog-reg-input": "_catalog-reg-input_hc5ur_247", "catalogRegInput": "_catalog-reg-input_hc5ur_247", "current-chapter": "_current-chapter_hc5ur_257", "currentChapter": "_current-chapter_hc5ur_257" };
   var dialog_module_default = classes5;
 
   // src/components/Dialog.tsx
@@ -33814,28 +33862,40 @@
       ]
     });
   };
+  var CatalogItem = (props) => {
+    const item = (0, import_react15.useMemo)(() => {
+      return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", {
+        className: dialog_module_default["catalog-list-item"] + (props.current ? " " + dialog_module_default["current-chapter"] : ""),
+        onClick: () => {
+          document.querySelector("#reader-scroll-ele").scrollTop = props.chapter.index * lineHeight;
+        },
+        title: props.chapter.title,
+        children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", {
+          children: props.chapter.title
+        })
+      });
+    }, [props.chapter, props.current]);
+    return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_jsx_runtime40.Fragment, {
+      children: item
+    });
+  };
   var CatalogContent = (props) => {
     const [reg, setReg] = (0, import_react15.useState)(props.book?.reg || "");
     const [catalog, setCatalog] = (0, import_react15.useState)(props.book?.getCatalog() || []);
     (0, import_react15.useEffect)(() => {
       setReg(props.book?.reg || "");
     }, [props.book?.reg]);
+    (0, import_react15.useEffect)(() => {
+      setCatalog(props.book?.getCatalog() || []);
+    }, [props.book]);
     return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, {
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("ul", {
           className: dialog_module_default["catalog-list"],
-          children: catalog.map((e2) => {
-            return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", {
-              className: dialog_module_default["catalog-list-item"],
-              onClick: () => {
-                document.querySelector(
-                  "#reader-scroll-ele"
-                ).scrollTop = e2.index * lineHeight;
-              },
-              title: e2.title,
-              children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", {
-                children: e2.title
-              })
+          children: catalog.map((e2, i2) => {
+            return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(CatalogItem, {
+              chapter: e2,
+              current: i2 === props.currentChapter
             }, e2.index);
           })
         }),
@@ -33874,15 +33934,6 @@
   var Rename = createDialog(RenameContent, renameVisibleStore);
   var Config = createDialog(configContent, configVisibleStore);
   var Catalog = createDialog(CatalogContent, catalogVisibleStore);
-  var CatalogPortal = (props) => {
-    return import_react_dom.default.createPortal(
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Catalog, {
-        book: props.book,
-        scrollEle: props.scrollEle
-      }),
-      document.querySelector("main")
-    );
-  };
 
   // src/components/Gallery/ImgComponent/Bookmarks.tsx
   var import_react16 = __toESM(require_react());
@@ -34726,21 +34777,23 @@
     const [start, setStart] = (0, import_react22.useState)(0);
     const [book, setBook] = (0, import_react22.useState)(null);
     const [content, setContent] = (0, import_react22.useState)([]);
+    const [chapter, setChapter] = (0, import_react22.useState)(0);
     const scrollEle = (0, import_react22.useRef)(null);
     const initBottom = (0, import_react22.useMemo)(
       () => book ? (book.length - contentRange) * lineHeight : 0,
       [book]
     );
-    const updateWhenScrollLot = (0, import_react22.useCallback)(
+    const updateWhenDrag = (0, import_react22.useCallback)(
       (eleScrollTop) => {
         if (!book)
           return;
-        let lineNum = Math.ceil(eleScrollTop / lineHeight);
-        let startLine = lineNum - deltaLine - overflowNum > 0 ? lineNum - deltaLine - overflowNum : 0;
+        let lineIndex = Math.ceil(eleScrollTop / lineHeight);
+        let startLine = lineIndex - deltaLine - overflowNum > 0 ? lineIndex - deltaLine - overflowNum : 0;
+        setChapter(book.updateCurrentChapter(lineIndex, "drag"));
         if (startLine + contentRange >= book.length)
           startLine = book.length - contentRange;
         let bottom2 = 0, top2 = 0;
-        if (startLine > 0 && lineNum - deltaLine - overflowNum + contentRange <= book.length) {
+        if (startLine > 0 && lineIndex - deltaLine - overflowNum + contentRange <= book.length) {
           bottom2 = initBottom - (eleScrollTop - (deltaLine + overflowNum) * lineHeight);
           top2 = eleScrollTop - (deltaLine + overflowNum) * lineHeight;
         } else if (startLine === 0) {
@@ -34764,10 +34817,10 @@
           return;
         scrollEle.current.scrollTop = eleScrollTop;
         scrollTop.current = eleScrollTop;
-        updateWhenScrollLot(eleScrollTop);
+        updateWhenDrag(eleScrollTop);
         scrollEle.current.scrollTop -= 400;
       },
-      [updateWhenScrollLot]
+      [updateWhenDrag]
     );
     const beforeScrollTop = (0, import_react22.useRef)(0);
     const handleOpenInExplorer = (0, import_react22.useCallback)(() => {
@@ -34792,8 +34845,17 @@
               if (start + contentRange >= book.length) {
                 return;
               }
+              if (distance >= 0) {
+                setChapter(
+                  book.updateCurrentChapter(
+                    Math.ceil(eleScrollTop / lineHeight),
+                    "scroll",
+                    "down"
+                  )
+                );
+              }
               if (distance < 0) {
-                updateWhenScrollLot(eleScrollTop);
+                updateWhenDrag(eleScrollTop);
               } else if (distance < distanceToUpdate) {
                 setContent(
                   book.getContent(
@@ -34811,8 +34873,17 @@
               if (start <= 0) {
                 return;
               }
+              if (distance <= 0) {
+                setChapter(
+                  book.updateCurrentChapter(
+                    Math.ceil(eleScrollTop / lineHeight),
+                    "scroll",
+                    "up"
+                  )
+                );
+              }
               if (distance > 0) {
-                updateWhenScrollLot(eleScrollTop);
+                updateWhenDrag(eleScrollTop);
               } else if (distance > -distanceToUpdate) {
                 setContent(
                   book.getContent(
@@ -34841,7 +34912,7 @@
       if (scroll) {
         scrollEle.current.scrollTop = scroll;
         scrollTop.current = scroll;
-        updateWhenScrollLot(scrollTop.current);
+        updateWhenDrag(scrollTop.current);
       }
     }, [book]);
     (0, import_react22.useEffect)(() => {
@@ -34858,7 +34929,7 @@
           /* @__PURE__ */ (0, import_jsx_runtime55.jsx)("article", {
             className: reader_module_default["reader-content"],
             dangerouslySetInnerHTML: {
-              __html: content.map((e2) => `${e2.tag[0]}${e2.content}${e2.tag[1]}`).join("")
+              __html: content.join("")
             },
             ref: article
           }),
@@ -34870,7 +34941,11 @@
     }, [content, top, bottom]);
     return /* @__PURE__ */ (0, import_jsx_runtime55.jsxs)(import_jsx_runtime55.Fragment, {
       children: [
-        props.render(handleOpenInExplorer),
+        /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(Catalog, {
+          book,
+          currentChapter: chapter
+        }),
+        props.renderMenu(handleOpenInExplorer),
         /* @__PURE__ */ (0, import_jsx_runtime55.jsxs)("div", {
           className: reader_module_default["scroll-content"],
           id: "reader-scroll-ele",
@@ -34881,11 +34956,7 @@
             /* @__PURE__ */ (0, import_jsx_runtime55.jsx)("div", {
               className: reader_module_default["find-mask"]
             }),
-            mainContent,
-            /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(CatalogPortal, {
-              book,
-              scrollEle
-            })
+            mainContent
           ]
         }),
         /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(FindDialog, {
@@ -34930,7 +35001,7 @@
           message: "\u6DFB\u52A0\u4E66\u7B7E\u6210\u529F\uFF01"
         }),
         /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(BookContent, {
-          render: (fn) => menu(fn)
+          renderMenu: (fn) => menu(fn)
         })
       ]
     });

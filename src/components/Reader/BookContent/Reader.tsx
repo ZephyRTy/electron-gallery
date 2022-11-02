@@ -9,7 +9,7 @@ import { BookContent } from './Content';
 export const Reader = () => {
 	// eslint-disable-next-line no-unused-vars
 	const bookmarkToast = useRef((arg: boolean) => {});
-	const menu = useCallback((fn) => {
+	const menu = useCallback((fn: () => void) => {
 		return (
 			<SidebarContainer>
 				<Sidebar menuPosition="middle">
@@ -28,7 +28,7 @@ export const Reader = () => {
 	return (
 		<main className={styles['reader'] + ' main-content'}>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
-			<BookContent render={(fn) => menu(fn)} />
+			<BookContent renderMenu={(fn) => menu(fn)} />
 		</main>
 	);
 };

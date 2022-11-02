@@ -4,14 +4,13 @@
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
 import { Store, useData } from 'syill';
 import galleryConfig, {
 	lineHeight,
 	readerConfig,
 	translation
 } from '../types/constant';
-import { DirectoryInfo } from '../types/global';
+import { Chapter, DirectoryInfo } from '../types/global';
 import { BookDetail } from '../utils/BookDetail';
 import { FileOperator } from '../utils/fileOperator';
 import { GalleryOperator } from '../utils/galleryOperator';
@@ -463,41 +462,49 @@ const ConfigItem = (props: {
 	);
 };
 
-const CatalogItem = (props: { title: string }) => {
-	return (
-		<div>
-			<span>{props.title}</span>
-		</div>
-	);
+const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
+	const item = useMemo(() => {
+		return (
+			<li
+				className={
+					styles['catalog-list-item'] +
+					(props.current ? ' ' + styles['current-chapter'] : '')
+				}
+				onClick={() => {
+					document.querySelector('#reader-scroll-ele')!.scrollTop =
+						props.chapter.index * lineHeight;
+				}}
+				title={props.chapter.title}
+			>
+				<span>{props.chapter.title}</span>
+			</li>
+		);
+	}, [props.chapter, props.current]);
+	return <>{item}</>;
 };
-
 const CatalogContent = (props: {
 	setVisible: (v: boolean) => void;
 	book: BookDetail;
-	scrollEle: HTMLElement;
+	currentChapter: number;
 }) => {
 	const [reg, setReg] = useState(props.book?.reg || '');
 	const [catalog, setCatalog] = useState(props.book?.getCatalog() || []);
 	useEffect(() => {
 		setReg(props.book?.reg || '');
 	}, [props.book?.reg]);
+	useEffect(() => {
+		setCatalog(props.book?.getCatalog() || []);
+	}, [props.book]);
 	return (
 		<>
 			<ul className={styles['catalog-list']}>
-				{catalog.map((e) => {
+				{catalog.map((e, i) => {
 					return (
-						<li
-							className={styles['catalog-list-item']}
+						<CatalogItem
+							chapter={e}
+							current={i === props.currentChapter}
 							key={e.index}
-							onClick={() => {
-								document.querySelector(
-									'#reader-scroll-ele'
-								)!.scrollTop = e.index * lineHeight;
-							}}
-							title={e.title}
-						>
-							<span>{e.title}</span>
-						</li>
+						/>
 					);
 				})}
 			</ul>
@@ -543,13 +550,4 @@ export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
 export const Rename = createDialog(RenameContent, renameVisibleStore);
 export const Config = createDialog(configContent, configVisibleStore);
 
-const Catalog = createDialog(CatalogContent, catalogVisibleStore);
-export const CatalogPortal = (props: {
-	book: BookDetail;
-	scrollEle: HTMLElement;
-}) => {
-	return ReactDOM.createPortal(
-		<Catalog book={props.book} scrollEle={props.scrollEle} />,
-		document.querySelector('main')!
-	);
-};
+export const Catalog = createDialog(CatalogContent, catalogVisibleStore);

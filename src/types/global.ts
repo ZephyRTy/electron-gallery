@@ -71,7 +71,7 @@ export enum Mode {
 export interface TextLine {
 	index: number;
 	content: string;
-	tag: [string, string];
+	className: string[];
 	paragraphIndex: number;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;

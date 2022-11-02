@@ -20,5 +20,5 @@
 		"experimentalDecorators": true,
 		"noImplicitAny": false
 	},
-	"include": ["src/**/*", "ipcMain.ts"]
+	"include": ["src/**/*", "ipcMain.ts", "./plugins/**/*"]
 }

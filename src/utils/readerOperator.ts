@@ -51,6 +51,11 @@ export class ReaderOperator extends FileOperator<
 	}
 
 	async loadText() {
+		if (!this.currentBook) {
+			this.currentBook = JSON.parse(
+				window.sessionStorage.getItem('currentBook')!
+			);
+		}
 		let text = await fs.readFile(this.currentBook!.path, 'utf-8');
 		if (this.isNotUtf8(text)) {
 			text = this.gbkToUtf8(
@@ -77,7 +82,7 @@ export class ReaderOperator extends FileOperator<
 					words.push({
 						index: lineNum++,
 						content: `${item}`,
-						tag: ['<p class="text-line">', '</p>'],
+						className: ['text-line'],
 						paragraphIndex:
 							item.length < this.lettersOfEachLine
 								? paragraphIndex
@@ -93,7 +98,7 @@ export class ReaderOperator extends FileOperator<
 			book.addContent({
 				index: lineNum++,
 				content: '',
-				tag: ['<p class="text-br">', '</p>'],
+				className: ['text-br'],
 				paragraphIndex: -1
 			});
 		}
@@ -200,6 +205,7 @@ export class ReaderOperator extends FileOperator<
 		return this.currentBook;
 	}
 	mountBook(book: Book) {
+		window.sessionStorage.setItem('currentBook', JSON.stringify(book));
 		this.titleWillUpdate(book.title);
 		this.currentBook = book;
 	}

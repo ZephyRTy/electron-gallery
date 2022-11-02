@@ -48,7 +48,7 @@ export class MysqlOperator {
 
 	async checkExternalDriver() {
 		if (this.loaded) {
-			return;
+			return this.hasExternalDriver;
 		}
 		const res = await getAllDrive();
 		this.hasExternalDriver = !!res.find(

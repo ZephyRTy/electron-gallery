@@ -27,6 +27,11 @@ let missing: string[] =
 					'utf-8'
 				)
 		  );
+let getNewPacks: Circuit<
+	unknown,
+	unknown,
+	{ title: string; url: string; current: string }
+>;
 export const getImgFrom24fa = async () => {
 	let connection = mysql.createConnection({
 		host: 'localhost',
@@ -79,7 +84,7 @@ export const getImgFrom24fa = async () => {
 		cover: string;
 	}[] = [];
 
-	let getNewPacks = new Circuit(
+	getNewPacks = new Circuit(
 		(body: unknown) => {
 			let $ = cheerio.load(body as any);
 			let images = $('a[title^="后页"]');

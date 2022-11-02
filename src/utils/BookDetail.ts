@@ -6,6 +6,7 @@ export class BookDetail {
 	private contentSize = { start: 0, end: 0 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
+	private currentChapter = 0;
 	regExp: RegExp;
 	constructor(book: Book) {
 		this.book = book;
@@ -15,9 +16,15 @@ export class BookDetail {
 	public addChapter(chapter: Chapter) {
 		this.catalog.push(chapter);
 	}
-	public getContent(start: number, end: number): TextLine[] {
+	public getContent(start: number, end: number): string[] {
 		this.contentSize = { start, end };
-		return this.content.slice(start, end);
+		return this.content.slice(start, end).map((line) => {
+			return `<p ${
+				line.className.length > 0
+					? 'class=' + '"' + line.className.join(' ') + '"'
+					: ''
+			}>${line.content} </p>`;
+		});
 	}
 
 	public addContent(content: TextLine[] | TextLine) {
@@ -35,13 +42,57 @@ export class BookDetail {
 	private parseCatalog(line: TextLine) {
 		let title = line.content.match(this.regExp)?.[0];
 		if (title) {
+			if (!line.className.includes('chapter-title')) {
+				line.className.push('chapter-title');
+			}
 			this.addChapter({
 				title,
 				index: line.index
 			});
+		} else {
+			line.className = line.className.filter(
+				(className) => className !== 'chapter-title'
+			);
 		}
 	}
 
+	updateCurrentChapter(
+		lineIndex: number,
+		method: 'scroll' | 'drag' = 'scroll',
+		direction: 'up' | 'down' = 'down'
+	) {
+		let chapter = this.currentChapter;
+		if (this.currentChapter >= this.catalog.length) {
+			return -1;
+		}
+		if (method === 'drag') {
+			let num =
+				this.getChapter(chapter).index < lineIndex
+					? this.currentChapter
+					: 0;
+			for (let i = num; i < this.catalog.length; i++) {
+				if (this.catalog[i].index > lineIndex) {
+					break;
+				}
+				chapter = i;
+			}
+		} else if (direction === 'down') {
+			if (this.currentChapter < this.catalog.length - 1) {
+				if (
+					this.getChapter(this.currentChapter + 1).index <= lineIndex
+				) {
+					chapter = this.currentChapter + 1;
+				}
+			}
+		} else if (direction === 'up') {
+			if (this.currentChapter > 0) {
+				if (this.getChapter(this.currentChapter).index > lineIndex) {
+					chapter = this.currentChapter - 1;
+				}
+			}
+		}
+		return chapter;
+	}
 	reParseCatalog(reg: string) {
 		this.book.reg = reg;
 		this.regExp = new RegExp(String.raw`${reg}`, 'g');
@@ -87,11 +138,13 @@ export class BookDetail {
 						}
 					}
 				} else {
+					tempRes = [];
 					offsetInKey = 0;
 					res.offset = -1;
 				}
 			}
 		}
+
 		return result;
 	}
 	get start() {
@@ -114,5 +167,9 @@ export class BookDetail {
 			lineIndex >= this.contentSize.start &&
 			lineIndex < this.contentSize.end
 		);
+	}
+
+	getChapter(index: number) {
+		return this.catalog[index];
 	}
 }

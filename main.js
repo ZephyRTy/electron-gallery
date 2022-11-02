@@ -33,7 +33,7 @@ function createWindow() {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
-				pathname: path.join(__dirname, 'dist', 'index.html'),
+				pathname: path.join(__dirname, 'build', 'index.html'),
 				protocol: 'file:',
 				slashes: true
 			})

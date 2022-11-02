@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 // Modified from: https://github.com/indooorsman/esbuild-css-modules-plugin
 // eff4a500c56a45b1550887a8f7c20f57b01a46b7
@@ -41,7 +42,6 @@ async function buildScss(
 	scssFullPath: string,
 	sassOptions: sass.Options<'sync'>
 ): Promise<sass.CompileResult> {
-	console.log(chalk.green(`Compiling ${scssFullPath}...`));
 	return await sass.compile(scssFullPath);
 }
 
@@ -52,7 +52,7 @@ async function buildScssModulesJS(
 	const css = (await buildScss(scssFullPath, options.scssOptions)).css;
 	let cssModulesJSON = {};
 	const result = await postcss([
-		postcssModules({
+		postcssModules.default({
 			localsConvention: options.localsConvention,
 			generateScopedName: options.generateScopedName,
 			getJSON(cssSourceFile, json) {
