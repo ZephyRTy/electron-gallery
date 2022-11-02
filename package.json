@@ -82,7 +82,7 @@
 	},
 	"scripts": {
 		"dev:webpack": "node scripts/start.js",
-		"dev:esbuild": "node dev/esbuild.config.js",
+		"dev:esbuild": "node scripts/esbuild.dev.js",
 		"dev:run:electron": "electron .",
 		"build": "node scripts/build.js",
 		"esbuild": "node scripts/es_build.js",

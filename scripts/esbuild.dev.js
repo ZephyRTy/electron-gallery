@@ -25,6 +25,9 @@ const logLocalhostUrl = () => {
 const logBuildSuccess = (message) => {
 	console.log(chalk.bgRgb(37, 120, 181).bold(message));
 };
+if (!fse.existsSync(path.join('./dev'))) {
+	fse.mkdirSync(path.join('./dev'));
+}
 esbuild
 	.build({
 		// 入口
@@ -35,6 +38,11 @@ esbuild
 		bundle: true,
 		// 输出的目录
 		outdir: './dev',
+		// 定义环境变量
+		define: {
+			'process.env.NODE_ENV': '"development"',
+			'process.env.DEBUG': true
+		},
 		// 启动轮询的监听模式
 		watch: {
 			onRebuild(error) {
