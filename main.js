@@ -26,14 +26,14 @@ function createWindow() {
 		}
 	});
 	remote.enable(mainWindow.webContents);
-	if (!app.isPackaged) {
+	if (app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL('http://localhost:3000/');
 	} else {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
-				pathname: path.join(__dirname, 'build', 'index.html'),
+				pathname: path.join(__dirname, 'dist', 'index.html'),
 				protocol: 'file:',
 				slashes: true
 			})

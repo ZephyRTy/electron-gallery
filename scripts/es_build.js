@@ -2,6 +2,11 @@
 const svgrPlugin = require('esbuild-plugin-svgr');
 const sassPlugin = require('esbuild-plugin-sass');
 const { ScssModulesPlugin } = require('../plugins/sassModulePlugin');
+const fse = require('fs-extra');
+const path = require('path');
+if (!fse.existsSync(path.join('./dist'))) {
+	fse.mkdirSync(path.join('./dist'));
+}
 require('esbuild')
 	.build({
 		entryPoints: ['./src/index.tsx'],
@@ -29,5 +34,36 @@ require('esbuild')
 				exportType: 'named'
 			})
 		]
+	})
+	.then(async () => {
+		const fileName = path.join('./dist/index.html');
+		// 创建文件，如果文件不存在直接创建，存在不做任何事情
+		await fse.ensureFile(fileName);
+		// 把下面内容写入dist中的index.html文件中
+		await fse.writeFileSync(
+			fileName,
+			`
+ <!DOCTYPE html>
+ <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link rel="stylesheet" href="./index.css">
+	<link rel="stylesheet" href="./_modules.css">
+  </head>
+  <body>
+    <div id="root">  </div>
+  </body>
+  <script type="module" src="./index.js"></script>
+  <script>
+    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
+    ':35729/livereload.js?snipver=1"></' + 'script>')
+  </script>
+  </script>
+ </html>
+ `
+		);
 	})
 	.catch(() => process.exit(1));
