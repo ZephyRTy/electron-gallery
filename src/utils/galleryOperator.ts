@@ -2,7 +2,6 @@
 /* eslint-disable new-cap */
 /* eslint-disable no-unused-vars */
 import { Map } from 'immutable';
-import { defaultCover } from '../types/constant';
 import {
 	ImageBookmark,
 	ImageDirectory,
@@ -10,7 +9,7 @@ import {
 	NormalImage
 } from '../types/global';
 import { FileOperator } from './fileOperator';
-import { compress, endsWith } from './functions';
+import { compress, endsWith, rmDir } from './functions';
 import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { mysqlOperator } from './mysqlOperator';
 import { ReaderOperator } from './readerOperator';
@@ -108,13 +107,12 @@ export class GalleryOperator extends FileOperator<
 					} else {
 						successCount++;
 					}
-
-					if (i === data.length - 1 && successCount) {
-						this.switchMode(Mode.Init);
-						compress(img).then(() => {
+					compress(img).then(() => {
+						if (i === data.length - 1 && successCount) {
+							this.switchMode(Mode.Init);
 							this.refresh();
-						});
-					}
+						}
+					});
 				})
 			);
 		});
@@ -127,12 +125,16 @@ export class GalleryOperator extends FileOperator<
 		});
 	}
 	async addNewDir(dirName: string) {
-		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
-			return -1;
+		// if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
+		// 	return -1;
+		// }
+		for (let key of this.dirMap.keys()) {
+			if (this.dirMap.get(key)!.title === dirName) {
+				return -Number(key);
+			}
 		}
 		let newDirectory = {
-			dir_title: dirName,
-			dir_cover: defaultCover
+			dir_title: dirName
 		};
 		let res = await mysqlOperator.insertDir(newDirectory);
 		if (res) {
@@ -143,7 +145,7 @@ export class GalleryOperator extends FileOperator<
 		return -1;
 	}
 	//获取当前要打开的页面
-	current(packId: number, change: boolean = true) {
+	override packWillOpen(packId: number, change: boolean = true) {
 		this.switchMode(Mode.Detail);
 		let res: NormalImage = null as any;
 		if (this.mode === Mode.Bookmark) {
@@ -153,10 +155,35 @@ export class GalleryOperator extends FileOperator<
 		} else {
 			res = this.currentPacks.find((v) => v.id === packId)!;
 		}
+		if (res) {
+			window.sessionStorage.setItem('current', JSON.stringify(res));
+		} else {
+			res = JSON.parse(window.sessionStorage.getItem('current')!);
+		}
 		if (change) {
 			this.titleWillUpdate(res.title);
 		}
 		return res;
+	}
+
+	removePack(pack: NormalImage, shouldDelete = false) {
+		if (pack.parent) {
+			this.removeFileFromDir(pack.id, pack.parent);
+		}
+		this.deletePack(pack.id);
+		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
+		this.starModel.remove(pack.id);
+		this.bookmarkModel.remove(pack.id);
+		this.searchCache.res = this.searchCache.res.filter(
+			(e) => e.id !== pack.id
+		);
+		if (shouldDelete) {
+			rmDir(pack.path).then(() => {
+				this.refresh();
+			});
+		} else {
+			this.refresh();
+		}
 	}
 }
 

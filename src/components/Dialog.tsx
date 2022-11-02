@@ -3,11 +3,14 @@
 /* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
-import React, { useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Store, useData } from 'syill';
-import globalConfig, { LINE_HEIGHT, translation } from '../types/constant';
-import { DirectoryInfo } from '../types/global';
+import galleryConfig, {
+	lineHeight,
+	readerConfig,
+	translation
+} from '../types/constant';
+import { Chapter, DirectoryInfo } from '../types/global';
 import { BookDetail } from '../utils/BookDetail';
 import { FileOperator } from '../utils/fileOperator';
 import { GalleryOperator } from '../utils/galleryOperator';
@@ -112,17 +115,21 @@ const DirMapContent = (props: {
 			}
 		}
 	}, [checked, props.visible]);
-	return (
-		<>
+	const dirList = useMemo(() => {
+		return (
 			<ul className={styles['dir-map-list']} ref={ul}>
 				{dirs.map((dir: [string, DirectoryInfo], v) => {
 					const dirIndex = dir[0];
 					return (
-						<li className={styles['dir-map-item']} key={dirIndex}>
+						<li
+							className={styles['dir-map-item']}
+							id={'input-' + dirIndex}
+							key={dirIndex}
+						>
 							<input
 								checked={checked === dirIndex}
 								className={styles['dir-map-checkbox']}
-								disabled={!globalConfig.r18}
+								disabled={!galleryConfig.r18}
 								id={'checkbox-' + dirIndex}
 								onClick={() => {
 									if (checked === dirIndex) {
@@ -139,7 +146,7 @@ const DirMapContent = (props: {
 							<label htmlFor={'checkbox-' + dirIndex}>
 								<div className={styles['dir-map-item-content']}>
 									<span>
-										{globalConfig.r18
+										{galleryConfig.r18
 											? dir[1].title
 											: `文件夹${v}`}
 									</span>
@@ -154,11 +161,16 @@ const DirMapContent = (props: {
 					);
 				})}
 			</ul>
+		);
+	}, [dirs, checked]);
+	return (
+		<>
+			{dirList}
 			<input
 				className={`${styles['dir-map-input']} ${
 					err ? styles['dir-map-input--error'] : ''
 				}`}
-				disabled={!globalConfig.r18}
+				disabled={!galleryConfig.r18}
 				onChange={(e) => {
 					if (err) {
 						setErr(false);
@@ -175,6 +187,11 @@ const DirMapContent = (props: {
 									setDestination(dirIndex.toString());
 								} else {
 									setErr(true);
+									document
+										.querySelector(`#input-${-dirIndex}`)!
+										.scrollIntoView();
+									setChecked(dirIndex);
+									setDestination(dirIndex);
 								}
 							});
 					}
@@ -202,7 +219,7 @@ const DirMapContent = (props: {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
-						if (destination.length === 0 || !globalConfig.r18) {
+						if (destination.length === 0 || !galleryConfig.r18) {
 							return;
 						} else if (isNaN(parseInt(destination))) {
 							throw new Error('Wrong destination directory');
@@ -258,7 +275,7 @@ const RenameContent = (props: {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
-						if (!globalConfig.r18) {
+						if (!galleryConfig.r18) {
 							dialogActive.setActive(false);
 							props.setVisible(false);
 							return;
@@ -280,7 +297,12 @@ const RenameContent = (props: {
 	);
 };
 
-const configContent = (props: { setVisible: (v: boolean) => void }) => {
+const configContent = (props: {
+	setVisible: (v: boolean) => void;
+	oldConfig: object;
+	type: 'gallery' | 'reader';
+}) => {
+	const { oldConfig: globalConfig } = props;
 	const newConfig = useRef({ ...globalConfig });
 	const [confirmed, setConfirmed] = useState(false);
 	return (
@@ -319,9 +341,14 @@ const configContent = (props: { setVisible: (v: boolean) => void }) => {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
+						let obj = {
+							gallery: galleryConfig,
+							reader: readerConfig
+						};
+						obj[props.type] = newConfig.current;
 						fs.writeFileSync(
 							'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
-							JSON.stringify(newConfig.current)
+							JSON.stringify(obj)
 						);
 						ipcRenderer.send('relaunch');
 					}}
@@ -435,41 +462,49 @@ const ConfigItem = (props: {
 	);
 };
 
-const CatalogItem = (props: { title: string }) => {
-	return (
-		<div>
-			<span>{props.title}</span>
-		</div>
-	);
+const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
+	const item = useMemo(() => {
+		return (
+			<li
+				className={
+					styles['catalog-list-item'] +
+					(props.current ? ' ' + styles['current-chapter'] : '')
+				}
+				onClick={() => {
+					document.querySelector('#reader-scroll-ele')!.scrollTop =
+						props.chapter.index * lineHeight;
+				}}
+				title={props.chapter.title}
+			>
+				<span>{props.chapter.title}</span>
+			</li>
+		);
+	}, [props.chapter, props.current]);
+	return <>{item}</>;
 };
-
 const CatalogContent = (props: {
 	setVisible: (v: boolean) => void;
 	book: BookDetail;
-	scrollEle: HTMLElement;
+	currentChapter: number;
 }) => {
 	const [reg, setReg] = useState(props.book?.reg || '');
 	const [catalog, setCatalog] = useState(props.book?.getCatalog() || []);
 	useEffect(() => {
 		setReg(props.book?.reg || '');
 	}, [props.book?.reg]);
+	useEffect(() => {
+		setCatalog(props.book?.getCatalog() || []);
+	}, [props.book]);
 	return (
 		<>
 			<ul className={styles['catalog-list']}>
-				{catalog.map((e) => {
+				{catalog.map((e, i) => {
 					return (
-						<li
-							className={styles['catalog-list-item']}
+						<CatalogItem
+							chapter={e}
+							current={i === props.currentChapter}
 							key={e.index}
-							onClick={() => {
-								document.querySelector(
-									'#reader-scroll-ele'
-								)!.scrollTop = e.index * LINE_HEIGHT;
-							}}
-							title={e.title}
-						>
-							<span>{e.title}</span>
-						</li>
+						/>
 					);
 				})}
 			</ul>
@@ -515,13 +550,4 @@ export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
 export const Rename = createDialog(RenameContent, renameVisibleStore);
 export const Config = createDialog(configContent, configVisibleStore);
 
-const Catalog = createDialog(CatalogContent, catalogVisibleStore);
-export const CatalogPortal = (props: {
-	book: BookDetail;
-	scrollEle: HTMLElement;
-}) => {
-	return ReactDOM.createPortal(
-		<Catalog book={props.book} scrollEle={props.scrollEle} />,
-		document.querySelector('main')!
-	);
-};
+export const Catalog = createDialog(CatalogContent, catalogVisibleStore);

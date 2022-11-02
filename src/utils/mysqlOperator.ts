@@ -9,7 +9,7 @@ import {
 	Mode,
 	NormalImage
 } from '../types/global';
-import { formatDate, hasExternalDriver } from './functions';
+import { formatDate, getAllDrive } from './functions';
 
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');
@@ -20,12 +20,14 @@ export class MysqlOperator {
 	private _pool: any;
 	private _config: any;
 	private _searchRes = { param: '', result: [] as string[] };
-	private hasExternalDriver: boolean = hasExternalDriver;
+	private hasExternalDriver: boolean = false;
+	private loaded = false;
 	private init = false;
 	private database: string = 'GALLERY';
 	private mainTableName = 'pack_list';
 	count: number = 0;
 	private constructor() {
+		this.checkExternalDriver();
 		this._config = {
 			host: 'localhost',
 			user: 'root',
@@ -44,6 +46,48 @@ export class MysqlOperator {
 		return MysqlOperator._instance;
 	}
 
+	async checkExternalDriver() {
+		if (this.loaded) {
+			return this.hasExternalDriver;
+		}
+		const res = await getAllDrive();
+		this.hasExternalDriver = !!res.find(
+			(e) => e.name === 'BigHouse' && e.drive === 'E'
+		);
+		this.loaded = true;
+		return this.hasExternalDriver;
+	}
+
+	getPackById(id: number) {
+		const sql = `select * from ${this.mainTableName} where id = ?`;
+		return new Promise((resolve, reject) => {
+			if (this.count !== 0) {
+				resolve(this.count);
+			}
+			this._pool.getConnection((err: any, connection: any) => {
+				connection?.query(sql, [id], (err: any, result: any) => {
+					connection.release();
+					if (err) {
+						reject(err);
+					} else {
+						if (result.length !== 1) {
+							reject('查询结果不为1');
+						}
+						const v = result[0];
+						resolve({
+							id: v.id ?? v.dir_id,
+							title: v.title ?? v.dir_title,
+							path: v.path ?? '',
+							cover: v.cover ?? v.dir_cover,
+							stared: Boolean(v.stared ?? v.dir_stared),
+							parent: v.parent,
+							reg: v.reg
+						});
+					}
+				});
+			});
+		});
+	}
 	switchDatabase(database: string, tableName: string) {
 		if (database === this.database) {
 			return false;
@@ -86,14 +130,17 @@ export class MysqlOperator {
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} stared = 1 order by id desc`;
 				break;
-			case Mode.InDir:
+			case Mode.DirContent:
 				dirId = window.location.href.match(/directory=([0-9]+)/)![1];
 				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} parent = ${dirId} order by id desc`;
 				break;
-			case Mode.ShowDir:
+			case Mode.ShowDirs:
 				sql = `select * from directory order by update_time desc`;
+				if (this.mainTableName === 'pack_list') {
+					sql = `select * from directory,pack_list where cover_id = id order by update_time desc`;
+				}
 				break;
 			case Mode.Bookmark:
 				sql = `select id, title,path, b_cover as cover, b_url as url,
@@ -143,13 +190,13 @@ export class MysqlOperator {
 								})
 							);
 							return;
-						} else if (mode === Mode.ShowDir) {
+						} else if (mode === Mode.ShowDirs) {
 							resolve(
 								result.map((v: any) => {
 									return {
 										id: v.dir_id,
 										title: v.dir_title,
-										cover: v.dir_cover,
+										cover: v.path + v.cover,
 										timeStamp:
 											formatDate(
 												new Date(
@@ -223,16 +270,22 @@ export class MysqlOperator {
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} stared = 1 and title ${key} order by id desc`;
 				break;
-			case Mode.InDir:
+			case Mode.DirContent:
 				dirId = window.location.href.match(/directory=([0-9]+)/)![1];
 				sql = `select * from ${this.mainTableName} where ${
 					this.hasExternalDriver ? '' : "path not like 'E%' and"
 				} parent = ${dirId} and title ${key} order by id desc`;
 				break;
-			case Mode.ShowDir:
-				sql = `select * from directory where ${
-					this.hasExternalDriver ? '' : "path not like 'E%' and"
-				} dir_title ${key} order by update_time desc`;
+			case Mode.ShowDirs:
+				if (this.mainTableName === 'pack_list') {
+					sql = `select * from directory, pack_list where ${
+						this.hasExternalDriver ? '' : "path not like 'E%' and"
+					} dir_title ${key} and directory.cover_id = pack_list.id order by update_time desc`;
+				} else {
+					sql = `select * from directory where ${
+						this.hasExternalDriver ? '' : "path not like 'E%' and"
+					} dir_title ${key} order by update_time desc`;
+				}
 				break;
 			case Mode.Bookmark:
 				sql = `select * from bookmark, ${
@@ -256,13 +309,17 @@ export class MysqlOperator {
 						resolve(
 							result.map((v: any) => {
 								return {
-									id: v.id ?? v.dir_id,
-									title: v.title ?? v.dir_title,
-									path: v.path ?? '',
-									cover: v.cover ?? v.dir_cover,
+									id: v.dir_id ?? v.id,
+									title: v.dir_title ?? v.title,
+									path: mode === Mode.ShowDirs ? '' : v.path,
+									cover:
+										mode === Mode.ShowDirs
+											? v.path + v.cover
+											: v.cover,
 									stared: Boolean(v.stared ?? v.dir_stared),
 									parent: v.parent,
-									reg: v.reg
+									reg: v.reg,
+									timeStamp: v.update_time
 								} as unknown as T;
 							})
 						);
@@ -286,7 +343,7 @@ export class MysqlOperator {
 			});
 		});
 	}
-
+	//TODO 文件夹封面的外键约束
 	async updateDir(
 		dirId: number,
 		packId: number,
@@ -298,12 +355,27 @@ export class MysqlOperator {
 			number | null,
 			number
 		];
-		return new Promise((resolve, reject) => {
-			if (cover) {
+		if (cover) {
+			if (status) {
 				this._pool.getConnection((err: any, connection: any) => {
 					connection.query(
-						'update directory set dir_cover = ? where  dir_id = ?',
-						[cover, dirId],
+						'update directory set cover_id = ? where  dir_id = ?',
+						[packId, dirId],
+						(err: any) => {
+							connection.release();
+							if (err) {
+								console.error(err);
+							}
+						}
+					);
+				});
+			} else {
+				this._pool.getConnection((err: any, connection: any) => {
+					connection.query(
+						`update directory, (select id, title, parent from pack_list where id in 
+							(select max(id) from pack_list where parent > 0 group by parent having id != ?)) as t
+							set cover_id = t.id where  dir_id = ? and t.parent = dir_id`,
+						[packId, dirId],
 						(err: any) => {
 							connection.release();
 							if (err) {
@@ -313,6 +385,8 @@ export class MysqlOperator {
 					);
 				});
 			}
+		}
+		return new Promise((resolve, reject) => {
 			this._pool.getConnection(async (err: any, connection: any) => {
 				connection.query(sql, sqlParam, (err: any, res: any) => {
 					connection.release();
@@ -482,6 +556,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [reg, id], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -495,6 +570,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [title, packID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -509,6 +585,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [title, dirID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -527,6 +604,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [cover, packID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}
@@ -541,6 +619,7 @@ export class MysqlOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [packID], (err: any, res: any) => {
+					connection.release();
 					if (err) {
 						reject(err);
 					}

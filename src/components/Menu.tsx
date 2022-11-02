@@ -52,13 +52,13 @@ export const Menu = (props: { type: 'reader' | 'gallery' }) => {
 			window.location.href
 		);
 		if (directory) {
-			setMode(Mode.InDir);
+			setMode(Mode.DirContent);
 		} else if (stared) {
 			setMode(Mode.Stared);
 		} else if (bookmark) {
 			setMode(Mode.Bookmark);
 		} else if (show_dir) {
-			setMode(Mode.ShowDir);
+			setMode(Mode.ShowDirs);
 		} else if (search) {
 		} else {
 			setMode(Mode.Normal);
@@ -82,7 +82,7 @@ export const Menu = (props: { type: 'reader' | 'gallery' }) => {
 				type={props.type}
 			/>
 			<ShowDir
-				activeMode={Mode.ShowDir}
+				activeMode={Mode.ShowDirs}
 				currentMode={mode}
 				type={props.type}
 			/>

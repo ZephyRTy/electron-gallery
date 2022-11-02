@@ -1,3 +1,5 @@
+/* eslint-disable quotes */
+/* eslint-disable no-undef */
 'use strict';
 
 // Do this as the first thing so that any code reading it knows the right env.
@@ -56,7 +58,7 @@ if (process.env.HOST) {
 		)
 	);
 	console.log(
-		`If this was unintentional, check that you haven't mistakenly set it in your shell.`
+		"If this was unintentional, check that you haven't mistakenly set it in your shell."
 	);
 	console.log(
 		`Learn more here: ${chalk.yellow('https://cra.link/advanced-config')}`
@@ -128,7 +130,7 @@ checkBrowsers(paths.appPath, isInteractive)
 			}
 
 			console.log(chalk.cyan('Starting the development server...\n'));
-			openBrowser(urls.localUrlForBrowser);
+			//openBrowser(urls.localUrlForBrowser);
 		});
 
 		['SIGINT', 'SIGTERM'].forEach(function (sig) {

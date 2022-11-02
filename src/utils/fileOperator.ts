@@ -39,6 +39,7 @@ export abstract class FileOperator<
 	bookmark extends BasicBookmark,
 	folder extends BasicFolder
 > {
+	external = false;
 	protected directories: normal[] = [];
 	protected fileCache = {
 		startPage: 0,
@@ -80,7 +81,7 @@ export abstract class FileOperator<
 		mysqlOperator.select<normal, folder>([], Mode.Bookmark).then((res) => {
 			this.bookmarkModel.data = res as unknown as bookmark[];
 		});
-		mysqlOperator.select<normal, folder>([], Mode.ShowDir).then((res) => {
+		mysqlOperator.select<normal, folder>([], Mode.ShowDirs).then((res) => {
 			this.directories = res as normal[];
 		});
 		mysqlOperator.mapDir().then((res) => {
@@ -125,7 +126,7 @@ export abstract class FileOperator<
 		this.searchCache.res = [];
 		this.titleWillUpdate('Search=' + this.searchCache.key);
 		let result = [] as normal[];
-		if (this.mode === Mode.InDir) {
+		if (this.mode === Mode.DirContent) {
 			result = this.currentPacks.filter((v) => v.title.includes(key));
 		} else {
 			result = await mysqlOperator.search(
@@ -183,8 +184,8 @@ export abstract class FileOperator<
 		index: number,
 		page: number
 	): Promise<[normal[], number]> {
-		if (this.switchMode(Mode.InDir)) {
-			this.currentPacks = await mysqlOperator.select([], Mode.InDir);
+		if (this.switchMode(Mode.DirContent)) {
+			this.currentPacks = await mysqlOperator.select([], Mode.DirContent);
 		}
 		return [
 			this.currentPacks.slice(
@@ -222,8 +223,8 @@ export abstract class FileOperator<
 		this.starModel.update(newStar);
 	}
 	async showDir(page: number): Promise<[normal[], number]> {
-		this.switchMode(Mode.ShowDir);
-		let res = await mysqlOperator.select<normal, folder>([], Mode.ShowDir);
+		this.switchMode(Mode.ShowDirs);
+		let res = await mysqlOperator.select<normal, folder>([], Mode.ShowDirs);
 		this.currentPacks = res as normal[];
 		return [
 			res.slice(
@@ -234,6 +235,7 @@ export abstract class FileOperator<
 		];
 	}
 	async getPacks(page: number, url: string): Promise<[normal[], number]> {
+		this.external = !!(await mysqlOperator.checkExternalDriver());
 		let query: {
 			search?: string;
 			directory?: string;
@@ -297,7 +299,7 @@ export abstract class FileOperator<
 	}
 
 	//获取当前要打开的页面
-	abstract current(packId: number, change: boolean);
+	abstract packWillOpen(packId: number, change: boolean);
 
 	async bookmarksUpdate(newBookmark: bookmark, marked: boolean = true) {
 		if (hasCover(newBookmark)) {
@@ -346,22 +348,7 @@ export abstract class FileOperator<
 		});
 	}
 
-	async addNewDir(dirName: string) {
-		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
-			return -1;
-		}
-		let newDirectory = {
-			dir_title: dirName,
-			dir_cover: defaultCover
-		};
-		let res = await mysqlOperator.insertDir(newDirectory);
-		if (res) {
-			this.dirMap = Map(await mysqlOperator.mapDir());
-			this.switchMode(Mode.Init);
-			return res;
-		}
-		return -1;
-	}
+	abstract addNewDir(dirName: string);
 	removeFileFromDir(packId: number, dirId: number) {
 		let e = this.currentPacks.find((e) => e.id !== packId);
 		if (hasCover(e)) {
@@ -386,23 +373,23 @@ export abstract class FileOperator<
 	modeType(mode: Mode) {
 		switch (mode) {
 			case Mode.Init:
-				return 'Gallery';
+				return 'Integration';
 			case Mode.Detail:
 				return 'Detail';
 			case Mode.Bookmark:
 				return 'Bookmark';
-			case Mode.ShowDir:
+			case Mode.ShowDirs:
 				return 'Directories';
 			case Mode.Stared:
 				return 'Stared';
-			case Mode.InDir:
+			case Mode.DirContent:
 				return (
 					this.dirMap!.get(
 						window.location.href.match(/directory=([0-9]+)/)![1]
 					)?.title ?? 'Directories'
 				);
 			default:
-				return 'Gallery';
+				return 'Integration';
 		}
 	}
 
@@ -451,7 +438,7 @@ export abstract class FileOperator<
 	}
 
 	rename(newTitle: string) {
-		if (this.mode === Mode.ShowDir) {
+		if (this.mode === Mode.ShowDirs) {
 			return this.renameDir(newTitle);
 		}
 		return this.renamePack(newTitle);
@@ -460,7 +447,7 @@ export abstract class FileOperator<
 		return mysqlOperator.getCount();
 	}
 
-	deletePack(packId: number) {
+	protected deletePack(packId: number) {
 		mysqlOperator.delete(packId);
 	}
 	get modeOfSearch() {
@@ -468,7 +455,7 @@ export abstract class FileOperator<
 	}
 
 	get inDir() {
-		return this.mode === Mode.InDir;
+		return this.mode === Mode.DirContent;
 	}
 
 	searchParentName(parentID: number | undefined) {
@@ -491,7 +478,7 @@ export abstract class FileOperator<
 		promises.push(mysqlOperator.getCount());
 		promises.push(mysqlOperator.select<normal, folder>([], Mode.Stared));
 		promises.push(mysqlOperator.select<normal, folder>([], Mode.Bookmark));
-		promises.push(mysqlOperator.select<normal, folder>([], Mode.ShowDir));
+		promises.push(mysqlOperator.select<normal, folder>([], Mode.ShowDirs));
 		let [dirMap, total, stared, bookmark, showDir] = await Promise.all(
 			promises
 		);

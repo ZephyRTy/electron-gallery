@@ -1,13 +1,20 @@
 /* eslint-disable camelcase */
 import { Map } from 'immutable';
 import { SPACE_CODE } from '../types/constant';
-import { Book, BookDirectory, BookmarkOfBook, Mode } from '../types/global';
+import {
+	Book,
+	BookDirectory,
+	BookmarkOfBook,
+	Mode,
+	TextLine
+} from '../types/global';
 import { BookDetail } from './BookDetail';
 import { FileOperator } from './fileOperator';
 import { deleteUselessWords } from './functions';
 import { mysqlOperator } from './mysqlOperator';
 const fs = window.require('fs/promises');
 const iconv = window.require('iconv-lite');
+const path = window.require('path');
 iconv.skipDecodeWarning = true;
 const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
@@ -21,7 +28,6 @@ export const isText = (file: string) => file.endsWith('.txt');
 // eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
 
-//TODO 文本搜索
 export class ReaderOperator extends FileOperator<
 	Book,
 	BookmarkOfBook,
@@ -45,6 +51,11 @@ export class ReaderOperator extends FileOperator<
 	}
 
 	async loadText() {
+		if (!this.currentBook) {
+			this.currentBook = JSON.parse(
+				window.sessionStorage.getItem('currentBook')!
+			);
+		}
 		let text = await fs.readFile(this.currentBook!.path, 'utf-8');
 		if (this.isNotUtf8(text)) {
 			text = this.gbkToUtf8(
@@ -57,22 +68,38 @@ export class ReaderOperator extends FileOperator<
 		const book = new BookDetail(this.currentBook!);
 		const lines = text.split('\n');
 		let lineNum = 0;
+		let paragraphIndex = 0;
+		let continuousBlankLine = 0;
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
 			let len = line.length;
-			if (len) {
-				book.addContent(
-					splitWords(line, this.lettersOfEachLine).map((item) => {
-						return {
-							index: lineNum++,
-							content: `<p class="text-line">${item}</p>`
-						};
-					})
-				);
+			if (len && line !== DOUBLE_SPACE) {
+				continuousBlankLine = 0;
+				const words = [] as TextLine[];
+				const arr = splitWords(line, this.lettersOfEachLine);
+				for (let i = 0; i < arr.length; i++) {
+					const item = arr[i];
+					words.push({
+						index: lineNum++,
+						content: `${item}`,
+						className: ['text-line'],
+						paragraphIndex:
+							item.length < this.lettersOfEachLine
+								? paragraphIndex
+								: paragraphIndex++
+					});
+				}
+				book.addContent(words);
+			}
+			++continuousBlankLine;
+			if (continuousBlankLine === 2) {
+				continue;
 			}
 			book.addContent({
 				index: lineNum++,
-				content: '<p class="text-br"></p>'
+				content: '',
+				className: ['text-br'],
+				paragraphIndex: -1
 			});
 		}
 		return book;
@@ -115,7 +142,15 @@ export class ReaderOperator extends FileOperator<
 			if (!e.path || !e.title || !isText(e.path)) {
 				return;
 			}
-
+			const novelPath = path.resolve('D:/小说', path.basename(e.path));
+			if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
+				fs.rename(e.path, novelPath, (err) => {
+					if (err) {
+						console.error(err);
+					}
+				});
+				e.path = novelPath;
+			}
 			let newPack = {
 				path: e.path,
 				title: deleteUselessWords(
@@ -166,10 +201,11 @@ export class ReaderOperator extends FileOperator<
 		return -1;
 	}
 
-	current() {
+	packWillOpen() {
 		return this.currentBook;
 	}
 	mountBook(book: Book) {
+		window.sessionStorage.setItem('currentBook', JSON.stringify(book));
 		this.titleWillUpdate(book.title);
 		this.currentBook = book;
 	}

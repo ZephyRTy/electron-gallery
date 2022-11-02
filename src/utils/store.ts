@@ -33,3 +33,8 @@ export const imageStateStore = { current: '' };
 export const currentOperator: { op: FileOperator<any, any, any> | null } = {
 	op: null
 };
+
+export const findStore = new Store(false);
+export const cursorStore = new Store(
+	[] as { top: number; offset: number; width: number }[]
+);

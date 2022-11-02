@@ -1,20 +1,26 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-	CONTENT_RANGE,
+	contentRange,
+	deltaLine,
 	DELTA_HEIGHT,
-	DELTA_LINE,
-	DISTANCE_2_UPDATE,
-	LINE_HEIGHT,
-	OVERFLOW_NUM
+	distanceToUpdate,
+	lineHeight,
+	overflowNum
 } from '../../../types/constant';
-import { TextLine } from '../../../types/global';
 import { BookDetail } from '../../../utils/BookDetail';
+import { openInExplorer } from '../../../utils/functions';
 import { readerOperator } from '../../../utils/galleryOperator';
-import { CatalogPortal } from '../../Dialog';
+import { Catalog } from '../../Dialog';
 import styles from '../style/reader.module.scss';
+import { FindDialog, FindMaskContainer } from './FindDialog';
 import { Placeholder } from './Placeholder';
-export const BookContent = () => {
+
+export const BookContent = (props: {
+	renderMenu: (...args: any[]) => JSX.Element;
+}) => {
 	const article = useRef(null as HTMLDivElement | null);
 	let [searchParams] = useSearchParams();
 	const scrollTop = useRef(0);
@@ -23,42 +29,72 @@ export const BookContent = () => {
 	const [bottom, setBottom] = useState(0);
 	const [start, setStart] = useState(0);
 	const [book, setBook] = useState(null as any as BookDetail);
-	const [content, setContent] = useState([] as TextLine[]);
+	const [content, setContent] = useState([] as string[]);
+	const [chapter, setChapter] = useState(0);
 	const scrollEle = useRef(null);
 	const initBottom = useMemo(
-		() => (book ? (book.length - CONTENT_RANGE) * LINE_HEIGHT : 0),
+		() => (book ? (book.length - contentRange) * lineHeight : 0),
 		[book]
 	);
-	const updateWhenScrollLot = useCallback(
+	const updateWhenDrag = useCallback(
 		(eleScrollTop: number) => {
 			if (!book) return;
-			let lineNum = Math.ceil(eleScrollTop / LINE_HEIGHT);
-			const startLine =
-				lineNum - DELTA_LINE - OVERFLOW_NUM > 0
-					? lineNum - DELTA_LINE - OVERFLOW_NUM
+			let lineIndex = Math.ceil(eleScrollTop / lineHeight);
+			let startLine =
+				lineIndex - deltaLine - overflowNum > 0
+					? lineIndex - deltaLine - overflowNum
 					: 0;
-			setContent(book.getContent(startLine, startLine + CONTENT_RANGE));
+			setChapter(book.updateCurrentChapter(lineIndex, 'drag'));
+			if (startLine + contentRange >= book.length)
+				startLine = book.length - contentRange;
+			let bottom = 0,
+				top = 0;
+			if (
+				startLine > 0 &&
+				lineIndex - deltaLine - overflowNum + contentRange <=
+					book.length
+			) {
+				bottom =
+					initBottom -
+					(eleScrollTop - (deltaLine + overflowNum) * lineHeight);
+				top = eleScrollTop - (deltaLine + overflowNum) * lineHeight;
+			} else if (startLine === 0) {
+				bottom = initBottom;
+				top = 0;
+			} else {
+				bottom = 0;
+				top = initBottom;
+			}
+			setContent(book.getContent(startLine, startLine + contentRange));
 			setStart(startLine);
-			setTop(
-				startLine
-					? eleScrollTop - (DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT
-					: 0
-			);
-			setBottom(
-				startLine
-					? initBottom -
-							(eleScrollTop -
-								(DELTA_LINE + OVERFLOW_NUM) * LINE_HEIGHT) -
-							LINE_HEIGHT * CONTENT_RANGE
-					: initBottom
-			);
+			setTop(top);
+			setBottom(bottom);
 		},
 		[book]
 	);
+	// eslint-disable-next-line no-unused-vars
+	const scrollToLineNum = useCallback(
+		(lineNum: number) => {
+			const eleScrollTop = lineNum * lineHeight;
+			if (
+				Math.abs(eleScrollTop - (scrollEle.current as any).scrollTop) <
+				800
+			)
+				return;
+			(scrollEle.current as any).scrollTop = eleScrollTop;
+			scrollTop.current = eleScrollTop;
+			updateWhenDrag(eleScrollTop);
+			(scrollEle.current as any).scrollTop -= 400;
+		},
+		[updateWhenDrag]
+	);
 	const beforeScrollTop = useRef(0);
+	const handleOpenInExplorer = useCallback(() => {
+		if (book) openInExplorer(book.path);
+	}, [book]);
 	const handleScroll = useMemo(() => {
 		let timer: number;
-		return (e) => {
+		return (e: { stopPropagation: () => void }) => {
 			if (timer) {
 				clearTimeout(timer);
 			}
@@ -66,30 +102,39 @@ export const BookContent = () => {
 				if (scrollEle.current && article.current) {
 					e.stopPropagation();
 					let { scrollTop: eleScrollTop } = scrollEle.current as any;
-
 					let direction =
-						eleScrollTop - beforeScrollTop.current > 0 ? 1 : -1;
+						eleScrollTop - beforeScrollTop.current > 0 ? 1 : -1; //1向下滚动，-1向上滚动
 					beforeScrollTop.current = eleScrollTop;
 					scrollTop.current = eleScrollTop;
 					if (direction === 1) {
 						let distance = (
 							article.current as HTMLElement
 						).getBoundingClientRect().bottom;
-						if (start + CONTENT_RANGE >= book.length) {
+						if (start + contentRange >= book.length) {
 							return;
 						}
-						if (distance < 0) {
-							updateWhenScrollLot(eleScrollTop);
-						} else if (distance < DISTANCE_2_UPDATE) {
-							setContent(
-								book.getContent(
-									start + DELTA_LINE,
-									start + DELTA_LINE + CONTENT_RANGE
+						if (distance >= 0) {
+							setChapter(
+								book.updateCurrentChapter(
+									Math.ceil(eleScrollTop / lineHeight),
+									'scroll',
+									'down'
 								)
 							);
-							setStart(start + DELTA_LINE);
-							setTop(top + DELTA_HEIGHT);
-							setBottom(bottom - DELTA_HEIGHT);
+						}
+						if (distance < 0) {
+							updateWhenDrag(eleScrollTop);
+						} else if (distance < distanceToUpdate) {
+							setContent(
+								book.getContent(
+									start + deltaLine,
+									start + deltaLine + contentRange
+								)
+							);
+							let v = Math.min(top + DELTA_HEIGHT, initBottom);
+							setStart(start + deltaLine);
+							setTop(v);
+							setBottom(initBottom - v);
 						}
 					} else {
 						let distance = (
@@ -98,20 +143,29 @@ export const BookContent = () => {
 						if (start <= 0) {
 							return;
 						}
-						if (distance > 0) {
-							updateWhenScrollLot(eleScrollTop);
-						} else if (distance > -DISTANCE_2_UPDATE) {
-							setContent(
-								book.getContent(
-									start - DELTA_LINE,
-									start - DELTA_LINE + CONTENT_RANGE
+						if (distance <= 0) {
+							setChapter(
+								book.updateCurrentChapter(
+									Math.ceil(eleScrollTop / lineHeight),
+									'scroll',
+									'up'
 								)
 							);
-							setStart(start - DELTA_LINE);
-							setTop((v) =>
-								v - DELTA_HEIGHT > 0 ? v - DELTA_HEIGHT : 0
+						}
+						if (distance > 0) {
+							updateWhenDrag(eleScrollTop);
+						} else if (distance > -distanceToUpdate) {
+							setContent(
+								book.getContent(
+									start - deltaLine,
+									start - deltaLine + contentRange
+								)
 							);
-							setBottom((v) => v + DELTA_HEIGHT);
+
+							let v = Math.max(top - DELTA_HEIGHT, 0);
+							setStart(start - deltaLine);
+							setTop(v);
+							setBottom(initBottom - v);
 						}
 					}
 				}
@@ -121,15 +175,15 @@ export const BookContent = () => {
 	useEffect(() => {
 		readerOperator.loadText().then((res) => {
 			setBook(res);
-			setContent(res.getContent(start, start + CONTENT_RANGE));
-			setBottom((res.length - CONTENT_RANGE) * LINE_HEIGHT);
+			setContent(res.getContent(start, start + contentRange));
+			setBottom((res.length - contentRange) * lineHeight);
 		});
 	}, []);
 	useEffect(() => {
 		if (scroll) {
 			(scrollEle.current as any).scrollTop = scroll;
 			scrollTop.current = scroll;
-			updateWhenScrollLot(scrollTop.current);
+			updateWhenDrag(scrollTop.current);
 		}
 	}, [book]);
 	useEffect(() => {
@@ -137,26 +191,36 @@ export const BookContent = () => {
 			(scrollEle.current as any).scrollTop = scrollTop.current;
 		}
 	}, [top, bottom]);
+	const mainContent = useMemo(() => {
+		return (
+			<>
+				<Placeholder height={top} />
+				<article
+					className={styles['reader-content']}
+					dangerouslySetInnerHTML={{
+						__html: content.join('')
+					}}
+					ref={article}
+				></article>
+				<Placeholder height={bottom} />
+			</>
+		);
+	}, [content, top, bottom]);
 	return (
-		<div
-			className={styles['scroll-content']}
-			id="reader-scroll-ele"
-			onScroll={handleScroll}
-			ref={scrollEle}
-		>
-			<Placeholder height={top} />
-			<article
-				className={styles['reader-content']}
-				dangerouslySetInnerHTML={{
-					__html: content.map((e) => e.content).join('')
-				}}
-				ref={article}
-			></article>
-			<CatalogPortal
-				book={book}
-				scrollEle={scrollEle as any as HTMLElement}
-			/>
-			<Placeholder height={bottom} />
-		</div>
+		<>
+			<Catalog book={book} currentChapter={chapter} />
+			{props.renderMenu(handleOpenInExplorer)}
+			<div
+				className={styles['scroll-content']}
+				id="reader-scroll-ele"
+				onScroll={handleScroll}
+				ref={scrollEle}
+			>
+				<FindMaskContainer />
+				<div className={styles['find-mask']}></div>
+				{mainContent}
+			</div>
+			<FindDialog book={book} scrollToLine={scrollToLineNum} />
+		</>
 	);
 };

@@ -96,6 +96,9 @@ const cmdOrder = {
 		`wmic logicaldisk where name="${drive}:" get volumename`
 };
 
+export const externalDriver = {
+	value: false
+};
 /**
  * 获取电脑中所有盘符及其名称
  * @returns 电脑中所有盘符及其名称
@@ -171,10 +174,6 @@ export async function getAllDrive(): Promise<
 
 	return result;
 }
-
-export const hasExternalDriver = Boolean(
-	(await getAllDrive()).find((e) => e.name === 'BigHouse' && e.drive === 'E')
-);
 
 export const setSearchParams = (head: string, params: any) => {
 	let search = '';
@@ -290,4 +289,24 @@ export const deleteUselessWords = (str: string, ...useless: string[]) => {
 
 export const gotoHash = (hash: string) => {
 	window.location.hash = hash;
+};
+export const rmDir = async (dirPath: string) => {
+	let files = [];
+	try {
+		files = fs.readdirSync(dirPath);
+	} catch (e) {
+		return false;
+	}
+	if (files.length > 0)
+		for (let i = 0; i < files.length; i++) {
+			let filePath = dirPath + '/' + files[i];
+			if (fs.statSync(filePath).isFile()) fs.unlinkSync(filePath);
+			else rmDir(filePath);
+		}
+	await fs.rmdir(dirPath, (err) => {
+		if (err) {
+			console.error(err);
+		}
+	});
+	return true;
 };

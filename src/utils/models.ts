@@ -19,6 +19,9 @@ export const createStarModel = <T extends BasicData>(): Model<T> => {
 				await mysqlOperator.updateStar(newStar);
 			}
 			this.data = await mysqlOperator.select([], Mode.Stared);
+		},
+		remove(id) {
+			this.data = this.data.filter((item) => item.id !== id);
 		}
 	};
 };
@@ -44,6 +47,9 @@ export const bookmarkModel: Model<ImageBookmark> = {
 			[],
 			Mode.Bookmark
 		)) as ImageBookmark[];
+	},
+	remove(id) {
+		this.data = this.data.filter((item) => item.id !== id);
 	}
 };
 export const createBookmarkModel = <T extends BasicBookmark>(): Model<T> => {
@@ -51,6 +57,9 @@ export const createBookmarkModel = <T extends BasicBookmark>(): Model<T> => {
 		dirty: false,
 		data: [] as T[],
 		dataToUpdate: [] as T[],
+		remove(id) {
+			this.data = this.data.filter((item) => item.id !== id);
+		},
 		async update(newData: T, marked: boolean = true) {
 			if (isImageBookmark(newData)) {
 				if (this.data.find((item) => item.id === newData.id)) {

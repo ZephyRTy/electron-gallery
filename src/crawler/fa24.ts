@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import globalConfig, {
+import galleryConfig, {
 	domainOf24fa,
 	downloadPath,
 	proxyEnabled
@@ -28,6 +27,11 @@ let missing: string[] =
 					'utf-8'
 				)
 		  );
+let getNewPacks: Circuit<
+	unknown,
+	unknown,
+	{ title: string; url: string; current: string }
+>;
 export const getImgFrom24fa = async () => {
 	let connection = mysql.createConnection({
 		host: 'localhost',
@@ -80,7 +84,7 @@ export const getImgFrom24fa = async () => {
 		cover: string;
 	}[] = [];
 
-	let getNewPacks = new Circuit(
+	getNewPacks = new Circuit(
 		(body: unknown) => {
 			let $ = cheerio.load(body as any);
 			let images = $('a[title^="后页"]');
@@ -109,11 +113,11 @@ export const getImgFrom24fa = async () => {
 				}
 				title = title.replace(/[\\/:*?"<>|]/g, '_');
 				if (mode !== 'new') {
-					if (!_.includes(missing, title)) {
+					if (!missing.includes(title)) {
 						return;
 					}
 				} else {
-					if (_.includes(recentCatalog, title)) {
+					if (recentCatalog.includes(title)) {
 						return;
 					}
 					newPacks.push({
@@ -143,7 +147,7 @@ export const getImgFrom24fa = async () => {
 		{ max: 1 }
 	);
 	Req.options = {
-		proxy: proxyEnabled ? globalConfig.proxy : undefined,
+		proxy: proxyEnabled ? galleryConfig.proxy : undefined,
 		headers
 	};
 

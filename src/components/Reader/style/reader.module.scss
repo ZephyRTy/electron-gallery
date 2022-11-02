@@ -6,6 +6,7 @@
 	overflow-y: auto;
 	height: fit-content !important;
 	&-content {
+		font-family: auto;
 		font-size: 16px;
 		display: block;
 		padding: 0 20px;
@@ -36,4 +37,52 @@
 	height: 96vh;
 	position: relative;
 	width: 100%;
+}
+
+.find {
+	&-dialog {
+		top: 30px;
+		right: 20px;
+		width: 300px;
+		height: 35px;
+		background-color: rgb(9, 160, 231);
+		position: absolute;
+		border: 1px solid #99d7f4;
+		border-radius: 4px;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		input {
+			width: 200px;
+			height: 25px;
+			outline: none;
+			border: none;
+			font-size: 16px;
+			z-index: 200;
+		}
+		button {
+			width: 60px;
+			height: 30px;
+			outline: none;
+			border: none;
+			background-color: transparent;
+			margin: 0 3px;
+			svg {
+				margin-top: 0;
+				fill: black;
+			}
+			&:hover {
+				background-color: #99d7f4;
+			}
+		}
+	}
+	&-mask {
+		position: absolute;
+		top: 0;
+		left: 70px;
+		height: 30px;
+		background-color: #fffb2a7d;
+		z-index: 100;
+	}
 }

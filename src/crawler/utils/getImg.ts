@@ -1,4 +1,7 @@
-import globalConfig, { downloadPath, proxyEnabled } from '../../types/constant';
+import galleryConfig, {
+	downloadPath,
+	proxyEnabled
+} from '../../types/constant';
 
 const fs = window.require('fs');
 const request = window.require('request');
@@ -15,7 +18,7 @@ export function getImg(
 	if (!fs.existsSync(filePath + `\\${img.title}`)) {
 		fs.mkdirSync(filePath + `\\${img.title}`);
 	}
-	const proxy = proxyEnabled ? globalConfig.proxy : undefined;
+	const proxy = proxyEnabled ? galleryConfig.proxy : undefined;
 	try {
 		request({
 			url: img.src,

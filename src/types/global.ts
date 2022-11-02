@@ -53,6 +53,7 @@ export interface Model<T> {
 	data: T[];
 	dataToUpdate: T[];
 	update(newData?: T, ...args: any[]): void;
+	remove(id: number): void;
 }
 export interface HttpImagePack {
 	[index: number]: { title: string; mgSrcList: string[] };
@@ -62,14 +63,16 @@ export enum Mode {
 	Normal = 'Normal',
 	Stared = 'Stared',
 	Bookmark = 'Bookmark',
-	InDir = 'InDir', //文件夹内部
-	ShowDir = 'ShowDir',
+	DirContent = 'InDir', //文件夹内部
+	ShowDirs = 'ShowDirs',
 	Detail = 'Detail'
 }
 
 export interface TextLine {
 	index: number;
 	content: string;
+	className: string[];
+	paragraphIndex: number;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;
 export interface Chapter {

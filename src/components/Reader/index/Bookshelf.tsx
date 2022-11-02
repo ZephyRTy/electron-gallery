@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useController } from 'syill';
+import { readerConfig } from '../../../types/constant';
 import { Book } from '../../../types/global';
 import { isBookDir, isBookmarkOfBook } from '../../../utils/functions';
 import { readerOperator as readerOp } from '../../../utils/galleryOperator';
 import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
-import { DirMap } from '../../Dialog';
+import { Config, DirMap } from '../../Dialog';
 import {
 	Add,
 	Back,
@@ -74,6 +75,7 @@ export const Bookshelf = () => {
 	return (
 		<div className={styles['bookshelf'] + ' main-content'}>
 			{dirMap}
+			<Config oldConfig={readerConfig} type="reader" />
 			<SidebarContainer>
 				{topMenu} <Menu type="reader" />
 			</SidebarContainer>

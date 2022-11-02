@@ -5,7 +5,7 @@ import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Back } from '../../../icon/back.svg';
 import { ReactComponent as HomePage } from '../../../icon/home.svg';
-import globalConfig, {
+import galleryConfig, {
 	defaultCover,
 	imageCountOfSinglePage
 } from '../../../types/constant';
@@ -38,7 +38,9 @@ const endsWith = (str: string, ...arg: string[]) => {
 export const PackDetail = () => {
 	const { pack } = useParams();
 	const fileOperator = useRef(GalleryOperator.getInstance()).current;
-	const currentPath = useRef(fileOperator.current(parseInt(pack!))?.path);
+	const currentPath = useRef(
+		fileOperator.packWillOpen(parseInt(pack!))?.path
+	);
 	let [searchParams] = useSearchParams();
 	let page = searchParams.get('page')
 		? parseInt(searchParams.get('page') as string, 10)
@@ -66,7 +68,7 @@ export const PackDetail = () => {
 			return;
 		}
 		const fileList: string[] = fs.readdirSync(filePath);
-		if (!globalConfig.r18) {
+		if (!galleryConfig.r18) {
 			imgList.current = fileList.map((v, i) => ({
 				src: defaultCover,
 				index: i
@@ -193,12 +195,12 @@ export const PackDetail = () => {
 				</Sidebar>
 			</SidebarContainer>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
+			<DetailContainer
+				images={images}
+				total={Math.ceil(total / imageCountOfSinglePage)}
+			/>
 			{images.length ? (
 				<>
-					<DetailContainer
-						images={images}
-						total={Math.ceil(total / imageCountOfSinglePage)}
-					/>
 					<PageNav
 						current={page}
 						pack={pack}

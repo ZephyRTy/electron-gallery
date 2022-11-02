@@ -1,6 +1,6 @@
 import { MutableRefObject, useCallback, useRef } from 'react';
 import { ReactComponent as AddBookmarkIcon } from '../../../icon/addBookmark.svg';
-import globalConfig from '../../../types/constant';
+import galleryConfig from '../../../types/constant';
 import { NormalImage } from '../../../types/global';
 import { formatDate, parseUrlQuery } from '../../../utils/functions';
 import { GalleryOperator } from '../../../utils/galleryOperator';
@@ -48,7 +48,7 @@ export function AddBookmark(props: {
 				}
 				imgSrc = '/' + elements[imgIndex].src.split('/').pop();
 			}
-			let data = fileOperator.current(
+			let data = fileOperator.packWillOpen(
 				parseInt(pack!),
 				false
 			) as NormalImage;
@@ -67,7 +67,7 @@ export function AddBookmark(props: {
 			if (!urlObj.page) {
 				url += 'page=1&';
 			}
-			url += `scroll=${top}&`;
+			url += `scroll=${top + 1}&`;
 			fileOperator.bookmarksUpdate({
 				...data,
 				cover: imgSrc,
@@ -87,7 +87,7 @@ export function AddBookmark(props: {
 	return (
 		<button
 			className="add-bookmark detail-icon"
-			disabled={!globalConfig.r18}
+			disabled={!galleryConfig.r18}
 			onClick={handleClick}
 		>
 			<AddBookmarkIcon />
