@@ -11,7 +11,7 @@ import {
 import { FileOperator } from './fileOperator';
 import { compress, endsWith, rmDir } from './functions';
 import { ImgWaterfallCache } from './ImgWaterFallCache';
-import { mysqlOperator } from './mysqlOperator';
+import { MysqlOperator, mysqlOperator } from './mysqlOperator';
 import { ReaderOperator } from './readerOperator';
 const fs = window.require('fs');
 const isImage = (v: string) =>
@@ -23,6 +23,7 @@ export class GalleryOperator extends FileOperator<
 	ImageDirectory
 > {
 	protected static instance: GalleryOperator;
+	protected override sql: MysqlOperator;
 	static getInstance(): GalleryOperator {
 		if (!GalleryOperator.instance) {
 			GalleryOperator.instance = new GalleryOperator();
@@ -31,13 +32,14 @@ export class GalleryOperator extends FileOperator<
 	}
 
 	protected constructor() {
-		super({ database: 'GALLERY', tableName: 'pack_list' });
+		super({ database: 'GALLERY', tableName: 'pack_list' }, mysqlOperator);
+		this.sql = mysqlOperator;
 	}
 
 	async changePackCover(packId: string, cover: string, fullPath: string) {
 		compress(fullPath);
 		let e = this.currentPacks.find((e) => e.id === parseInt(packId))!;
-		await mysqlOperator.changePackCover(e?.id, cover);
+		await this.sql.changePackCover(e?.id, cover);
 		e.cover = cover;
 		if (e.stared) {
 			this.starModel.update();
@@ -71,7 +73,7 @@ export class GalleryOperator extends FileOperator<
 				title: data.title,
 				stared: 0 as 0
 			};
-			await mysqlOperator.insertPack(newPack, duplicate);
+			await this.sql.insertPack(newPack, duplicate);
 			const img = newPack.path + newPack.cover;
 			await compress(img);
 			this.switchMode(Mode.Init);
@@ -101,7 +103,7 @@ export class GalleryOperator extends FileOperator<
 			};
 			const img = newPack.path + newPack.cover;
 			success.push(
-				mysqlOperator.insertPack(newPack).then((res) => {
+				this.sql.insertPack(newPack).then((res) => {
 					if (!res) {
 						result.push(`${e.title}:::重复`);
 					} else {
@@ -136,9 +138,9 @@ export class GalleryOperator extends FileOperator<
 		let newDirectory = {
 			dir_title: dirName
 		};
-		let res = await mysqlOperator.insertDir(newDirectory);
+		let res = await this.sql.insertDir(newDirectory);
 		if (res) {
-			this.dirMap = Map(await mysqlOperator.mapDir());
+			this.dirMap = Map(await this.sql.mapDir());
 			this.switchMode(Mode.Init);
 			return res;
 		}

@@ -11,7 +11,7 @@ import {
 import { BookDetail } from './BookDetail';
 import { FileOperator } from './fileOperator';
 import { deleteUselessWords } from './functions';
-import { mysqlOperator } from './mysqlOperator';
+import { sqliteOperator } from './sqliteOperator';
 const fs = window.require('fs/promises');
 const iconv = window.require('iconv-lite');
 const path = window.require('path');
@@ -34,9 +34,10 @@ export class ReaderOperator extends FileOperator<
 	BookDirectory
 > {
 	private static instance: ReaderOperator;
+	protected override sql = sqliteOperator;
 	private currentBook: Book | null = null;
 	private constructor() {
-		super({ database: 'book', tableName: 'book_list' });
+		super({ database: 'book', tableName: 'book_list' }, sqliteOperator);
 	}
 	public static getInstance(): ReaderOperator {
 		if (!ReaderOperator.instance) {
@@ -130,7 +131,7 @@ export class ReaderOperator extends FileOperator<
 				title: data.title,
 				stared: 0 as 0
 			};
-			await mysqlOperator.insertPack(newPack, duplicate);
+			await this.sql.insertPack(newPack, duplicate);
 			this.switchMode(Mode.Init);
 			this.refresh();
 			return true;
@@ -164,7 +165,7 @@ export class ReaderOperator extends FileOperator<
 				stared: 0 as 0
 			};
 			success.push(
-				mysqlOperator.insertPack(newPack).then((res) => {
+				this.sql.insertPack(newPack, false).then((res) => {
 					if (!res) {
 						result.push(`${e.title}:::重复`);
 					} else {
@@ -192,9 +193,9 @@ export class ReaderOperator extends FileOperator<
 		let newDirectory = {
 			dir_title: dirName
 		};
-		let res = await mysqlOperator.insertDir(newDirectory);
+		let res = await this.sql.insertDir(newDirectory);
 		if (res) {
-			this.dirMap = Map(await mysqlOperator.mapDir());
+			this.dirMap = Map(await this.sql.mapDir());
 			this.switchMode(Mode.Init);
 			return res;
 		}
