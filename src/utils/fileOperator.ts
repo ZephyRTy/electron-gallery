@@ -15,6 +15,7 @@ import {
 	DirectoryInfo,
 	Mode
 } from '../types/global';
+import { SQLOperator } from '../types/sql';
 import {
 	compress,
 	convertJsRegToMysqlReg,
@@ -24,7 +25,6 @@ import {
 	parseUrlQuery
 } from './functions';
 import { createBookmarkModel, createStarModel, selectionModel } from './models';
-import { mysqlOperator } from './mysqlOperator';
 import { currentOperator } from './store';
 const fs = window.require('fs');
 const isImage = (v: string) =>
@@ -57,8 +57,8 @@ export abstract class FileOperator<
 	protected total = 0;
 	protected currentPacks = [] as normal[];
 	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
-	protected readonly starModel = createStarModel<normal>();
-	protected readonly bookmarkModel = createBookmarkModel<bookmark>();
+	protected readonly starModel;
+	protected readonly bookmarkModel;
 	protected selection = selectionModel;
 	protected nextTitle = '';
 	protected searchCache = {
@@ -70,21 +70,24 @@ export abstract class FileOperator<
 		valid: false
 	};
 	protected constructor(
-		protected databaseConfig: { database: string; tableName: string }
+		protected databaseConfig: { database: string; tableName: string },
+		protected sql: SQLOperator
 	) {
-		mysqlOperator.getCount().then((res) => {
+		this.bookmarkModel = createBookmarkModel<bookmark>(this.sql);
+		this.starModel = createStarModel<normal>(this.sql);
+		this.sql.getCount().then((res) => {
 			this.total = res;
 		});
-		mysqlOperator.select<normal, folder>([], Mode.Stared).then((res) => {
+		this.sql.select<normal, folder>([], Mode.Stared).then((res) => {
 			this.starModel.data = res as normal[];
 		});
-		mysqlOperator.select<normal, folder>([], Mode.Bookmark).then((res) => {
+		this.sql.select<normal, folder>([], Mode.Bookmark).then((res) => {
 			this.bookmarkModel.data = res as unknown as bookmark[];
 		});
-		mysqlOperator.select<normal, folder>([], Mode.ShowDirs).then((res) => {
+		this.sql.select<normal, folder>([], Mode.ShowDirs).then((res) => {
 			this.directories = res as normal[];
 		});
-		mysqlOperator.mapDir().then((res) => {
+		this.sql.mapDir().then((res) => {
 			this.dirMap = Map(res);
 		});
 	} //获取图包
@@ -96,13 +99,13 @@ export abstract class FileOperator<
 			page >= this.fileCache.startPage + 10 ||
 			this.fileCache.startPage === 0
 		) {
-			res = await mysqlOperator.select(
+			res = (await this.sql.select(
 				[
 					(page - 1) * packCountOfSinglePage,
 					10 * packCountOfSinglePage
 				],
 				Mode.Normal
-			);
+			)) as normal[];
 			this.fileCache.data = res;
 			this.fileCache.startPage = page;
 		}
@@ -129,7 +132,7 @@ export abstract class FileOperator<
 		if (this.mode === Mode.DirContent) {
 			result = this.currentPacks.filter((v) => v.title.includes(key));
 		} else {
-			result = await mysqlOperator.search(
+			result = await this.sql.search(
 				this.searchCache.reg ? convertJsRegToMysqlReg(key) : key,
 				this.mode,
 				this.searchCache.reg
@@ -185,7 +188,7 @@ export abstract class FileOperator<
 		page: number
 	): Promise<[normal[], number]> {
 		if (this.switchMode(Mode.DirContent)) {
-			this.currentPacks = await mysqlOperator.select([], Mode.DirContent);
+			this.currentPacks = await this.sql.select([], Mode.DirContent);
 		}
 		return [
 			this.currentPacks.slice(
@@ -224,7 +227,7 @@ export abstract class FileOperator<
 	}
 	async showDir(page: number): Promise<[normal[], number]> {
 		this.switchMode(Mode.ShowDirs);
-		let res = await mysqlOperator.select<normal, folder>([], Mode.ShowDirs);
+		let res = await this.sql.select<normal, folder>([], Mode.ShowDirs);
 		this.currentPacks = res as normal[];
 		return [
 			res.slice(
@@ -235,7 +238,7 @@ export abstract class FileOperator<
 		];
 	}
 	async getPacks(page: number, url: string): Promise<[normal[], number]> {
-		this.external = !!(await mysqlOperator.checkExternalDriver());
+		this.external = !!(await this.sql.checkExternalDriver());
 		let query: {
 			search?: string;
 			directory?: string;
@@ -331,7 +334,7 @@ export abstract class FileOperator<
 				}
 				++count;
 				e.parent = dirIndex;
-				mysqlOperator
+				this.sql
 					.updateDir(dirIndex, e.id, 1, count === 1 ? cover : '')
 					.then(() => {
 						if (count === this.selection.selected.size) {
@@ -352,7 +355,7 @@ export abstract class FileOperator<
 	removeFileFromDir(packId: number, dirId: number) {
 		let e = this.currentPacks.find((e) => e.id !== packId);
 		if (hasCover(e)) {
-			mysqlOperator
+			this.sql
 				.updateDir(
 					dirId,
 					packId,
@@ -396,7 +399,7 @@ export abstract class FileOperator<
 	protected renameTarget = { id: -1, oldTitle: '' };
 	protected async renamePack(title: string) {
 		try {
-			await mysqlOperator.renamePack(this.renameTarget.id, title);
+			await this.sql.renamePack(this.renameTarget.id, title);
 			let target = this.currentPacks.find(
 				(e) => e.id === this.renameTarget.id
 			)!;
@@ -423,7 +426,7 @@ export abstract class FileOperator<
 	}
 	protected async renameDir(title: string) {
 		try {
-			await mysqlOperator.renameDir(this.renameTarget.id, title);
+			await this.sql.renameDir(this.renameTarget.id, title);
 			this.dirMap.get(this.renameTarget.id.toString())!.title = title;
 			let target = this.currentPacks.find(
 				(e) => e.id === this.renameTarget.id
@@ -444,11 +447,11 @@ export abstract class FileOperator<
 		return this.renamePack(newTitle);
 	}
 	async getTotal() {
-		return mysqlOperator.getCount();
+		return this.sql.getCount();
 	}
 
 	protected deletePack(packId: number) {
-		mysqlOperator.delete(packId);
+		this.sql.delete(packId);
 	}
 	get modeOfSearch() {
 		return this.searchCache.mode;
@@ -474,11 +477,11 @@ export abstract class FileOperator<
 
 	protected async load() {
 		let promises = [] as Promise<any>[];
-		promises.push(mysqlOperator.mapDir());
-		promises.push(mysqlOperator.getCount());
-		promises.push(mysqlOperator.select<normal, folder>([], Mode.Stared));
-		promises.push(mysqlOperator.select<normal, folder>([], Mode.Bookmark));
-		promises.push(mysqlOperator.select<normal, folder>([], Mode.ShowDirs));
+		promises.push(this.sql.mapDir());
+		promises.push(this.sql.getCount());
+		promises.push(this.sql.select<normal, folder>([], Mode.Stared));
+		promises.push(this.sql.select<normal, folder>([], Mode.Bookmark));
+		promises.push(this.sql.select<normal, folder>([], Mode.ShowDirs));
 		let [dirMap, total, stared, bookmark, showDir] = await Promise.all(
 			promises
 		);
@@ -488,26 +491,26 @@ export abstract class FileOperator<
 		this.bookmarkModel.data = bookmark;
 		this.directories = showDir;
 		return true;
-		// mysqlOperator.getCount().then((res) => {
+		// this.sql.getCount().then((res) => {
 		// 	this.total = res;
 		// });
-		// mysqlOperator.select<normal, folder>([], Mode.Stared).then((res) => {
+		// this.sql.select<normal, folder>([], Mode.Stared).then((res) => {
 		// 	this.starModel.data = res as normal[];
 		// });
-		// mysqlOperator.select<normal, folder>([], Mode.Bookmark).then((res) => {
+		// this.sql.select<normal, folder>([], Mode.Bookmark).then((res) => {
 		// 	this.bookmarkModel.data = res as unknown as bookmark[];
 		// });
-		// mysqlOperator.select<normal, folder>([], Mode.ShowDir).then((res) => {
+		// this.sql.select<normal, folder>([], Mode.ShowDir).then((res) => {
 		// 	this.directories = res as normal[];
 		// });
-		// mysqlOperator.mapDir().then((res) => {
+		// this.sql.mapDir().then((res) => {
 		// 	this.dirMap = Map(res);
 		// });
 	}
 	async switchMainTable(name: string) {
 		currentOperator.op = this;
 		if (
-			mysqlOperator.switchDatabase(
+			this.sql.switchDatabase(
 				this.databaseConfig.database,
 				this.databaseConfig.tableName
 			)

@@ -1,5 +1,7 @@
+/* eslint-disable no-undef */
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
+import { generalConfig } from '../config';
 import {
 	BasicData,
 	BookmarkOfBook,
@@ -12,38 +14,86 @@ import {
 import { SQLOperator } from '../types/sql';
 import { formatDate, getAllDrive } from './functions';
 /* eslint-disable no-underscore-dangle */
-const mysql = window.require('mysql');
+const sq3 = window.require('sqlite3');
+const path = window.require('path');
+const fs = window.require('fs');
+const transformToSQL = (obj: Object) => {
+	let result = '';
+	Object.keys(obj).forEach((key) => {
+		result + `${key}=?,`;
+	});
+	return result.slice(0, -1);
+};
+const transformToSQLParams = (obj: Object) => {
+	let result = [] as any[];
+	Object.keys(obj).forEach((key) => {
+		if (typeof obj[key] === 'string') {
+			result.push(`'${obj[key]}'`);
+		} else {
+			result.push(obj[key]);
+		}
+	});
+	return result;
+};
 // 封装数据库操作
-export class MysqlOperator implements SQLOperator {
-	private static _instance: MysqlOperator;
-	private id = null as any;
+export class SqliteOperator implements SQLOperator {
+	private static _instance: SqliteOperator;
+	private db;
 	private _pool: any;
-	private _config: any;
-	private _searchRes = { param: '', result: [] as string[] };
 	private hasExternalDriver: boolean = false;
 	private loaded = false;
-	private init = false;
-	private database: string = 'GALLERY';
-	private mainTableName = 'pack_list';
+	private database: string = 'book';
+	private mainTableName = 'book_list';
 	count: number = 0;
 	private constructor() {
-		this.checkExternalDriver();
-		this._config = {
-			host: 'localhost',
-			user: 'root',
-			password: '123456',
-			database: 'GALLERY',
-			port: 3306,
-			connectionLimit: 10
-		};
-		this._pool = mysql.createPool(this._config);
-	}
-
-	static getInstance(): MysqlOperator {
-		if (!MysqlOperator._instance) {
-			MysqlOperator._instance = new MysqlOperator();
+		const dbPath = path.resolve(generalConfig.root, 'storage');
+		if (!fs.existsSync(dbPath)) {
+			fs.mkdirSync(dbPath);
 		}
-		return MysqlOperator._instance;
+		console.log(dbPath);
+
+		this.db = new sq3.Database(path.resolve(dbPath, 'books.db'), () => {
+			this.initialize();
+		});
+		this.checkExternalDriver();
+	}
+	private initialize() {
+		const stmt1 = `CREATE TABLE if not exists directory (
+			dir_id integer PRIMARY KEY AUTOINCREMENT ,
+			dir_title varchar(100) NOT NULL,
+			update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP
+		  )`;
+		const stmt2 = `CREATE TABLE if not exists book_list (
+			id integer  PRIMARY KEY AUTOINCREMENT ,
+			title varchar(100) NOT NULL,
+			path varchar(200) NOT NULL unique,
+			stared tinyint(1) NOT NULL DEFAULT '0',
+			parent int unsigned DEFAULT NULL,
+			reg varchar(400) NOT NULL DEFAULT '[第卷][0123456789一二三四五六七八九十百千万亿零壹贰叁肆伍陆柒捌玖拾佰仟]+[章节回卷集部篇幕][^<]*',
+			CONSTRAINT fk_book_id FOREIGN KEY (parent) REFERENCES directory (dir_id) ON DELETE SET NULL ON UPDATE CASCADE
+		  ) `;
+		const stmt3 = `CREATE TABLE if not exists bookmark (
+			b_id int NOT NULL,
+			b_timeStamp timestamp NULL DEFAULT NULL,
+			b_url varchar(100) NOT NULL,
+			PRIMARY KEY (b_id),
+			CONSTRAINT bookmark_ibfk_1 FOREIGN KEY (b_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
+		  )`;
+		this.db.run(stmt1, (arg: any) => {
+			if (arg) console.log(arg);
+		});
+		this.db.run(stmt2, (arg: any) => {
+			if (arg) console.log(arg);
+		});
+		this.db.run(stmt3, (arg: any) => {
+			if (arg) console.log(arg);
+		});
+	}
+	static getInstance(): SqliteOperator {
+		if (!SqliteOperator._instance) {
+			SqliteOperator._instance = new SqliteOperator();
+		}
+		return SqliteOperator._instance;
 	}
 
 	async checkExternalDriver() {
@@ -64,50 +114,32 @@ export class MysqlOperator implements SQLOperator {
 			if (this.count !== 0) {
 				resolve(this.count);
 			}
-			this._pool.getConnection((err: any, connection: any) => {
-				connection?.query(sql, [id], (err: any, result: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					} else {
-						if (result.length !== 1) {
-							reject('查询结果不为1');
-						}
-						const v = result[0];
-						resolve({
-							id: v.id ?? v.dir_id,
-							title: v.title ?? v.dir_title,
-							path: v.path ?? '',
-							cover: v.cover ?? v.dir_cover,
-							stared: Boolean(v.stared ?? v.dir_stared),
-							parent: v.parent,
-							reg: v.reg
-						});
+			this.db.get(sql, [id], (err, result) => {
+				if (err) {
+					reject(err);
+				} else {
+					if (result.length !== 1) {
+						reject('查询结果不为1');
 					}
-				});
+					const v = result[0];
+					resolve({
+						id: v.id ?? v.dir_id,
+						title: v.title ?? v.dir_title,
+						path: v.path ?? '',
+						cover: v.cover ?? v.dir_cover,
+						stared: Boolean(v.stared ?? v.dir_stared),
+						parent: v.parent,
+						reg: v.reg
+					});
+				}
 			});
 		});
 	}
+	// eslint-disable-next-line no-unused-vars
 	switchDatabase(database: string, tableName: string) {
-		if (database === this.database) {
-			return false;
-		}
-		this.database = database;
-		this.mainTableName = tableName;
-		if (this._pool) {
-			this._pool.end();
-		}
-		this._config = {
-			host: 'localhost',
-			user: 'root',
-			password: '123456',
-			database: this.database,
-			port: 3306,
-			connectionLimit: 10
-		};
-		this._pool = mysql.createPool(this._config);
 		return true;
 	}
+
 	async select<Pack = NormalImage, Folder = ImageDirectory>(
 		sqlParam: number[],
 		mode: Mode
@@ -166,63 +198,58 @@ export class MysqlOperator implements SQLOperator {
 				} parent is not null order by id desc limit ? ,?`;
 		}
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, sqlParam, (err: any, result: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					} else {
-						if (mode === Mode.Bookmark) {
-							resolve(
-								result.map((v: any) => {
-									return {
-										id: v.id,
-										title: v.title,
-										path: v.path,
-										cover: v.cover,
-										url: v.url,
-										timeStamp: formatDate(
-											new Date(v.timeStamp).toString()
-										),
-										stared: Boolean(v.stared),
-										reg: v.reg
-									} as unknown as Pack;
-								})
-							);
-							return;
-						} else if (mode === Mode.ShowDirs) {
-							resolve(
-								result.map((v: any) => {
-									return {
-										id: v.dir_id,
-										title: v.dir_title,
-										cover: v.path + v.cover,
-										timeStamp:
-											formatDate(
-												new Date(
-													v.update_time
-												).toString()
-											) ?? ''
-									} as unknown as Folder;
-								})
-							);
-							return;
-						}
+			this.db.all(sql, sqlParam, (err: any, result: any[]) => {
+				if (err) {
+					reject(err);
+				} else {
+					if (mode === Mode.Bookmark) {
 						resolve(
 							result.map((v: any) => {
 								return {
-									id: v.id ?? v.dir_id,
-									title: v.title ?? v.dir_title,
-									path: v.path ?? '',
-									cover: v.cover ?? v.dir_cover,
-									stared: Boolean(v.stared ?? v.dir_stared),
-									parent: v.parent,
+									id: v.id,
+									title: v.title,
+									path: v.path,
+									cover: v.cover,
+									url: v.url,
+									timeStamp: formatDate(
+										new Date(v.timeStamp).toString()
+									),
+									stared: Boolean(v.stared),
 									reg: v.reg
 								} as unknown as Pack;
 							})
 						);
+						return;
+					} else if (mode === Mode.ShowDirs) {
+						resolve(
+							result.map((v: any) => {
+								return {
+									id: v.dir_id,
+									title: v.dir_title,
+									cover: v.path + v.cover,
+									timeStamp:
+										formatDate(
+											new Date(v.update_time).toString()
+										) ?? ''
+								} as unknown as Folder;
+							})
+						);
+						return;
 					}
-				});
+					resolve(
+						result.map((v: any) => {
+							return {
+								id: v.id ?? v.dir_id,
+								title: v.title ?? v.dir_title,
+								path: v.path ?? '',
+								cover: v.cover ?? v.dir_cover,
+								stared: Boolean(v.stared ?? v.dir_stared),
+								parent: v.parent,
+								reg: v.reg
+							} as unknown as Pack;
+						})
+					);
+				}
 			});
 		});
 	}
@@ -234,21 +261,19 @@ export class MysqlOperator implements SQLOperator {
 			if (this.count !== 0) {
 				resolve(this.count);
 			}
-			this._pool.getConnection((err: any, connection: any) => {
-				connection?.query(sql, (err: any, result: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					} else {
-						resolve(result[0].count);
-					}
-				});
+			this.db.get(sql, (err: any, result: any) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(result.count || 0);
+				}
 			});
 		});
 	}
 
 	end() {
 		this._pool.end();
+		this.db.close();
 	}
 
 	async search<T extends BasicData>(
@@ -300,31 +325,28 @@ export class MysqlOperator implements SQLOperator {
 				} title ${key} order by id desc`;
 		}
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, sqlParam, (err: any, result: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					} else {
-						resolve(
-							result.map((v: any) => {
-								return {
-									id: v.dir_id ?? v.id,
-									title: v.dir_title ?? v.title,
-									path: mode === Mode.ShowDirs ? '' : v.path,
-									cover:
-										mode === Mode.ShowDirs
-											? v.path + v.cover
-											: v.cover,
-									stared: Boolean(v.stared ?? v.dir_stared),
-									parent: v.parent,
-									reg: v.reg,
-									timeStamp: v.update_time
-								} as unknown as T;
-							})
-						);
-					}
-				});
+			this.db.all(sql, (err, result) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(
+						result.map((v: any) => {
+							return {
+								id: v.dir_id ?? v.id,
+								title: v.dir_title ?? v.title,
+								path: mode === Mode.ShowDirs ? '' : v.path,
+								cover:
+									mode === Mode.ShowDirs
+										? v.path + v.cover
+										: v.cover,
+								stared: Boolean(v.stared ?? v.dir_stared),
+								parent: v.parent,
+								reg: v.reg,
+								timeStamp: v.update_time
+							} as unknown as T;
+						})
+					);
+				}
 			});
 		});
 	}
@@ -332,14 +354,11 @@ export class MysqlOperator implements SQLOperator {
 		let sql = `update ${this.mainTableName} set stared = ? where id = ?`;
 		let sqlParam = [data.stared ? 1 : 0, data.id];
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection(async (err: any, connection: any) => {
-				connection.query(sql, sqlParam, (err: any, res: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					resolve(res);
-				});
+			this.db.run(sql, sqlParam, (err, res) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
 			});
 		});
 	}
@@ -357,44 +376,35 @@ export class MysqlOperator implements SQLOperator {
 		];
 		if (cover) {
 			if (status) {
-				this._pool.getConnection((err: any, connection: any) => {
-					connection.query(
-						'update directory set cover_id = ? where  dir_id = ?',
-						[packId, dirId],
-						(err: any) => {
-							connection.release();
-							if (err) {
-								console.error(err);
-							}
+				this.db.run(
+					'update directory set cover_id = ? where  dir_id = ?',
+					[packId, dirId],
+					(err: any) => {
+						if (err) {
+							console.error(err);
 						}
-					);
-				});
+					}
+				);
 			} else {
-				this._pool.getConnection((err: any, connection: any) => {
-					connection.query(
-						`update directory, (select id, title, parent from pack_list where id in 
-							(select max(id) from pack_list where parent > 0 group by parent having id != ?)) as t
-							set cover_id = t.id where  dir_id = ? and t.parent = dir_id`,
-						[packId, dirId],
-						(err: any) => {
-							connection.release();
-							if (err) {
-								console.error(err);
-							}
+				this.db.run(
+					`update directory, (select id, title, parent from pack_list where id in 
+						(select max(id) from pack_list where parent > 0 group by parent having id != ?)) as t
+						set cover_id = t.id where  dir_id = ? and t.parent = dir_id`,
+					[packId, dirId],
+					(err: any) => {
+						if (err) {
+							console.error(err);
 						}
-					);
-				});
+					}
+				);
 			}
 		}
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection(async (err: any, connection: any) => {
-				connection.query(sql, sqlParam, (err: any, res: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					resolve(res);
-				});
+			this.db.run(sql, sqlParam, (err: any, res: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
 			});
 		});
 	}
@@ -403,38 +413,36 @@ export class MysqlOperator implements SQLOperator {
 		let sql = `select dir_id as id, dir_title as title , count(parent) as count from directory left outer join ${this.mainTableName} on(dir_id = parent )
 			  group by dir_id ;`;
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, (err: any, result: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					let map = new Map<string, DirectoryInfo>();
-					result.forEach((v: any) => {
-						map.set(v.id.toString(), {
-							count: v.count,
-							title: v.title
-						});
+			this.db.all(sql, (err: any, result: any) => {
+				if (err) {
+					reject(err);
+				}
+				let map = new Map<string, DirectoryInfo>();
+				result.forEach((v: any) => {
+					map.set(v.id.toString(), {
+						count: v.count,
+						title: v.title
 					});
-					resolve(map);
 				});
+				resolve(map);
 			});
 		});
 	}
 
 	insertDir(newDir: { dir_title: string }): Promise<number | null> {
-		let sql = 'insert into directory set ?';
+		let sql = 'insert into directory (dir_title, update_time) values (?,?)';
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, newDir, (err: any, res: any) => {
-					connection.release();
+			this.db.get(
+				sql,
+				[newDir.dir_title, formatDate(new Date())],
+				(err: any, res: any) => {
 					if (err) {
 						console.error(err);
 						reject(null);
 					}
-					resolve(res.insertId as number);
-				});
-			});
+					resolve(res.lastID as number);
+				}
+			);
 		});
 	}
 
@@ -447,20 +455,14 @@ export class MysqlOperator implements SQLOperator {
 		},
 		duplicate: boolean = false
 	) {
-		let sql = `insert into ${this.mainTableName} set ?`;
+		let sql = `insert into ${this.mainTableName} (title, stared, path) values ('${newPack.title}' , ${newPack.stared} , '${newPack.path}')`;
 		return new Promise((resolve) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				if (!newPack.cover) {
-					delete newPack.cover;
+			this.db.run(sql, (res) => {
+				if (res && !duplicate) {
+					resolve(null);
+					return;
 				}
-				connection.query(sql, newPack, (err: any, res: any) => {
-					connection.release();
-					if (err && !duplicate) {
-						resolve(null);
-						return;
-					}
-					resolve(res);
-				});
+				resolve('ok');
 			});
 		});
 	}
@@ -476,35 +478,32 @@ export class MysqlOperator implements SQLOperator {
 				: 'update bookmark set ? where b_id = ?'
 			: 'delete from bookmark where b_id = ?';
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(
-					sql,
-					marked
-						? mode === 'insert'
-							? {
+			this.db.run(
+				sql,
+				marked
+					? mode === 'insert'
+						? {
+								b_url: bookmark.url,
+								b_cover: bookmark.cover,
+								b_timeStamp: bookmark.timeStamp,
+								b_id: bookmark.id
+						  }
+						: [
+								{
 									b_url: bookmark.url,
 									b_cover: bookmark.cover,
-									b_timeStamp: bookmark.timeStamp,
-									b_id: bookmark.id
-							  }
-							: [
-									{
-										b_url: bookmark.url,
-										b_cover: bookmark.cover,
-										b_timeStamp: bookmark.timeStamp
-									},
-									bookmark.id
-							  ]
-						: [bookmark.id],
-					(err: any, res: any) => {
-						connection.release();
-						if (err) {
-							reject(err);
-						}
-						resolve(res);
+									b_timeStamp: bookmark.timeStamp
+								},
+								bookmark.id
+						  ]
+					: [bookmark.id],
+				(err: any, res: any) => {
+					if (err) {
+						reject(err);
 					}
-				);
-			});
+					resolve(res);
+				}
+			);
 		});
 	}
 	updateBookmarkOfBook(
@@ -514,37 +513,24 @@ export class MysqlOperator implements SQLOperator {
 	) {
 		let sql = marked
 			? mode === 'insert'
-				? 'insert into bookmark set ? '
-				: 'update bookmark set ? where b_id = ?'
+				? `insert into bookmark (b_id, b_url, b_timeStamp) values (?,?,?) `
+				: `update bookmark set b_url=?, b_timeStamp=? where b_id = ?`
 			: 'delete from bookmark where b_id = ?';
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(
-					sql,
-					marked
-						? mode === 'insert'
-							? {
-									b_url: bookmark.url,
-									b_timeStamp: bookmark.timeStamp,
-									b_id: bookmark.id
-							  }
-							: [
-									{
-										b_url: bookmark.url,
-										b_timeStamp: bookmark.timeStamp
-									},
-									bookmark.id
-							  ]
-						: [bookmark.id],
-					(err: any, res: any) => {
-						connection.release();
-						if (err) {
-							reject(err);
-						}
-						resolve(res);
+			this.db.run(
+				sql,
+				marked
+					? mode === 'insert'
+						? [bookmark.id, bookmark.url, bookmark.timeStamp]
+						: [bookmark.url, bookmark.timeStamp, bookmark.id]
+					: [bookmark.id],
+				(err: any, res: any) => {
+					if (err) {
+						reject(err);
 					}
-				);
-			});
+					resolve(res);
+				}
+			);
 		});
 	}
 	updateReg(id: number, reg: string) {
@@ -554,28 +540,22 @@ export class MysqlOperator implements SQLOperator {
 		// );
 		let sql = `update ${this.mainTableName} set reg = ? where id = ?`;
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, [reg, id], (err: any, res: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					resolve(res);
-				});
+			this.db.run(sql, [reg, id], (err: any, res: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
 			});
 		});
 	}
 	renamePack(packID: number, title: string) {
 		let sql = `update ${this.mainTableName} set title = ? where id = ?`;
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, [title, packID], (err: any, res: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					resolve(res);
-				});
+			this.db.run(sql, [title, packID], (err: any, res: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
 			});
 		});
 	}
@@ -583,14 +563,11 @@ export class MysqlOperator implements SQLOperator {
 	renameDir(dirID: number, title: string) {
 		let sql = 'update directory set dir_title = ? where dir_id = ?';
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, [title, dirID], (err: any, res: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					resolve(res);
-				});
+			this.db.run(sql, [title, dirID], (err: any, res: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
 			});
 		});
 	}
@@ -602,14 +579,11 @@ export class MysqlOperator implements SQLOperator {
 		// );
 		let sql = `update ${this.mainTableName} set cover = ? where id = ?`;
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, [cover, packID], (err: any, res: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					resolve(res);
-				});
+			this.db.run(sql, [cover, packID], (err: any, res: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
 			});
 		});
 	}
@@ -617,16 +591,13 @@ export class MysqlOperator implements SQLOperator {
 	delete(packID: number) {
 		let sql = `delete from ${this.mainTableName} where id = ?`;
 		return new Promise((resolve, reject) => {
-			this._pool.getConnection((err: any, connection: any) => {
-				connection.query(sql, [packID], (err: any, res: any) => {
-					connection.release();
-					if (err) {
-						reject(err);
-					}
-					resolve(res);
-				});
+			this.db.run(sql, [packID], (err: any, res: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
 			});
 		});
 	}
 }
-export const mysqlOperator = MysqlOperator.getInstance();
+export const sqliteOperator = SqliteOperator.getInstance();

@@ -1,75 +1,49 @@
-import {
-	BasicBookmark,
-	BasicData,
-	ImageBookmark,
-	Mode,
-	Model
-} from '../types/global';
+import { BasicBookmark, BasicData, Mode, Model } from '../types/global';
+import { SQLOperator } from '../types/sql';
 import { isBookmarkOfBook, isImageBookmark } from './functions';
-import { mysqlOperator } from './mysqlOperator';
 
-export const createStarModel = <T extends BasicData>(): Model<T> => {
+export const createStarModel = <T extends BasicData>(
+	sqlOperator: SQLOperator
+): Model<T> => {
 	return {
 		dirty: false,
 		data: [] as T[],
 		dataToUpdate: [] as T[],
+		sqlOperator: sqlOperator,
 		async update(newStar?: T) {
 			this.dirty = true;
 			if (newStar) {
-				await mysqlOperator.updateStar(newStar);
+				await this.sqlOperator.updateStar(newStar);
 			}
-			this.data = await mysqlOperator.select([], Mode.Stared);
+			this.data = await this.sqlOperator.select([], Mode.Stared);
 		},
 		remove(id) {
 			this.data = this.data.filter((item) => item.id !== id);
 		}
 	};
 };
-export const bookmarkModel: Model<ImageBookmark> = {
-	dirty: false,
-	data: [] as ImageBookmark[],
-	dataToUpdate: [] as ImageBookmark[],
-	async update(newData: ImageBookmark, marked: boolean = true) {
-		if (this.data.find((item) => item.id === newData.id)) {
-			await mysqlOperator.updateGalleryBookmark(
-				newData,
-				marked,
-				'update'
-			);
-		} else {
-			await mysqlOperator.updateGalleryBookmark(
-				newData,
-				marked,
-				'insert'
-			);
-		}
-		this.data = (await mysqlOperator.select(
-			[],
-			Mode.Bookmark
-		)) as ImageBookmark[];
-	},
-	remove(id) {
-		this.data = this.data.filter((item) => item.id !== id);
-	}
-};
-export const createBookmarkModel = <T extends BasicBookmark>(): Model<T> => {
+
+export const createBookmarkModel = <T extends BasicBookmark>(
+	sqlOperator: SQLOperator
+): Model<T> => {
 	return {
 		dirty: false,
 		data: [] as T[],
 		dataToUpdate: [] as T[],
+		sqlOperator: sqlOperator,
 		remove(id) {
 			this.data = this.data.filter((item) => item.id !== id);
 		},
 		async update(newData: T, marked: boolean = true) {
 			if (isImageBookmark(newData)) {
 				if (this.data.find((item) => item.id === newData.id)) {
-					await mysqlOperator.updateGalleryBookmark(
+					await this.sqlOperator.updateGalleryBookmark(
 						newData,
 						marked,
 						'update'
 					);
 				} else {
-					await mysqlOperator.updateGalleryBookmark(
+					await this.sqlOperator.updateGalleryBookmark(
 						newData,
 						marked,
 						'insert'
@@ -77,13 +51,13 @@ export const createBookmarkModel = <T extends BasicBookmark>(): Model<T> => {
 				}
 			} else if (isBookmarkOfBook(newData)) {
 				if (this.data.find((item) => item.id === newData.id)) {
-					await mysqlOperator.updateBookmarkOfBook(
+					await this.sqlOperator.updateBookmarkOfBook(
 						newData,
 						marked,
 						'update'
 					);
 				} else {
-					await mysqlOperator.updateBookmarkOfBook(
+					await this.sqlOperator.updateBookmarkOfBook(
 						newData,
 						marked,
 						'insert'
@@ -91,7 +65,10 @@ export const createBookmarkModel = <T extends BasicBookmark>(): Model<T> => {
 				}
 			}
 
-			this.data = (await mysqlOperator.select([], Mode.Bookmark)) as T[];
+			this.data = (await this.sqlOperator.select(
+				[],
+				Mode.Bookmark
+			)) as T[];
 		}
 	};
 };

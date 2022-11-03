@@ -27,8 +27,10 @@ txt.js
 /*.ts
 /*.js
 /sql
+/*.sql
 /.VSCodeCounter
 txt.ts
 text.txt
 /*.code-workspace
 src/config/config.json
+/app

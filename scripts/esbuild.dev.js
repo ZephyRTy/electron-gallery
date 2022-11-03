@@ -14,10 +14,10 @@ const chalk = require('chalk').default;
 // 启动编译好后自动刷新浏览器
 const livereload = require('livereload');
 const lrserver = livereload.createServer();
-lrserver.watch(__dirname);
-console.log(path.join(__dirname));
+console.log(__dirname);
+lrserver.watch('./dev');
 // 使用静态服务
-app.use(serve(path.join(__dirname)));
+app.use(serve('./dev'));
 const logLocalhostUrl = () => {
 	console.log(chalk.bold.underline.cyanBright('http://localhost:3000/'));
 };
@@ -38,6 +38,7 @@ esbuild
 		bundle: true,
 		// 输出的目录
 		outdir: './dev',
+		platform: 'node',
 		// 定义环境变量
 		define: {
 			'process.env.NODE_ENV': '"development"',
