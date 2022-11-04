@@ -12,7 +12,7 @@ import galleryConfig, {
 } from '../types/constant';
 import { Chapter, DirectoryInfo } from '../types/global';
 import { BookDetail } from '../utils/BookDetail';
-import { FileOperator } from '../utils/fileOperator';
+import { DataOperator } from '../utils/DataOperator';
 import { GalleryOperator } from '../utils/galleryOperator';
 import {
 	catalogVisibleStore,
@@ -80,7 +80,7 @@ const sortCNAndEN = (
 	);
 };
 const DirMapContent = (props: {
-	util: FileOperator<any, any, any>;
+	util: DataOperator<any, any, any>;
 	setInSelect: React.Dispatch<React.SetStateAction<number>>;
 	setVisible: (v: boolean) => void;
 	visible?: boolean;

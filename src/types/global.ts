@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import { GalleryOperator } from '../utils/galleryOperator';
-import { SQLOperator } from './sql';
+import { RequestOperator } from '../utils/requestoperator';
 
 export type fileStatus = 0 | 1 | 2 | 3;
 export interface BasicData {
@@ -55,7 +55,7 @@ export interface Model<T> {
 	dataToUpdate: T[];
 	update(newData?: T, ...args: any[]): void;
 	remove(id: number): void;
-	sqlOperator: SQLOperator;
+	sqlOperator: RequestOperator;
 }
 export interface HttpImagePack {
 	[index: number]: { title: string; mgSrcList: string[] };

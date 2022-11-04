@@ -24,7 +24,7 @@ import {
 	BasicFolder,
 	Mode
 } from '../../types/global';
-import { FileOperator } from '../../utils/fileOperator';
+import { DataOperator } from '../../utils/DataOperator';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
 export const HomePage = (props: {
 	activeMode: Mode;
@@ -93,7 +93,7 @@ export const Add = <
 	B extends BasicBookmark,
 	C extends BasicFolder
 >(props: {
-	util: FileOperator<A, B, C>;
+	util: DataOperator<A, B, C>;
 }) => {
 	const [visible, setVisible] = useController(fileDropVisibleStore);
 	return (
@@ -135,7 +135,7 @@ export const Refresh = <
 	B extends BasicBookmark,
 	C extends BasicFolder
 >(props: {
-	util: FileOperator<A, B, C>;
+	util: DataOperator<A, B, C>;
 }) => {
 	return (
 		<button

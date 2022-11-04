@@ -68,7 +68,7 @@ export function AddBookmark(props: {
 				url += 'page=1&';
 			}
 			url += `scroll=${top + 1}&`;
-			fileOperator.bookmarksUpdate({
+			fileOperator.UpdateBookmark({
 				...data,
 				cover: imgSrc,
 				url,

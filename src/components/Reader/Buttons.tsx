@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect } from 'react';
+import { MutableRefObject, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useController } from 'syill';
 import { ReactComponent as AddBookmarkIcon } from '../../icon/addBookmark.svg';
@@ -36,10 +36,25 @@ export const GotoGalleryBtn = () => {
 };
 export const Back = () => {
 	const navigate = useNavigate();
+	const addBookmark = useCallback(() => {
+		const ele = document.querySelector('#reader-scroll-ele');
+		let urlObj = parseUrlQuery(window.location.href);
+		delete urlObj['undefined'];
+		urlObj['scroll'] = ele!.scrollTop;
+		const id = readerOperator.packWillOpen()!.id;
+		let url =
+			`#/reader/book/${id}?` + new URLSearchParams(urlObj).toString();
+		readerOperator.UpdateBookmark({
+			...readerOperator.packWillOpen()!,
+			url,
+			timeStamp: formatDate(new Date())
+		});
+	}, []);
 	return (
 		<button
 			className="btn-back icon"
 			onClick={() => {
+				addBookmark();
 				navigate(-1);
 			}}
 		>
@@ -52,23 +67,25 @@ export const AddBookmark = (props: {
 	// eslint-disable-next-line no-unused-vars
 	bookmarkToast: MutableRefObject<(arg: boolean) => void>;
 }) => {
+	const addBookmark = useCallback(() => {
+		const ele = document.querySelector('#reader-scroll-ele');
+		let urlObj = parseUrlQuery(window.location.href);
+		delete urlObj['undefined'];
+		urlObj['scroll'] = ele!.scrollTop;
+		const id = readerOperator.packWillOpen()!.id;
+		let url =
+			`#/reader/book/${id}?` + new URLSearchParams(urlObj).toString();
+		readerOperator.UpdateBookmark({
+			...readerOperator.packWillOpen()!,
+			url,
+			timeStamp: formatDate(new Date())
+		});
+	}, []);
 	return (
 		<button
 			className="add-bookmark detail-icon"
 			onClick={(e) => {
-				const ele = document.querySelector('#reader-scroll-ele');
-				let urlObj = parseUrlQuery(window.location.href);
-				delete urlObj['undefined'];
-				urlObj['scroll'] = ele!.scrollTop;
-				const id = readerOperator.packWillOpen()!.id;
-				let url =
-					`#/reader/book/${id}?` +
-					new URLSearchParams(urlObj).toString();
-				readerOperator.bookmarksUpdate({
-					...readerOperator.packWillOpen()!,
-					url,
-					timeStamp: formatDate(new Date())
-				});
+				addBookmark();
 				props.bookmarkToast.current(true);
 				(e.target as HTMLButtonElement).disabled = true;
 				setTimeout(() => {

@@ -9,12 +9,12 @@ import {
 	Mode,
 	NormalImage
 } from '../types/global';
-import { SQLOperator } from '../types/sql';
 import { formatDate, getAllDrive } from './functions';
+import { RequestOperator } from './requestoperator';
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');
 // 封装数据库操作
-export class MysqlOperator implements SQLOperator {
+export class MysqlOperator implements RequestOperator {
 	private static _instance: MysqlOperator;
 	private id = null as any;
 	private _pool: any;

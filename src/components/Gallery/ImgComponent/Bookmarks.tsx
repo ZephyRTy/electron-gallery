@@ -12,7 +12,7 @@ export const BookmarkItem: ImageComponent<ImageBookmark> = (props: {
 	const [changed, setChanged] = useState(false);
 	useEffect(() => {
 		if (changed) {
-			props.util.bookmarksUpdate(props.data, marked);
+			props.util.UpdateBookmark(props.data, marked);
 		}
 	}, [changed, marked, props.data, props.util]);
 	const clickHandler = useCallback(() => {

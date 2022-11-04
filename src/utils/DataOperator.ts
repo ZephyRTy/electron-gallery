@@ -15,7 +15,6 @@ import {
 	DirectoryInfo,
 	Mode
 } from '../types/global';
-import { SQLOperator } from '../types/sql';
 import {
 	compress,
 	convertJsRegToMysqlReg,
@@ -25,6 +24,7 @@ import {
 	parseUrlQuery
 } from './functions';
 import { createBookmarkModel, createStarModel, selectionModel } from './models';
+import { RequestOperator } from './requestoperator';
 import { currentOperator } from './store';
 const fs = window.require('fs');
 const isImage = (v: string) =>
@@ -34,7 +34,7 @@ const checkImageSize = (path: string) => {
 	return size;
 };
 // 对文件进行操作，可与数据进行交互
-export abstract class FileOperator<
+export abstract class DataOperator<
 	normal extends BasicData,
 	bookmark extends BasicBookmark,
 	folder extends BasicFolder
@@ -71,7 +71,7 @@ export abstract class FileOperator<
 	};
 	protected constructor(
 		protected databaseConfig: { database: string; tableName: string },
-		protected sql: SQLOperator
+		protected sql: RequestOperator
 	) {
 		this.bookmarkModel = createBookmarkModel<bookmark>(this.sql);
 		this.starModel = createStarModel<normal>(this.sql);
@@ -221,7 +221,7 @@ export abstract class FileOperator<
 		duplicate: boolean
 	);
 
-	staredUpdate(newStar: normal) {
+	updateStared(newStar: normal) {
 		newStar.stared = !newStar.stared;
 		this.starModel.update(newStar);
 	}
@@ -304,7 +304,7 @@ export abstract class FileOperator<
 	//获取当前要打开的页面
 	abstract packWillOpen(packId: number, change: boolean);
 
-	async bookmarksUpdate(newBookmark: bookmark, marked: boolean = true) {
+	async UpdateBookmark(newBookmark: bookmark, marked: boolean = true) {
 		if (hasCover(newBookmark)) {
 			await compress(
 				newBookmark.path + newBookmark.cover,
@@ -315,7 +315,7 @@ export abstract class FileOperator<
 	}
 
 	//更新选区
-	selectionUpdate(newSelection: number, selected: boolean) {
+	updateSelection(newSelection: number, selected: boolean) {
 		this.selection.update(newSelection, selected);
 	}
 

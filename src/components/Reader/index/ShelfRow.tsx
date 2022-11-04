@@ -55,7 +55,7 @@ export const ShelfItem = (props: {
 	}, [props.bookItem?.stared]);
 	const selectHandler = useCallback(
 		(e: any) => {
-			readerOperator.selectionUpdate(props.bookItem.id, e.target.checked);
+			readerOperator.updateSelection(props.bookItem.id, e.target.checked);
 		},
 		[props.bookItem.id]
 	);
@@ -118,7 +118,7 @@ export const ShelfItem = (props: {
 				className={styles['bookshelf-star-button']}
 				onClick={() => {
 					setStared(!stared);
-					readerOperator.staredUpdate(props.bookItem);
+					readerOperator.updateStared(props.bookItem);
 				}}
 			></button>
 		</div>
