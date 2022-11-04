@@ -8,7 +8,7 @@ import {
 	Mode,
 	NormalImage
 } from '../types/global';
-import { FileOperator } from './fileOperator';
+import { DataOperator } from './DataOperator';
 import { compress, endsWith, rmDir } from './functions';
 import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { MysqlOperator, mysqlOperator } from './mysqlOperator';
@@ -17,7 +17,7 @@ const fs = window.require('fs');
 const isImage = (v: string) =>
 	endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg', 'webp');
 // 对文件进行操作，可与数据进行交互
-export class GalleryOperator extends FileOperator<
+export class GalleryOperator extends DataOperator<
 	NormalImage,
 	ImageBookmark,
 	ImageDirectory

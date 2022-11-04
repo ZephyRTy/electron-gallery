@@ -5,9 +5,9 @@ import {
 	DirectoryInfo,
 	ImageBookmark,
 	Mode
-} from './global';
+} from '../types/global';
 
-export interface SQLOperator {
+export interface RequestOperator {
 	select<A, B>(sqlParam: number[], mode: Mode): Promise<any[]>;
 	getCount(): Promise<number>;
 	end(): void;

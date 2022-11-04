@@ -40,7 +40,7 @@ export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 				className={styles['bookshelf-bookmark-button']}
 				onClick={() => {
 					setMarked(!marked);
-					readerOperator.bookmarksUpdate(props.bookItem, !marked);
+					readerOperator.UpdateBookmark(props.bookItem, !marked);
 				}}
 			></button>
 		</div>

@@ -9,7 +9,7 @@ import {
 	TextLine
 } from '../types/global';
 import { BookDetail } from './BookDetail';
-import { FileOperator } from './fileOperator';
+import { DataOperator } from './DataOperator';
 import { deleteUselessWords } from './functions';
 import { sqliteOperator } from './sqliteOperator';
 const fs = window.require('fs/promises');
@@ -28,7 +28,7 @@ export const isText = (file: string) => file.endsWith('.txt');
 // eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
 
-export class ReaderOperator extends FileOperator<
+export class ReaderOperator extends DataOperator<
 	Book,
 	BookmarkOfBook,
 	BookDirectory

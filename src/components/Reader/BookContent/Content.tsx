@@ -89,6 +89,7 @@ export const BookContent = (props: {
 		[updateWhenDrag]
 	);
 	const beforeScrollTop = useRef(0);
+
 	const handleOpenInExplorer = useCallback(() => {
 		if (book) openInExplorer(book.path);
 	}, [book]);

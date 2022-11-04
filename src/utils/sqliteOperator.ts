@@ -11,8 +11,8 @@ import {
 	Mode,
 	NormalImage
 } from '../types/global';
-import { SQLOperator } from '../types/sql';
 import { formatDate, getAllDrive } from './functions';
+import { RequestOperator } from './requestoperator';
 /* eslint-disable no-underscore-dangle */
 const sq3 = window.require('sqlite3');
 const path = window.require('path');
@@ -36,7 +36,7 @@ const transformToSQLParams = (obj: Object) => {
 	return result;
 };
 // 封装数据库操作
-export class SqliteOperator implements SQLOperator {
+export class SqliteOperator implements RequestOperator {
 	private static _instance: SqliteOperator;
 	private db;
 	private _pool: any;

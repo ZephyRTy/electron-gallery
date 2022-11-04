@@ -1,9 +1,9 @@
 import { BasicBookmark, BasicData, Mode, Model } from '../types/global';
-import { SQLOperator } from '../types/sql';
 import { isBookmarkOfBook, isImageBookmark } from './functions';
+import { RequestOperator } from './requestoperator';
 
 export const createStarModel = <T extends BasicData>(
-	sqlOperator: SQLOperator
+	sqlOperator: RequestOperator
 ): Model<T> => {
 	return {
 		dirty: false,
@@ -24,7 +24,7 @@ export const createStarModel = <T extends BasicData>(
 };
 
 export const createBookmarkModel = <T extends BasicBookmark>(
-	sqlOperator: SQLOperator
+	sqlOperator: RequestOperator
 ): Model<T> => {
 	return {
 		dirty: false,
