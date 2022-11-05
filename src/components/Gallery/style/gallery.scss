@@ -81,6 +81,11 @@ $height: 60%;
 			top: 0;
 		}
 	}
+	&-history {
+		svg {
+			width: 28px !important;
+		}
+	}
 }
 #file-input {
 	display: none;
@@ -165,6 +170,8 @@ svg {
 		height: 30px;
 		margin: 0;
 		user-select: initial;
+		position: relative;
+		z-index: 10;
 	}
 }
 

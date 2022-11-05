@@ -49,4 +49,5 @@ export interface RequestOperator {
 		marked: boolean,
 		mode: 'insert' | 'update'
 	): Promise<unknown>;
+	updateReg(id: number, reg: string): Promise<unknown>;
 }

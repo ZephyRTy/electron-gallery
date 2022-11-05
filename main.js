@@ -28,7 +28,7 @@ function createWindow() {
 	remote.enable(mainWindow.webContents);
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
-		mainWindow.loadURL('http://localhost:3000/');
+		mainWindow.loadURL('http://localhost:8097/');
 	} else {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
@@ -66,6 +66,7 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
 	app.quit();
 } else {
+	// eslint-disable-next-line no-unused-vars
 	app.on('second-instance', (event, commandLine, workingDirectory) => {
 		// 当运行第二个实例时,将会聚焦到mainWindow这个窗口
 		if (mainWindow) {

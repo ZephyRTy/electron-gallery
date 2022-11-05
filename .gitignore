@@ -34,3 +34,4 @@ text.txt
 /*.code-workspace
 src/config/config.json
 /app
+/storage

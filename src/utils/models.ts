@@ -1,6 +1,6 @@
 import { BasicBookmark, BasicData, Mode, Model } from '../types/global';
 import { isBookmarkOfBook, isImageBookmark } from './functions';
-import { RequestOperator } from './requestoperator';
+import { RequestOperator } from './requestOperator';
 
 export const createStarModel = <T extends BasicData>(
 	sqlOperator: RequestOperator

@@ -1,0 +1,114 @@
+$after-border-width: 7px;
+$after-border-color: rgb(26, 224, 254);
+
+.catalog-list {
+	list-style: none;
+	transform: translateZ(0);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+	background: white;
+	padding: 0;
+	margin: 0;
+	&::-webkit-scrollbar {
+		width: 10px;
+		background: transparent;
+	}
+	&::-webkit-scrollbar-thumb {
+		background: transparent;
+		border-radius: 5px;
+		transition: background 0.2s;
+	}
+	&:hover::-webkit-scrollbar-thumb {
+		background: #ccc;
+		border-radius: 5px;
+	}
+	&-item {
+		padding: 11px;
+		//border-bottom: 1px solid #00000026;
+		width: 85%;
+		&:last-child::after {
+			width: 0;
+			height: 0;
+		}
+		&::after {
+			content: '';
+			display: block;
+			width: 40px;
+			height: 1px;
+			background-color: #00000038;
+			top: 11px;
+			left: 50%;
+			transform: translateX(-50%);
+			position: relative;
+		}
+		&:hover {
+			color: rgb(14, 202, 254);
+			&::after {
+				background-color: rgb(14, 202, 254);
+			}
+		}
+		span {
+			text-align: center;
+			display: block;
+			max-width: 300px;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+	}
+}
+.catalog-container {
+	display: flex;
+	left: 50px;
+	width: 350px;
+	position: absolute;
+	height: 100%;
+	overflow-y: auto;
+	z-index: 100;
+	align-items: center;
+	transition: all 0.3s ease-in-out;
+	&::-webkit-scrollbar {
+		width: 0;
+	}
+	&.hidden {
+		transform: translateX(calc(-100% + 13px));
+		// .catalog-show-btn::after {
+		// 	border-color: transparent transparent transparent
+		// 		$after-border-color;
+		// 	transform: translate(20%, -50%);
+		// }
+	}
+}
+
+.catalog-reg-input {
+	min-height: 50px;
+	width: 350px;
+	height: 50px;
+	margin-bottom: 20px;
+	&:focus-visible {
+		outline: none;
+	}
+}
+
+.current-chapter {
+	font-weight: bold;
+}
+.catalog-show-btn {
+	padding: 0;
+	display: block;
+	width: 13px;
+	height: 32px;
+	background: #c3e6e6;
+	outline: none;
+	border: 1px solid #134a5b48 {
+		radius: 0 4px 4px 0;
+		left: none;
+	}
+	&:hover {
+		border-color: #25d8fb51;
+	}
+}

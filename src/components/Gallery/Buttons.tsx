@@ -10,6 +10,7 @@ import { ReactComponent as GotoReaderIcon } from '../../icon/books.svg';
 import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as OpenInExplorerIcon } from '../../icon/folder-open.svg';
+import { ReactComponent as HistoryIcon } from '../../icon/history.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
@@ -127,6 +128,27 @@ export const BookmarkBtn = (props: {
 			}}
 		>
 			<BookmarkIcon />
+		</button>
+	);
+};
+
+export const HistoryBtn = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
+	return (
+		<button
+			className={
+				'btn-history icon' +
+				(props.activeMode === props.currentMode ? ' activeMode' : '')
+			}
+			onClick={() => {
+				window.location.href =
+					'#/' + props.type + '?bookmark=true&page=1';
+			}}
+		>
+			<HistoryIcon />
 		</button>
 	);
 };

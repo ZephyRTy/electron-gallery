@@ -50,6 +50,7 @@ export const {
 	contentRange,
 	overflowNum,
 	distanceToUpdate,
+	fontSize,
 	r18: readerR18
 } = readerConfig;
 export const DELTA_HEIGHT = lineHeight * deltaLine;

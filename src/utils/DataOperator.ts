@@ -24,7 +24,7 @@ import {
 	parseUrlQuery
 } from './functions';
 import { createBookmarkModel, createStarModel, selectionModel } from './models';
-import { RequestOperator } from './requestoperator';
+import { RequestOperator } from './requestOperator';
 import { currentOperator } from './store';
 const fs = window.require('fs');
 const isImage = (v: string) =>

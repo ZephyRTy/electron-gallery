@@ -10,7 +10,7 @@ import {
 	NormalImage
 } from '../types/global';
 import { formatDate, getAllDrive } from './functions';
-import { RequestOperator } from './requestoperator';
+import { RequestOperator } from './requestOperator';
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');
 // 封装数据库操作
