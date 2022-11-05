@@ -12,29 +12,29 @@ import {
 	NormalImage
 } from '../types/global';
 import { formatDate, getAllDrive } from './functions';
-import { RequestOperator } from './requestoperator';
+import { RequestOperator } from './requestOperator';
 /* eslint-disable no-underscore-dangle */
 const sq3 = window.require('sqlite3');
 const path = window.require('path');
 const fs = window.require('fs');
-const transformToSQL = (obj: Object) => {
-	let result = '';
-	Object.keys(obj).forEach((key) => {
-		result + `${key}=?,`;
-	});
-	return result.slice(0, -1);
-};
-const transformToSQLParams = (obj: Object) => {
-	let result = [] as any[];
-	Object.keys(obj).forEach((key) => {
-		if (typeof obj[key] === 'string') {
-			result.push(`'${obj[key]}'`);
-		} else {
-			result.push(obj[key]);
-		}
-	});
-	return result;
-};
+// const transformToSQL = (obj: Object) => {
+// 	let result = '';
+// 	Object.keys(obj).forEach((key) => {
+// 		result + `${key}=?,`;
+// 	});
+// 	return result.slice(0, -1);
+// };
+// const transformToSQLParams = (obj: Object) => {
+// 	let result = [] as any[];
+// 	Object.keys(obj).forEach((key) => {
+// 		if (typeof obj[key] === 'string') {
+// 			result.push(`'${obj[key]}'`);
+// 		} else {
+// 			result.push(obj[key]);
+// 		}
+// 	});
+// 	return result;
+// };
 // 封装数据库操作
 export class SqliteOperator implements RequestOperator {
 	private static _instance: SqliteOperator;
@@ -50,14 +50,12 @@ export class SqliteOperator implements RequestOperator {
 		if (!fs.existsSync(dbPath)) {
 			fs.mkdirSync(dbPath);
 		}
-		console.log(dbPath);
-
 		this.db = new sq3.Database(path.resolve(dbPath, 'books.db'), () => {
-			this.initialize();
+			this.readerInitialize();
 		});
 		this.checkExternalDriver();
 	}
-	private initialize() {
+	private readerInitialize() {
 		const stmt1 = `CREATE TABLE if not exists directory (
 			dir_id integer PRIMARY KEY AUTOINCREMENT ,
 			dir_title varchar(100) NOT NULL,
@@ -74,10 +72,16 @@ export class SqliteOperator implements RequestOperator {
 		  ) `;
 		const stmt3 = `CREATE TABLE if not exists bookmark (
 			b_id int NOT NULL,
-			b_timeStamp timestamp NULL DEFAULT NULL,
+			b_timeStamp timestamp NULL DEFAULT CURRENT_TIMESTAMP,
 			b_url varchar(100) NOT NULL,
 			PRIMARY KEY (b_id),
 			CONSTRAINT bookmark_ibfk_1 FOREIGN KEY (b_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
+		  )`;
+		const stmt4 = `CREATE TABLE if not exists mark (
+			m_id int NOT NULL,
+			m_timeStamp timestamp NULL DEFAULT NULL,
+			line_num integer NOT NULL,
+			CONSTRAINT fk_mark_id FOREIGN KEY (m_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
 		  )`;
 		this.db.run(stmt1, (arg: any) => {
 			if (arg) console.log(arg);
@@ -86,6 +90,9 @@ export class SqliteOperator implements RequestOperator {
 			if (arg) console.log(arg);
 		});
 		this.db.run(stmt3, (arg: any) => {
+			if (arg) console.log(arg);
+		});
+		this.db.run(stmt4, (arg: any) => {
 			if (arg) console.log(arg);
 		});
 	}

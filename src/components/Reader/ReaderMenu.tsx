@@ -1,15 +1,15 @@
 import { useRef } from 'react';
 import { Toast } from '../Gallery/Toast';
 import { Sidebar } from '../Menu';
-import { AddBookmark, Back, CatalogBtn } from './Buttons';
+import { Back, RegExpBtn } from './Buttons';
 
 export const ReaderMenu = () => {
 	const bookmarkToast = useRef((arg: boolean) => {});
 	return (
 		<Sidebar menuPosition="middle">
 			<Back />
-			<CatalogBtn />
-			<AddBookmark bookmarkToast={bookmarkToast} />
+			<RegExpBtn />
+
 			<Toast handler={bookmarkToast} message="更改封面成功！" />
 		</Sidebar>
 	);

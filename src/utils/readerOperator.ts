@@ -66,7 +66,7 @@ export class ReaderOperator extends DataOperator<
 		return this.parseBook(text);
 	}
 	private parseBook(text: string) {
-		const book = new BookDetail(this.currentBook!);
+		const book = new BookDetail(this.currentBook!, this.sql);
 		const lines = text.split('\n');
 		let lineNum = 0;
 		let paragraphIndex = 0;
@@ -87,7 +87,8 @@ export class ReaderOperator extends DataOperator<
 						paragraphIndex:
 							item.length < this.lettersOfEachLine
 								? paragraphIndex
-								: paragraphIndex++
+								: paragraphIndex++,
+						parent: book
 					});
 				}
 				book.addContent(words);
@@ -100,7 +101,8 @@ export class ReaderOperator extends DataOperator<
 				index: lineNum++,
 				content: '',
 				className: ['text-br'],
-				paragraphIndex: -1
+				paragraphIndex: -1,
+				parent: book
 			});
 		}
 		return book;

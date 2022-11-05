@@ -14,6 +14,7 @@
 		"contentRange": 300,
 		"overflowNum": 20,
 		"distanceToUpdate": 2000,
+		"fontSize": 16,
 		"r18": true
 	}
 }

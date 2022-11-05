@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
+import { BookDetail } from '../utils/BookDetail';
 import { GalleryOperator } from '../utils/galleryOperator';
-import { RequestOperator } from '../utils/requestoperator';
+import { RequestOperator } from '../utils/requestOperator';
 
 export type fileStatus = 0 | 1 | 2 | 3;
 export interface BasicData {
@@ -71,10 +72,11 @@ export enum Mode {
 }
 
 export interface TextLine {
-	index: number;
+	index: number; //行号
 	content: string;
 	className: string[];
 	paragraphIndex: number;
+	readonly parent: BookDetail;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;
 export interface Chapter {

@@ -10,14 +10,61 @@ import {
 	lineHeight,
 	overflowNum
 } from '../../../types/constant';
+import { TextLine } from '../../../types/global';
 import { BookDetail } from '../../../utils/BookDetail';
 import { openInExplorer } from '../../../utils/functions';
 import { readerOperator } from '../../../utils/galleryOperator';
-import { Catalog } from '../../Dialog';
+import { RegExpSet } from '../../Dialog';
 import styles from '../style/reader.module.scss';
+import { SideCatalog } from './Catalog';
 import { FindDialog, FindMaskContainer } from './FindDialog';
+import { FloatMenu } from './FloatMenu';
 import { Placeholder } from './Placeholder';
-
+const ContentLine = (props: { line: TextLine }) => {
+	const para = useRef<HTMLParagraphElement>(null);
+	return (
+		<p
+			className={props.line.className.join(' ')}
+			onMouseDown={(e) => {
+				e.stopPropagation();
+				props.line.parent.setSelection('anchorIndex', props.line.index);
+				props.line.parent.setMousePosition(
+					e.clientX,
+					para.current?.getBoundingClientRect().y ?? e.clientY
+				);
+			}}
+			onMouseUp={(e) => {
+				const selection = window.getSelection();
+				if (selection) {
+					if (
+						selection.anchorNode === selection.focusNode &&
+						selection.anchorOffset === selection.focusOffset
+					) {
+						props.line.parent.clearSelection();
+						props.line.parent.clearMousePosition();
+						return;
+					}
+					props.line.parent.setSelection(
+						'focusIndex',
+						props.line.index
+					);
+					props.line.parent.setSelection(
+						'focusOffset',
+						selection.focusOffset
+					);
+					props.line.parent.setSelection(
+						'anchorOffset',
+						selection.anchorOffset
+					);
+					props.line.parent.showFloatMenu();
+				}
+			}}
+			ref={para}
+		>
+			{props.line.content}
+		</p>
+	);
+};
 export const BookContent = (props: {
 	renderMenu: (...args: any[]) => JSX.Element;
 }) => {
@@ -29,9 +76,10 @@ export const BookContent = (props: {
 	const [bottom, setBottom] = useState(0);
 	const [start, setStart] = useState(0);
 	const [book, setBook] = useState(null as any as BookDetail);
-	const [content, setContent] = useState([] as string[]);
+	const [content, setContent] = useState([] as TextLine[]);
 	const [chapter, setChapter] = useState(0);
 	const scrollEle = useRef(null);
+	const jump = useRef(false);
 	const initBottom = useMemo(
 		() => (book ? (book.length - contentRange) * lineHeight : 0),
 		[book]
@@ -72,6 +120,18 @@ export const BookContent = (props: {
 		},
 		[book]
 	);
+	const jumpTo = useCallback(
+		(scroll) => {
+			jump.current = true;
+			(scrollEle.current as any).scrollTop = scroll;
+			scrollTop.current = scroll;
+			updateWhenDrag(scrollTop.current);
+			setTimeout(() => {
+				jump.current = false;
+			}, 100);
+		},
+		[updateWhenDrag]
+	);
 	// eslint-disable-next-line no-unused-vars
 	const scrollToLineNum = useCallback(
 		(lineNum: number) => {
@@ -81,10 +141,8 @@ export const BookContent = (props: {
 				800
 			)
 				return;
-			(scrollEle.current as any).scrollTop = eleScrollTop;
-			scrollTop.current = eleScrollTop;
-			updateWhenDrag(eleScrollTop);
-			(scrollEle.current as any).scrollTop -= 400;
+			jumpTo(eleScrollTop);
+			//(scrollEle.current as any).scrollTop -= 400;
 		},
 		[updateWhenDrag]
 	);
@@ -93,6 +151,7 @@ export const BookContent = (props: {
 	const handleOpenInExplorer = useCallback(() => {
 		if (book) openInExplorer(book.path);
 	}, [book]);
+
 	const handleScroll = useMemo(() => {
 		let timer: number;
 		return (e: { stopPropagation: () => void }) => {
@@ -100,10 +159,10 @@ export const BookContent = (props: {
 				clearTimeout(timer);
 			}
 			timer = window.setTimeout(() => {
-				if (scrollEle.current && article.current) {
+				if (scrollEle.current && article.current && !jump.current) {
 					e.stopPropagation();
 					let { scrollTop: eleScrollTop } = scrollEle.current as any;
-					let direction =
+					let direction: -1 | 1 =
 						eleScrollTop - beforeScrollTop.current > 0 ? 1 : -1; //1向下滚动，-1向上滚动
 					beforeScrollTop.current = eleScrollTop;
 					scrollTop.current = eleScrollTop;
@@ -153,6 +212,7 @@ export const BookContent = (props: {
 								)
 							);
 						}
+
 						if (distance > 0) {
 							updateWhenDrag(eleScrollTop);
 						} else if (distance > -distanceToUpdate) {
@@ -182,9 +242,7 @@ export const BookContent = (props: {
 	}, []);
 	useEffect(() => {
 		if (scroll) {
-			(scrollEle.current as any).scrollTop = scroll;
-			scrollTop.current = scroll;
-			updateWhenDrag(scrollTop.current);
+			jumpTo(scroll);
 		}
 	}, [book]);
 	useEffect(() => {
@@ -196,21 +254,21 @@ export const BookContent = (props: {
 		return (
 			<>
 				<Placeholder height={top} />
-				<article
-					className={styles['reader-content']}
-					dangerouslySetInnerHTML={{
-						__html: content.join('')
-					}}
-					ref={article}
-				></article>
+				<article className={styles['reader-content']} ref={article}>
+					{content.map((line) => {
+						return <ContentLine key={line.index} line={line} />;
+					})}
+				</article>
 				<Placeholder height={bottom} />
 			</>
 		);
 	}, [content, top, bottom]);
 	return (
 		<>
-			<Catalog book={book} currentChapter={chapter} />
-			{props.renderMenu(handleOpenInExplorer)}
+			<RegExpSet book={book} currentChapter={chapter} />
+			<SideCatalog book={book} currentChapter={chapter} />
+			<FloatMenu book={book} />
+			{props.renderMenu(handleOpenInExplorer, book)}
 			<div
 				className={styles['scroll-content']}
 				id="reader-scroll-ele"

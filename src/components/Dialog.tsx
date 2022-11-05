@@ -482,7 +482,7 @@ const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	}, [props.chapter, props.current]);
 	return <>{item}</>;
 };
-const CatalogContent = (props: {
+const RegExpSetContent = (props: {
 	setVisible: (v: boolean) => void;
 	book: BookDetail;
 	currentChapter: number;
@@ -497,17 +497,6 @@ const CatalogContent = (props: {
 	}, [props.book]);
 	return (
 		<>
-			<ul className={styles['catalog-list']}>
-				{catalog.map((e, i) => {
-					return (
-						<CatalogItem
-							chapter={e}
-							current={i === props.currentChapter}
-							key={e.index}
-						/>
-					);
-				})}
-			</ul>
 			<textarea
 				className={styles['catalog-reg-input']}
 				onChange={(e) => {
@@ -538,6 +527,7 @@ const CatalogContent = (props: {
 					onClick={() => {
 						props.book.reParseCatalog(reg);
 						setCatalog(props.book.getCatalog());
+						props.setVisible(false);
 					}}
 				>
 					确认
@@ -550,4 +540,4 @@ export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
 export const Rename = createDialog(RenameContent, renameVisibleStore);
 export const Config = createDialog(configContent, configVisibleStore);
 
-export const Catalog = createDialog(CatalogContent, catalogVisibleStore);
+export const RegExpSet = createDialog(RegExpSetContent, catalogVisibleStore);

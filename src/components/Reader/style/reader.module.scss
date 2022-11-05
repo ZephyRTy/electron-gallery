@@ -41,6 +41,7 @@
 
 .find {
 	&-dialog {
+		z-index: 20;
 		top: 30px;
 		right: 20px;
 		width: 300px;
@@ -82,7 +83,24 @@
 		top: 0;
 		left: 70px;
 		height: 30px;
-		background-color: #fffb2a7d;
-		z-index: 100;
+		background-color: #fffb2ab7;
+		z-index: 9;
 	}
+}
+#text-width-calc {
+	visibility: hidden;
+	position: absolute;
+	height: auto;
+	width: auto;
+	white-space: nowrap;
+}
+
+.float-menu {
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 40;
+	width: 100px;
+	height: 20px;
+	background-color: blueviolet;
 }

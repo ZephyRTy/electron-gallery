@@ -1,30 +1,46 @@
+/* eslint-disable no-unused-vars */
+import { SetStateAction } from 'react';
+import { lineHeight } from '../types/constant';
 import { Book, Chapter, TextLine } from '../types/global';
-import { mysqlOperator } from './mysqlOperator';
-
+import { RequestOperator } from './requestOperator';
+const ensurePositive = (num: number) => (num < 0 ? 0 : num);
 export class BookDetail {
 	private book: Book;
 	private contentSize = { start: 0, end: 0 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
 	private currentChapter = 0;
+	private sqlOperator: RequestOperator;
+	// eslint-disable-next-line no-unused-vars
+	private floatMenuControl = (...args: any[]) => {};
+	private selection: {
+		anchorIndex: number;
+		anchorOffset: number;
+		focusIndex: number;
+		focusOffset: number;
+	} = {
+		anchorIndex: -1,
+		focusIndex: -1,
+		anchorOffset: -1,
+		focusOffset: -1
+	};
+	private mousePosition = {
+		x: -1,
+		y: -1
+	};
 	regExp: RegExp;
-	constructor(book: Book) {
+	constructor(book: Book, sqlOperator: RequestOperator) {
 		this.book = book;
 		this.regExp = new RegExp(String.raw`${book.reg}`, 'g');
+		this.sqlOperator = sqlOperator;
 	}
 
 	public addChapter(chapter: Chapter) {
 		this.catalog.push(chapter);
 	}
-	public getContent(start: number, end: number): string[] {
+	public getContent(start: number, end: number): TextLine[] {
 		this.contentSize = { start, end };
-		return this.content.slice(start, end).map((line) => {
-			return `<p ${
-				line.className.length > 0
-					? 'class=' + '"' + line.className.join(' ') + '"'
-					: ''
-			}>${line.content} </p>`;
-		});
+		return this.content.slice(start, end);
 	}
 
 	public addContent(content: TextLine[] | TextLine) {
@@ -100,7 +116,7 @@ export class BookDetail {
 		for (let i = 0; i < this.content.length; i++) {
 			this.parseCatalog(this.content[i]);
 		}
-		mysqlOperator.updateReg(this.book.id, reg);
+		this.sqlOperator.updateReg(this.book.id, reg);
 	}
 	getCatalog() {
 		return this.catalog;
@@ -111,12 +127,18 @@ export class BookDetail {
 			index: number;
 			offset: number;
 			length: number;
+			offsetInKey: number;
 		}[][];
 		let offsetInKey = 0;
-		let tempRes = [] as { index: number; offset: number; length: number }[];
+		let tempRes = [] as {
+			index: number;
+			offset: number;
+			length: number;
+			offsetInKey: number;
+		}[];
 		for (let i = 0; i < this.content.length; i++) {
 			let content = this.content[i].content;
-			const res = { index: i, offset: -1, length: 0 };
+			const res = { index: i, offset: -1, length: 0, offsetInKey };
 			for (let j = 0; j < content.length; ++j) {
 				if (content[j] === key[offsetInKey]) {
 					++offsetInKey;
@@ -141,6 +163,7 @@ export class BookDetail {
 					tempRes = [];
 					offsetInKey = 0;
 					res.offset = -1;
+					res.length = 0;
 				}
 			}
 		}
@@ -162,14 +185,68 @@ export class BookDetail {
 	get path() {
 		return this.book.path;
 	}
-	contain(lineIndex: number) {
-		return (
-			lineIndex >= this.contentSize.start &&
-			lineIndex < this.contentSize.end
-		);
+
+	getLine(lineNum: number) {
+		return this.content[lineNum];
 	}
 
 	getChapter(index: number) {
 		return this.catalog[index];
+	}
+
+	// 保存选中内容的起始行号、偏移和结束行号、偏移
+	setSelection(key: keyof typeof this.selection, value: number) {
+		this.selection[key] = value;
+	}
+	// 保存鼠标位置
+	setMousePosition(x: number, y: number) {
+		this.mousePosition = {
+			x: ensurePositive(x),
+			y: ensurePositive(Math.floor(y / lineHeight) * lineHeight)
+		};
+	}
+	clearSelection() {
+		this.selection = {
+			anchorIndex: -1,
+			focusIndex: -1,
+			anchorOffset: -1,
+			focusOffset: -1
+		};
+	}
+	clearMousePosition() {
+		this.mousePosition = { x: -1, y: -1 };
+		this.showFloatMenu();
+	}
+
+	mark() {
+		for (let key in this.selection) {
+			if (this.selection[key] === -1) {
+				return;
+			}
+		}
+	}
+	registerFloatMenu(setState: {
+		(value: SetStateAction<{ x: number; y: number }>): void;
+		(...args: any[]): void;
+	}) {
+		this.floatMenuControl = setState;
+	}
+	showFloatMenu() {
+		if (this.mousePosition.x === -1 && this.mousePosition.y === -1) {
+			this.floatMenuControl({ ...this.mousePosition });
+			return;
+		}
+		let y = this.mousePosition.y - 60,
+			x = this.mousePosition.x - 20;
+		if (y < 0 && y !== -1) {
+			y = 40;
+		}
+		if (x !== -1 && x < 50) {
+			x = 51;
+		}
+		this.floatMenuControl({
+			x,
+			y
+		});
 	}
 }

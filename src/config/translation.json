@@ -11,5 +11,6 @@
 	"deltaLine": "更新行数",
 	"contentRange": "内容范围",
 	"overflowNum": "溢出数量",
-	"distanceToUpdate": "更新距离"
+	"distanceToUpdate": "更新距离",
+	"fontSize": "字体大小"
 }
