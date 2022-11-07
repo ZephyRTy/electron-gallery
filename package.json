@@ -88,7 +88,8 @@
 		"esbuild": "node scripts/es_build.js",
 		"test": "node scripts/test.js",
 		"package": "npm run build && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
-		"package:esbuild": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite"
+		"package:esbuild": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
+		"package:electron-builder": "npm run build && electron-builder"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -198,33 +199,52 @@
 		"resetMocks": true
 	},
 	"build": {
-		"productName": "ele",
-		"appId": "com.ele.eletest",
-		"copyright": "cd©20211209",
+		"appId": "com.media.reader",
+		"productName": "多媒体阅读器",
 		"directories": {
-			"buildResources": "./",
-			"output": "pack"
+			"output": "app"
 		},
+		"publish": [
+			{
+				"provider": "generic",
+				"url": "http://oss.poooli.com/download/app/desktop/"
+			}
+		],
 		"files": [
-			"build/*",
-			"build/**/*",
-			"node_modules/**/*",
+			"build/",
 			"main.js"
 		],
 		"nsis": {
 			"oneClick": false,
 			"allowElevation": true,
 			"allowToChangeInstallationDirectory": true,
-			"installerIcon": "./public/gallery.ico",
-			"uninstallerIcon": "./public/gallery.ico",
-			"installerHeaderIcon": "./public/gallery.ico",
+			"installerIcon": "public/photo.ico",
+			"uninstallerIcon": "public/photo_uninstall.ico",
+			"installerHeaderIcon": "public/photo.ico",
 			"createDesktopShortcut": true,
 			"createStartMenuShortcut": true,
-			"perMachine": true,
-			"shortcutName": "elename"
+			"shortcutName": "name"
+		},
+		"dmg": {
+			"contents": [
+				{
+					"x": 410,
+					"y": 150,
+					"type": "link",
+					"path": "/Applications"
+				},
+				{
+					"x": 130,
+					"y": 150,
+					"type": "file"
+				}
+			]
+		},
+		"mac": {
+			"icon": "src/resources/icons/icon.icns"
 		},
 		"win": {
-			"icon": "./public/gallery.ico",
+			"icon": "public/photo.png",
 			"target": [
 				{
 					"target": "nsis",
@@ -233,6 +253,9 @@
 					]
 				}
 			]
+		},
+		"linux": {
+			"icon": "src/resources/icons/icon.ico"
 		}
 	}
 }
