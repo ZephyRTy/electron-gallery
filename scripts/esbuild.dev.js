@@ -42,7 +42,8 @@ esbuild
 		// 定义环境变量
 		define: {
 			'process.env.NODE_ENV': '"development"',
-			'process.env.DEBUG': true
+			'process.env.DEBUG': true,
+			'process.env.PORT': 3000
 		},
 		// 启动轮询的监听模式
 		watch: {
