@@ -12,7 +12,7 @@ import {
 } from '../../../types/constant';
 import { TextLine } from '../../../types/global';
 import { BookDetail } from '../../../utils/BookDetail';
-import { openInExplorer } from '../../../utils/functions';
+import { openInExplorer } from '../../../utils/functions/process';
 import { readerOperator } from '../../../utils/galleryOperator';
 import { RegExpSet } from '../../Dialog';
 import styles from '../style/reader.module.scss';
@@ -30,8 +30,9 @@ const ContentLine = (props: { line: TextLine }) => {
 				props.line.parent.setSelection('anchorIndex', props.line.index);
 				props.line.parent.setMousePosition(
 					e.clientX,
-					para.current?.getBoundingClientRect().y ?? e.clientY
+					props.line.index * lineHeight ?? e.clientY
 				);
+				props.line.parent.showFloatMenu(false);
 			}}
 			onMouseUp={(e) => {
 				const selection = window.getSelection();
@@ -56,7 +57,8 @@ const ContentLine = (props: { line: TextLine }) => {
 						'anchorOffset',
 						selection.anchorOffset
 					);
-					props.line.parent.showFloatMenu();
+					props.line.parent.fixSelection();
+					props.line.parent.showFloatMenu(true);
 				}
 			}}
 			ref={para}
@@ -253,6 +255,7 @@ export const BookContent = (props: {
 	const mainContent = useMemo(() => {
 		return (
 			<>
+				<FloatMenu book={book} />
 				<Placeholder height={top} />
 				<article className={styles['reader-content']} ref={article}>
 					{content.map((line) => {
@@ -262,12 +265,12 @@ export const BookContent = (props: {
 				<Placeholder height={bottom} />
 			</>
 		);
-	}, [content, top, bottom]);
+	}, [content, top, bottom, book]);
 	return (
 		<>
 			<RegExpSet book={book} currentChapter={chapter} />
 			<SideCatalog book={book} currentChapter={chapter} />
-			<FloatMenu book={book} />
+
 			{props.renderMenu(handleOpenInExplorer, book)}
 			<div
 				className={styles['scroll-content']}

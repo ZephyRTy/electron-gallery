@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BookmarkOfBook } from '../../../types/global';
-import { gotoHash } from '../../../utils/functions';
+import { gotoHash } from '../../../utils/functions/functions';
 import { readerOperator } from '../../../utils/galleryOperator';
 import styles from '../style/bookshelf.module.scss';
 import { ShelfBookTitle } from './ShelfRow';

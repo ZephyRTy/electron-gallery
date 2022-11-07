@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, Mode } from '../../../types/global';
-import { gotoHash, isBookmarkOfBook } from '../../../utils/functions';
+import { gotoHash } from '../../../utils/functions/functions';
+import { isBookmarkOfBook } from '../../../utils/functions/typeAssertion';
 import { readerOperator } from '../../../utils/galleryOperator';
 import styles from '../style/bookshelf.module.scss';
 

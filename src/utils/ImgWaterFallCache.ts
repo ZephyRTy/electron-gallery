@@ -1,5 +1,5 @@
 import { ImageBookmark, ImageData } from '../types/global';
-import { isImageBookmark } from './functions';
+import { isImageBookmark } from './functions/typeAssertion';
 
 // 缓存进入图片时的页面，保证前后页面排列的一致性
 export class ImgWaterfallCache {

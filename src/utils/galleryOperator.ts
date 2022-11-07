@@ -9,7 +9,8 @@ import {
 	NormalImage
 } from '../types/global';
 import { DataOperator } from './DataOperator';
-import { compress, endsWith, rmDir } from './functions';
+import { compress } from './functions/compressThumb';
+import { endsWith, rmDir } from './functions/functions';
 import { ImgWaterfallCache } from './ImgWaterFallCache';
 import { MysqlOperator, mysqlOperator } from './mysqlOperator';
 import { ReaderOperator } from './readerOperator';

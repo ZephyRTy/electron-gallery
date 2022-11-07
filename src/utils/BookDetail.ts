@@ -24,7 +24,7 @@ export class BookDetail {
 		anchorOffset: -1,
 		focusOffset: -1
 	};
-	private mousePosition = {
+	private mousePosition: { x: number | string; y: number | string } = {
 		x: -1,
 		y: -1
 	};
@@ -198,11 +198,41 @@ export class BookDetail {
 	setSelection(key: keyof typeof this.selection, value: number) {
 		this.selection[key] = value;
 	}
+
+	fixSelection() {
+		const { anchorIndex, anchorOffset, focusIndex, focusOffset } =
+			this.selection;
+		for (let i = anchorIndex; i <= focusIndex; i++) {
+			if (!this.getLine(i).className.includes('text-br')) {
+				if (i !== anchorIndex) {
+					this.selection.anchorIndex = i;
+					this.selection.anchorOffset = 0;
+					this.mousePosition.y = i * lineHeight;
+				}
+				break;
+			}
+		}
+		if (typeof this.mousePosition.y === 'number') {
+			this.mousePosition.y -= 30;
+		}
+
+		if (this.selection.anchorIndex === this.selection.focusIndex) {
+			this.mousePosition.x = `calc(${this.mousePosition.x}px + ${
+				(this.selection.focusOffset - this.selection.anchorOffset) * 0.3
+			}em)`;
+		} else {
+			this.mousePosition.x = `calc(${this.mousePosition.x}px + ${
+				(this.getLine(this.selection.anchorIndex).content.length -
+					this.selection.anchorOffset) *
+				0.1
+			}em)`;
+		}
+	}
 	// 保存鼠标位置
 	setMousePosition(x: number, y: number) {
 		this.mousePosition = {
 			x: ensurePositive(x),
-			y: ensurePositive(Math.floor(y / lineHeight) * lineHeight)
+			y: ensurePositive(y)
 		};
 	}
 	clearSelection() {
@@ -215,7 +245,6 @@ export class BookDetail {
 	}
 	clearMousePosition() {
 		this.mousePosition = { x: -1, y: -1 };
-		this.showFloatMenu();
 	}
 
 	mark() {
@@ -226,23 +255,24 @@ export class BookDetail {
 		}
 	}
 	registerFloatMenu(setState: {
-		(value: SetStateAction<{ x: number; y: number }>): void;
+		(
+			value: SetStateAction<{ x: number | string; y: number | string }>
+		): void;
 		(...args: any[]): void;
 	}) {
 		this.floatMenuControl = setState;
 	}
-	showFloatMenu() {
-		if (this.mousePosition.x === -1 && this.mousePosition.y === -1) {
-			this.floatMenuControl({ ...this.mousePosition });
+	showFloatMenu(show: boolean) {
+		if (!show) {
+			this.floatMenuControl({ x: -1, y: -1 });
 			return;
 		}
-		let y = this.mousePosition.y - 60,
-			x = this.mousePosition.x - 20;
-		if (y < 0 && y !== -1) {
-			y = 40;
-		}
-		if (x !== -1 && x < 50) {
-			x = 51;
+		let y = this.mousePosition.y,
+			x = this.mousePosition.x;
+		console.log(x);
+
+		if (x !== -1 && x < 50 && typeof x === 'number') {
+			x = 71;
 		}
 		this.floatMenuControl({
 			x,

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ReactComponent as RegExpIcon } from '../icon/regexp.svg';
 import { ReactComponent as SearchIcon } from '../icon/search.svg';
-import { setSearchParams } from '../utils/functions';
+import { setSearchParams } from '../utils/functions/functions';
 import { currentOperator } from '../utils/store';
 import styles from './style/header.module.scss';
 

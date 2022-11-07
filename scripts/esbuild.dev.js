@@ -43,7 +43,7 @@ esbuild
 		define: {
 			'process.env.NODE_ENV': '"development"',
 			'process.env.DEBUG': true,
-			'process.env.PORT': 3000
+			'process.env.PORT': 8097
 		},
 		// 启动轮询的监听模式
 		watch: {
@@ -111,7 +111,7 @@ esbuild
  </html>
  `
 		);
-		app.listen(3000, () => {
+		app.listen(parseInt(process.env.PORT, 10) || 8097, () => {
 			logLocalhostUrl();
 		});
 	})

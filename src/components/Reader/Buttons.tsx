@@ -7,7 +7,7 @@ import { ReactComponent as FindIcon } from '../../icon/find.svg';
 import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
 import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
 import { BookDetail } from '../../utils/BookDetail';
-import { formatDate, parseUrlQuery } from '../../utils/functions';
+import { formatDate, parseUrlQuery } from '../../utils/functions/functions';
 import { readerOperator } from '../../utils/galleryOperator';
 import { catalogVisibleStore, cursorStore, findStore } from '../../utils/store';
 export const RegExpBtn = () => {

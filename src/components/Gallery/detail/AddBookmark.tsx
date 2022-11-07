@@ -2,7 +2,7 @@ import { MutableRefObject, useCallback, useRef } from 'react';
 import { ReactComponent as AddBookmarkIcon } from '../../../icon/addBookmark.svg';
 import galleryConfig from '../../../types/constant';
 import { NormalImage } from '../../../types/global';
-import { formatDate, parseUrlQuery } from '../../../utils/functions';
+import { formatDate, parseUrlQuery } from '../../../utils/functions/functions';
 import { GalleryOperator } from '../../../utils/galleryOperator';
 import { imageStateStore } from '../../../utils/store';
 

@@ -119,28 +119,11 @@ export const FindDialog = (props: {
 								.slice(0, value.offset)
 								.replaceAll(SPACE_CODE, '一')
 					  );
-			// for (let j = 0; j < value.offset; j++) {
-			// 	const charCode = line.content[j].charCodeAt(0);
-			// 	if (charCode >= 0 && charCode <= 128) {
-			// 		offset += fontSize / 2;
-			// 	} else {
-			// 		offset += fontSize;
-			// 	}
-			// }
-			// for (let j = value.offset; j < value.length + value.offset; j++) {
-			// 	const charCode = line.content[j].charCodeAt(0);
-			// 	if (charCode >= 0 && charCode <= 128) {
-			// 		width += fontSize / 2;
-			// 	} else {
-			// 		width += fontSize;
-			// 	}
-			// }
 			width = metrics.width(
 				line.content
 					.slice(value.offset, value.length + value.offset)
 					.replaceAll(SPACE_CODE, '一')
 			);
-
 			arr.push({
 				top: value.index * lineHeight - 3,
 				offset: 70 + offset,
@@ -151,7 +134,6 @@ export const FindDialog = (props: {
 	}, [cursor]);
 	return (
 		<>
-			<canvas id={styles['text-width-calc']}></canvas>
 			<div
 				className={styles['find-dialog']}
 				style={{ display: vis ? 'flex' : 'none' }}

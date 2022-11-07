@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { ReactChild, useEffect, useMemo, useState } from 'react';
 import { Mode } from '../types/global';
-import { parseUrlQuery } from '../utils/functions';
+import { parseUrlQuery } from '../utils/functions/functions';
 import {
 	BookmarkBtn,
 	HistoryBtn,

@@ -10,7 +10,7 @@ import {
 } from '../types/global';
 import { BookDetail } from './BookDetail';
 import { DataOperator } from './DataOperator';
-import { deleteUselessWords } from './functions';
+import { deleteUselessWords } from './functions/functions';
 import { sqliteOperator } from './sqliteOperator';
 const fs = window.require('fs/promises');
 const iconv = window.require('iconv-lite');

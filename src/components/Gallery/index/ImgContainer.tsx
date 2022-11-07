@@ -13,11 +13,11 @@ import {
 	Mode,
 	NormalImage
 } from '../../../types/global';
+import { compress } from '../../../utils/functions/compressThumb';
 import {
-	compress,
 	isImageBookmark,
 	isImageDir
-} from '../../../utils/functions';
+} from '../../../utils/functions/typeAssertion';
 import { GalleryOperator } from '../../../utils/galleryOperator';
 import { ImgWaterfallCache } from '../../../utils/ImgWaterFallCache';
 import { dialogActive, dirMapVisibleStore } from '../../../utils/store';

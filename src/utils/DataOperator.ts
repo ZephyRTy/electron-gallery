@@ -15,14 +15,14 @@ import {
 	DirectoryInfo,
 	Mode
 } from '../types/global';
+import { compress } from './functions/compressThumb';
 import {
-	compress,
 	convertJsRegToMysqlReg,
 	endsWith,
-	hasCover,
 	notMoreThanOne,
 	parseUrlQuery
-} from './functions';
+} from './functions/functions';
+import { hasCover } from './functions/typeAssertion';
 import { createBookmarkModel, createStarModel, selectionModel } from './models';
 import { RequestOperator } from './requestOperator';
 import { currentOperator } from './store';

@@ -9,7 +9,7 @@ import galleryConfig, {
 	defaultCover,
 	imageCountOfSinglePage
 } from '../../../types/constant';
-import { openInExplorer } from '../../../utils/functions';
+import { openInExplorer } from '../../../utils/functions/process';
 import { GalleryOperator } from '../../../utils/galleryOperator';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { OpenInExplorerBtn } from '../Buttons';
