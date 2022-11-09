@@ -13,7 +13,7 @@ remote.initialize();
 module.exports = { mainWindow: mainWindow };
 function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
-	tray = new Tray('D:\\webDemo\\desktop-reader\\public\\photos.ico'); // 用ico图标格式
+	tray = new Tray('D:\\webDemo\\desktop-reader\\public\\photo_circle.ico'); // 用ico图标格式
 	mainWindow = new BrowserWindow({
 		width: 1000,
 		height: 900,
@@ -35,7 +35,7 @@ function createWindow() {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
-				pathname: path.join(__dirname, 'build', 'index.html'),
+				pathname: path.join(__dirname, 'dist', 'index.html'),
 				protocol: 'file:',
 				slashes: true
 			})
