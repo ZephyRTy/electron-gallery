@@ -311,7 +311,7 @@ export abstract class DataOperator<
 				getBookmarkThumb(newBookmark)
 			);
 		}
-		this.bookmarkModel.update(newBookmark, marked);
+		await this.bookmarkModel.update(newBookmark, marked);
 	}
 
 	//更新选区

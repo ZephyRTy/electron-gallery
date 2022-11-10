@@ -1,22 +1,21 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { BookDetail } from '../../../utils/BookDetail';
 import { readerOperator } from '../../../utils/galleryOperator';
 import { OpenInExplorerBtn } from '../../Gallery/Buttons';
-import { Toast } from '../../Gallery/Toast';
 import { Sidebar, SidebarContainer } from '../../Menu';
-import { Back, Find, MarkBtn, RegExpBtn } from '../Buttons';
+import { Back, CatalogBtn, Find, RegExpBtn, ShowMarksBtn } from '../Buttons';
 import styles from '../style/reader.module.scss';
 import { BookContent } from './Content';
 export const Reader = () => {
 	// eslint-disable-next-line no-unused-vars
-	const bookmarkToast = useRef((arg: boolean) => {});
 	const menu = useCallback((fn: () => void, book: BookDetail) => {
 		return (
 			<SidebarContainer>
 				<Sidebar menuPosition="middle">
 					<Back />
 					<RegExpBtn />
-					<MarkBtn book={book} bookmarkToast={bookmarkToast} />
+					<CatalogBtn />
+					<ShowMarksBtn book={book} />
 					<Find />
 					<OpenInExplorerBtn handleClick={fn} />
 				</Sidebar>
@@ -28,7 +27,6 @@ export const Reader = () => {
 	}, [readerOperator.packWillOpen()]);
 	return (
 		<main className={styles['reader'] + ' main-content'}>
-			<Toast handler={bookmarkToast} message="添加书签成功！" />
 			<BookContent renderMenu={menu} />
 		</main>
 	);

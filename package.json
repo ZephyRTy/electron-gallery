@@ -1,8 +1,12 @@
 {
-	"name": "desktop-reader",
+	"name": "y-reader",
 	"version": "0.1.0",
 	"main": "main.js",
 	"homepage": ".",
+	"author": {
+		"name": "Yang Tianyuan",
+		"email": "zephyryty@outlook.com"
+	},
 	"private": true,
 	"dependencies": {
 		"@electron/remote": "^2.0.8",
@@ -86,10 +90,11 @@
 		"build": "node scripts/build.js",
 		"esbuild": "node scripts/es_build.js",
 		"test": "node scripts/test.js",
-		"package": "npm run build && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
-		"package:esbuild": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
-		"package:bishe": "npm run build && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photos.ico --out=app/ --asar --app-version=0.0.1 --overwrite",
-		"package:electron-builder": "npm run build && electron-builder"
+		"pack": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photo.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
+		"package": "npm run build && npm run pack",
+		"package:esbuild": "npm run esbuild && npm run pack",
+		"package:bishe": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photo.ico --out=app/ --asar --app-version=0.0.1 --overwrite",
+		"package:electron-builder": "npm run esbuild && electron-builder --dir"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -113,13 +118,13 @@
 		"crypto": false
 	},
 	"devDependencies": {
-		"@types/jest": "^27.4.1",
 		"@babel/core": "^7.17.8",
 		"@babel/plugin-proposal-class-properties": "^7.16.7",
 		"@babel/plugin-syntax-top-level-await": "^7.14.5",
 		"@babel/plugin-transform-runtime": "^7.17.0",
 		"@babel/preset-env": "^7.16.11",
 		"@babel/runtime": "^7.17.8",
+		"@types/jest": "^27.4.1",
 		"@types/lodash": "^4.14.180",
 		"@types/mysql": "^2.15.21",
 		"@types/request": "^2.48.8",
@@ -127,7 +132,9 @@
 		"@typescript-eslint/parser": "^5.30.0",
 		"babel-loader": "^8.2.3",
 		"cellular-automata": "^2.0.1",
+		"chalk": "^5.1.2",
 		"chrome-launcher": "^0.15.1",
+		"cssnano": "^5.1.14",
 		"electron": "^17.1.2",
 		"electron-builder": "^22.14.13",
 		"electron-devtools-installer": "^3.2.0",
@@ -140,19 +147,21 @@
 		"eslint-plugin-jsx-a11y": "^6.6.0",
 		"eslint-plugin-react": "^7.30.1",
 		"eslint-plugin-react-hooks": "^4.6.0",
-		"lighthouse": "^9.6.3",
-		"livereload": "^0.9.3",
-		"node-sass": "^7.0.1",
-		"rollup": "^2.70.1",
-		"sass-loader": "^12.6.0",
-		"ts-node": "^10.9.1",
-		"typescript-plugin-css-modules": "^3.4.0",
 		"jest": "^27.4.3",
 		"jest-resolve": "^27.4.2",
 		"jest-watch-typeahead": "^1.0.0",
 		"koa": "^2.13.4",
 		"koa-router": "^12.0.0",
-		"koa-static": "^5.0.0"
+		"koa-static": "^5.0.0",
+		"lighthouse": "^9.6.3",
+		"livereload": "^0.9.3",
+		"node-sass": "^7.0.1",
+		"postcss-modules": "^6.0.0",
+		"rollup": "^2.70.1",
+		"sass": "^1.56.1",
+		"sass-loader": "^12.6.0",
+		"ts-node": "^10.9.1",
+		"typescript-plugin-css-modules": "^3.4.0"
 	},
 	"jest": {
 		"roots": [
@@ -207,7 +216,7 @@
 	},
 	"build": {
 		"appId": "com.media.reader",
-		"productName": "多媒体阅读器",
+		"productName": "YReader",
 		"directories": {
 			"output": "app"
 		},
@@ -218,7 +227,7 @@
 			}
 		],
 		"files": [
-			"build/",
+			"dist/",
 			"main.js"
 		],
 		"nsis": {
@@ -251,7 +260,7 @@
 			"icon": "src/resources/icons/icon.icns"
 		},
 		"win": {
-			"icon": "public/photo.png",
+			"icon": "public/photo.ico",
 			"target": [
 				{
 					"target": "nsis",
@@ -266,3 +275,4 @@
 		}
 	}
 }
+

@@ -1,6 +1,22 @@
 $height: 60%;
-
-@import '../../style/header.module.scss';
+$active-color: #ffcc99;
+@import './header.module.scss';
+@mixin btn-with-bar {
+	&:hover::after {
+		background-color: $active-color !important;
+	}
+	&::after {
+		transition: all 0.15s ease-in;
+		content: '';
+		display: block;
+		width: 4px;
+		height: 31px;
+		background-color: #a7a7a7;
+		left: 96%;
+		transform: translateY(-108%);
+		position: absolute;
+	}
+}
 .main-content {
 	width: 100%;
 	height: $fullscreen-height;
@@ -86,6 +102,15 @@ $height: 60%;
 			width: 28px !important;
 		}
 	}
+
+	&-catalog,
+	&-show-marks {
+		@include btn-with-bar;
+	}
+
+	&-show-marks {
+		margin-top: 2px;
+	}
 }
 #file-input {
 	display: none;
@@ -143,21 +168,27 @@ svg {
 		align-items: center;
 		justify-content: center;
 	}
-	svg {
-		fill: gray;
-		transition: all 0.15s ease-in;
-		&:hover {
-			fill: #3cb0fc;
-		}
-	}
+
 	button {
 		width: 42px;
+		svg {
+			fill: gray;
+			transition: all 0.15s ease-in;
+		}
+		&:hover {
+			svg {
+				fill: $active-color;
+			}
+		}
 	}
 }
 
-.activeMode {
+button.activeMode {
 	svg {
-		fill: #3cb0fc;
+		fill: $active-color;
+	}
+	&::after {
+		background-color: $active-color;
 	}
 }
 

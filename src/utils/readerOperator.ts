@@ -145,6 +145,7 @@ export class ReaderOperator extends DataOperator<
 			if (!e.path || !e.title || !isText(e.path)) {
 				return;
 			}
+			//NOTE 正式发布时删除
 			const novelPath = path.resolve('D:/小说', path.basename(e.path));
 			if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
 				fs.rename(e.path, novelPath, (err) => {

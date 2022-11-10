@@ -1,3 +1,11 @@
+import { lineHeight, SPACE_CODE } from '../../types/constant';
+import {
+	LineSelection,
+	LineSelectionPosition,
+	SelectionInfo
+} from '../../types/global';
+import { BookDetail } from '../BookDetail';
+
 export const fs = window.require('fs');
 export const path = window.require('path');
 export const Buffer = window.require('buffer').Buffer;
@@ -113,4 +121,110 @@ export const rmDir = async (dirPath: string) => {
 		}
 	});
 	return true;
+};
+const textMetrics = window.require('text-metrics');
+export const measureTextPosition = (
+	textInfo: LineSelection[],
+	book: BookDetail,
+	ele: HTMLElement
+): LineSelectionPosition[] => {
+	const arr = [] as LineSelectionPosition[];
+	for (let i = 0; i < textInfo.length; i++) {
+		let value = textInfo[i];
+		let width = 0,
+			offset = 0;
+		if (value.isBlank) {
+			arr.push({ top: 0, offset: 0, width: 0, logic: value });
+			continue;
+		}
+
+		let line = book.getLine(value.index);
+		const metrics = textMetrics.init(ele);
+		offset =
+			value.offset === 0
+				? 0
+				: metrics.width(
+						line.content
+							.slice(0, value.offset)
+							.replaceAll(SPACE_CODE, '一')
+				  );
+		width = metrics.width(
+			line.content
+				.slice(value.offset, value.length + value.offset)
+				.replaceAll(SPACE_CODE, '一')
+		);
+		arr.push({
+			top: value.index * lineHeight - 3,
+			offset: 70 + offset,
+			width,
+			logic: value
+		});
+	}
+	return arr;
+};
+
+export const stylesJoin = (...args: string[]) => {
+	return args.join(' ');
+};
+
+export const selectionContains = (
+	selection: SelectionInfo[],
+	line: SelectionInfo
+) => {
+	if (selection.length === 0) return false;
+	let i = 0;
+	while (i < selection.length) {
+		const { anchorIndex, focusIndex, anchorOffset, focusOffset } =
+			selection[i];
+		if (focusIndex < line.anchorIndex || anchorIndex > line.focusIndex) {
+			i++;
+			continue;
+		}
+		if (line.focusIndex > focusIndex && line.anchorIndex < anchorIndex) {
+			return true;
+		} else if (line.anchorIndex < anchorIndex) {
+			if (line.focusIndex === focusIndex) {
+				if (line.focusIndex > anchorIndex) {
+					return true;
+				} else if (line.focusIndex === anchorIndex) {
+					if (line.focusOffset >= anchorOffset) {
+						return true;
+					}
+				}
+			} else {
+				return true;
+			}
+		} else if (line.anchorIndex === anchorIndex) {
+			if (line.focusIndex !== focusIndex) {
+				return true;
+			} else if (
+				line.focusIndex === focusIndex &&
+				!(
+					line.anchorOffset >= focusOffset &&
+					line.focusOffset <= anchorOffset
+				)
+			) {
+				return true;
+			}
+		} else if (
+			line.anchorIndex > anchorIndex &&
+			line.anchorIndex < focusIndex
+		) {
+			return true;
+		} else if (
+			line.anchorIndex === focusIndex &&
+			line.anchorOffset < focusOffset
+		) {
+			return true;
+		}
+
+		++i;
+	}
+	return false;
+};
+
+export const LineSelectionEqual = (a: LineSelection, b: LineSelection) => {
+	return (
+		a.index === b.index && a.offset === b.offset && a.length === b.length
+	);
 };

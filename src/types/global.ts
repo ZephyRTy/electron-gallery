@@ -89,3 +89,39 @@ export interface Book extends BasicData {
 
 export interface BookDirectory extends BasicFolder {}
 export interface BookmarkOfBook extends Book, BasicBookmark {}
+/**
+ * 每一行选区的逻辑形式
+ */
+export interface LineSelection {
+	index: number;
+	offset: number;
+	length: number;
+	isBlank: boolean;
+}
+/**
+ * 行选区在页面上的实际形式
+ */
+export interface LineSelectionPosition {
+	top: number;
+	offset: number;
+	width: number;
+	readonly logic: LineSelection;
+}
+
+/**
+ * 每一组选区的逻辑形式，包含多个行选区，可被分割为行选区
+ */
+export interface SelectionInfo {
+	anchorIndex: number;
+	anchorOffset: number;
+	focusIndex: number;
+	focusOffset: number;
+	timestamp: string;
+	comment: string;
+}
+
+export interface MarkAnchor {
+	anchorIndex: number;
+	content: string;
+	timestamp: string;
+}

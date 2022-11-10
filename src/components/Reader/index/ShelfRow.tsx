@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, Mode } from '../../../types/global';
-import { gotoHash } from '../../../utils/functions/functions';
+import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
 import { isBookmarkOfBook } from '../../../utils/functions/typeAssertion';
 import { readerOperator } from '../../../utils/galleryOperator';
 import styles from '../style/bookshelf.module.scss';
@@ -64,15 +64,12 @@ export const ShelfItem = (props: {
 		return null;
 	}
 	return (
-		<div
-			className={styles['bookshelf-row-item']}
-			title={props.bookItem.title}
-		>
+		<div className={styles['bookshelf-row-item']}>
 			<div
-				className={
-					styles['bookshelf-row-cover'] +
-					(stared ? ' ' + styles['bookshelf-stared'] : '')
-				}
+				className={stylesJoin(
+					styles['bookshelf-row-cover'],
+					stared ? styles['bookshelf-stared'] : ''
+				)}
 				// onClick={() => {
 				// 	readerOperator.mountBook(props.bookItem);
 				// 	if (isBookmarkOfBook(props.bookItem)) {
@@ -83,6 +80,7 @@ export const ShelfItem = (props: {
 				// }}
 				onMouseDown={down}
 				onMouseUp={up}
+				title={props.bookItem.title}
 			>
 				<ShelfBookTitle
 					index={1}

@@ -35,33 +35,46 @@ export const createBookmarkModel = <T extends BasicBookmark>(
 			this.data = this.data.filter((item) => item.id !== id);
 		},
 		async update(newData: T, marked: boolean = true) {
+			const dataIndex = this.data.findIndex(
+				(item) => item.id === newData.id
+			);
 			if (isImageBookmark(newData)) {
-				if (this.data.find((item) => item.id === newData.id)) {
+				if (dataIndex !== -1) {
 					await this.sqlOperator.updateGalleryBookmark(
 						newData,
 						marked,
 						'update'
 					);
+					this.data = [
+						newData,
+						...this.data.filter((e) => e.id !== newData.id)
+					];
 				} else {
 					await this.sqlOperator.updateGalleryBookmark(
 						newData,
 						marked,
 						'insert'
 					);
+					this.data = [newData, ...this.data];
 				}
 			} else if (isBookmarkOfBook(newData)) {
-				if (this.data.find((item) => item.id === newData.id)) {
+				if (dataIndex !== -1) {
 					await this.sqlOperator.updateBookmarkOfBook(
 						newData,
 						marked,
 						'update'
 					);
+					this.data = [
+						newData,
+						...this.data.filter((e) => e.id !== newData.id)
+					];
 				} else {
 					await this.sqlOperator.updateBookmarkOfBook(
 						newData,
 						marked,
 						'insert'
 					);
+					this.data = [newData, ...this.data];
 				}
 			}
 

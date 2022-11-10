@@ -1,7 +1,14 @@
 /* eslint-disable no-undef */
 // 引入electron并创建一个BrowserWindow
 
-const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
+const {
+	app,
+	BrowserWindow,
+	ipcMain,
+	Tray,
+	Menu,
+	session
+} = require('electron');
 const path = require('path');
 const url = require('url');
 const remote = require('@electron/remote/main');
@@ -91,14 +98,14 @@ if (!gotTheLock) {
 	});
 
 	if (!app.isPackaged) {
-		const {
-			default: installExtension,
-			REACT_DEVELOPER_TOOLS
-		} = require('electron-devtools-installer');
-		app.whenReady().then(() => {
-			installExtension(REACT_DEVELOPER_TOOLS)
-				.then((name) => console.log(`Added Extension:  ${name}`))
-				.catch((err) => console.log('An error occurred: ', err));
+		// const {
+		// 	default: installExtension,
+		// 	REACT_DEVELOPER_TOOLS
+		// } = require('electron-devtools-installer');
+		app.whenReady().then(async () => {
+			await session.defaultSession.loadExtension(
+				String.raw`C:\Users\Yang\AppData\Local\Microsoft\Edge Dev\User Data\Default\Extensions\gpphkfbcpidddadnkolkpfckpihlkkil\4.25.0_0`
+			);
 		});
 	}
 	ipcMain.on('min', () => mainWindow.minimize());

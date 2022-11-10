@@ -1,25 +1,47 @@
-import { useEffect, useState } from 'react';
-import { BookDetail } from '../../../utils/BookDetail';
+import React, { useContext, useEffect, useState } from 'react';
+import { LineSelectionPosition } from '../../../types/global';
 import styles from '../style/reader.module.scss';
+import { BookContext } from './Content';
+import { MarkLineBtn } from './FloatButton';
 
 const pixelOrOther = (value: string | number) => {
 	return typeof value === 'string' ? value : `${value}px`;
 };
-export const FloatMenu = (props: { book: BookDetail }) => {
+export const FloatMenu = (props: {
+	setSelections: React.Dispatch<
+		React.SetStateAction<LineSelectionPosition[][]>
+	>;
+	setActive: React.Dispatch<
+		React.SetStateAction<LineSelectionPosition[] | null>
+	>;
+	active: LineSelectionPosition[] | null;
+}) => {
 	const [position, setPosition] = useState({ x: -1, y: -1 } as {
 		x: string | number;
 		y: number | string;
 	});
+	const book = useContext(BookContext);
 	useEffect(() => {
-		props.book?.registerFloatMenu(setPosition);
-	}, [props.book]);
+		book?.registerFloatMenu(setPosition);
+	}, [book]);
+	useEffect(() => {
+		if (position.x === position.y && position.x === -1) {
+			props.setActive(null);
+		}
+	}, [position]);
 	return position.x !== -1 && position.y !== -1 ? (
 		<div
 			className={styles['float-menu']}
 			style={{
-				left: pixelOrOther(position.x),
+				left: `min(${pixelOrOther(position.x)}, calc(100% - 110px))`,
 				top: pixelOrOther(position.y)
 			}}
-		></div>
+		>
+			<MarkLineBtn
+				marked={props.active}
+				setActive={props.setActive}
+				setSelections={props.setSelections}
+			/>
+		</div>
 	) : null;
 };

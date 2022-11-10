@@ -344,7 +344,6 @@ export class MysqlOperator implements RequestOperator {
 			});
 		});
 	}
-	//TODO 文件夹封面的外键约束
 	async updateDir(
 		dirId: number,
 		packId: number,

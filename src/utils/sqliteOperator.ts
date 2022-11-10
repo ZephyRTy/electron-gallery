@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
-import { generalConfig } from '../config';
 import {
 	BasicData,
 	BookmarkOfBook,
@@ -9,7 +8,8 @@ import {
 	ImageBookmark,
 	ImageDirectory,
 	Mode,
-	NormalImage
+	NormalImage,
+	SelectionInfo
 } from '../types/global';
 import { formatDate } from './functions/functions';
 import { getAllDrive } from './functions/process';
@@ -18,24 +18,22 @@ import { RequestOperator } from './requestOperator';
 const sq3 = window.require('sqlite3');
 const path = window.require('path');
 const fs = window.require('fs');
-// const transformToSQL = (obj: Object) => {
-// 	let result = '';
-// 	Object.keys(obj).forEach((key) => {
-// 		result + `${key}=?,`;
-// 	});
-// 	return result.slice(0, -1);
-// };
-// const transformToSQLParams = (obj: Object) => {
-// 	let result = [] as any[];
-// 	Object.keys(obj).forEach((key) => {
-// 		if (typeof obj[key] === 'string') {
-// 			result.push(`'${obj[key]}'`);
-// 		} else {
-// 			result.push(obj[key]);
-// 		}
-// 	});
-// 	return result;
-// };
+const os = window.require('os');
+const transformToSQL = <T extends object>(table: string, obj: T) => {
+	let columns = '(';
+	let values = '';
+	Object.keys(obj).forEach((key) => {
+		columns += `${key},`;
+		if (typeof obj[key] === 'string') {
+			values += `'${obj[key]}',`;
+		} else {
+			values += `${obj[key]},`;
+		}
+	});
+	columns = columns.slice(0, -1) + ')';
+	values = values.slice(0, -1);
+	return `insert into ${table} ` + columns + ' VALUES (' + values + ')';
+};
 // 封装数据库操作
 export class SqliteOperator implements RequestOperator {
 	private static _instance: SqliteOperator;
@@ -47,7 +45,12 @@ export class SqliteOperator implements RequestOperator {
 	private mainTableName = 'book_list';
 	count: number = 0;
 	private constructor() {
-		const dbPath = path.resolve(generalConfig.root, 'storage');
+		const dbPath = path.resolve(
+			os.userInfo().homedir,
+			'AppData',
+			'Roaming',
+			'YReader'
+		);
 		if (!fs.existsSync(dbPath)) {
 			fs.mkdirSync(dbPath);
 		}
@@ -81,7 +84,12 @@ export class SqliteOperator implements RequestOperator {
 		const stmt4 = `CREATE TABLE if not exists mark (
 			m_id int NOT NULL,
 			m_timeStamp timestamp NULL DEFAULT NULL,
-			line_num integer NOT NULL,
+			anchor_index integer NOT NULL,
+			anchor_offset integer NOT NULL,
+			focus_index integer NOT NULL,
+			focus_offset integer NOT NULL,
+			comment varchar(600) default NULL,
+			PRIMARY KEY (m_id, anchor_index, anchor_offset),
 			CONSTRAINT fk_mark_id FOREIGN KEY (m_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
 		  )`;
 		this.db.run(stmt1, (arg: any) => {
@@ -104,6 +112,31 @@ export class SqliteOperator implements RequestOperator {
 		return SqliteOperator._instance;
 	}
 
+	async getMarks(bookId: number): Promise<SelectionInfo[]> {
+		return new Promise((resolve, reject) => {
+			this.db.all(
+				`select * from mark where m_id = ${bookId} order by anchor_index, anchor_offset`,
+				(err: any, res: any) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(
+							res.map((e) => {
+								return {
+									anchorIndex: e.anchor_index,
+									anchorOffset: e.anchor_offset,
+									focusIndex: e.focus_index,
+									focusOffset: e.focus_offset,
+									comment: e.comment,
+									timestamp: e.m_timeStamp
+								} as SelectionInfo;
+							})
+						);
+					}
+				}
+			);
+		});
+	}
 	async checkExternalDriver() {
 		if (this.loaded) {
 			return this.hasExternalDriver;
@@ -370,7 +403,7 @@ export class SqliteOperator implements RequestOperator {
 			});
 		});
 	}
-	//TODO 文件夹封面的外键约束
+
 	async updateDir(
 		dirId: number,
 		packId: number,
@@ -426,7 +459,7 @@ export class SqliteOperator implements RequestOperator {
 					reject(err);
 				}
 				let map = new Map<string, DirectoryInfo>();
-				result.forEach((v: any) => {
+				result?.forEach((v: any) => {
 					map.set(v.id.toString(), {
 						count: v.count,
 						title: v.title
@@ -550,6 +583,44 @@ export class SqliteOperator implements RequestOperator {
 		return new Promise((resolve, reject) => {
 			this.db.run(sql, [reg, id], (err: any, res: any) => {
 				if (err) {
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
+
+	insertMark(id: number, selection: SelectionInfo) {
+		let sql = transformToSQL('mark', {
+			m_id: id,
+			m_timeStamp: formatDate(new Date()),
+			anchor_index: selection.anchorIndex,
+			focus_index: selection.focusIndex,
+			anchor_offset: selection.anchorOffset,
+			focus_offset: selection.focusOffset
+		});
+
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, (err: any, res: any) => {
+				if (err) {
+					console.log(err);
+
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
+
+	async removeMark(id: number, selection: SelectionInfo | null) {
+		if (!selection) {
+			throw new Error('selection is null');
+		}
+		let sql = `delete from mark where m_id = ${id} and anchor_index = ${selection.anchorIndex} and anchor_offset = ${selection.anchorOffset}`;
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, (err: any, res: any) => {
+				if (err) {
+					console.log(err);
 					reject(err);
 				}
 				resolve(res);

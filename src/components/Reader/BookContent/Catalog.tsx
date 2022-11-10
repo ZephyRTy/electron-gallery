@@ -1,17 +1,21 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { useData } from 'syill';
 import { lineHeight } from '../../../types/constant';
 import { Chapter } from '../../../types/global';
-import { BookDetail } from '../../../utils/BookDetail';
+import { stylesJoin } from '../../../utils/functions/functions';
+import { catalogShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
+import { BookContext } from './Content';
 const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	const item = useMemo(() => {
 		return (
 			<li
-				className={
-					styles['catalog-list-item'] +
-					(props.current ? ' ' + styles['current-chapter'] : '')
-				}
+				className={stylesJoin(
+					styles['side-list-item'],
+					styles['catalog-list-item'],
+					props.current ? styles['current-chapter'] : ''
+				)}
 				onClick={() => {
 					document.querySelector('#reader-scroll-ele')!.scrollTop =
 						props.chapter.index * lineHeight;
@@ -24,24 +28,23 @@ const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	}, [props.chapter, props.current]);
 	return <>{item}</>;
 };
-export const SideCatalog = (props: {
-	book: BookDetail;
-	currentChapter: number;
-}) => {
-	const [catalog, setCatalog] = useState(props.book?.getCatalog() || []);
-	const [show, setShow] = useState(false);
+export const SideCatalog = (props: { currentChapter: number }) => {
+	const book = useContext(BookContext);
+	const [catalog, setCatalog] = useState(book?.getCatalog() || []);
+	const [show, setShow] = useData(catalogShowStore);
 	useEffect(() => {
-		setCatalog(props.book?.getCatalog() || []);
-	}, [props.book, props.book?.reg]);
+		setCatalog(book?.getCatalog() || []);
+	}, [book, book?.reg]);
 	return (
 		<>
 			<div
-				className={
-					styles['catalog-container'] +
-					(show ? '' : ' ' + styles['hidden'])
-				}
+				className={stylesJoin(
+					styles['side-enter-box'],
+					show ? '' : styles['hidden'],
+					styles['side-enter']
+				)}
 			>
-				<ul className={styles['catalog-list']}>
+				<ul className={styles['side-list']}>
 					{catalog.map((e, i) => {
 						return (
 							<CatalogItem
@@ -52,12 +55,6 @@ export const SideCatalog = (props: {
 						);
 					})}
 				</ul>
-				<button
-					className={styles['catalog-show-btn']}
-					onClick={() => {
-						setShow(!show);
-					}}
-				/>
 			</div>
 		</>
 	);

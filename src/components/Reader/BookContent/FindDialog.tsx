@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import {
 	useCallback,
+	useContext,
 	useEffect,
 	useLayoutEffect,
 	useRef,
@@ -9,10 +10,12 @@ import {
 import { useController, useData } from 'syill';
 import { ReactComponent as LeftArrow } from '../../../icon/leftArrow.svg';
 import { ReactComponent as RightArrow } from '../../../icon/rightArrow.svg';
-import { lineHeight, SPACE_CODE } from '../../../types/constant';
-import { BookDetail } from '../../../utils/BookDetail';
+import { lineHeight } from '../../../types/constant';
+import { LineSelection } from '../../../types/global';
+import { measureTextPosition } from '../../../utils/functions/functions';
 import { cursorStore, findStore } from '../../../utils/store';
 import styles from '../style/reader.module.scss';
+import { BookContext } from './Content';
 const textMetrics = window.require('text-metrics');
 export const FindMask = (props: {
 	storeInfo: { top: number; offset: number; width: number };
@@ -40,20 +43,14 @@ export const FindMaskContainer = () => {
 	);
 };
 export const FindDialog = (props: {
-	book: BookDetail;
 	scrollToLine: (lineNum: number) => void;
 }) => {
+	const book = useContext(BookContext);
 	const [vis] = useData(findStore);
 	const inputEle = useRef<HTMLInputElement>(null);
 	const ele = useRef({ ele: null as HTMLDivElement | null });
 	const [searchKey, setSearchKey] = useState('');
-	const result = useRef(
-		[] as {
-			index: number;
-			offset: number;
-			length: number;
-		}[][]
-	);
+	const result = useRef([] as LineSelection[][]);
 	// eslint-disable-next-line no-undef
 
 	const [cursor, setCursor] = useState(-1);
@@ -61,7 +58,7 @@ export const FindDialog = (props: {
 	const next = useCallback(() => {
 		const divEle = ele.current.ele!;
 		if (result.current.length === 0) {
-			result.current = props.book.find(searchKey);
+			result.current = book.find(searchKey);
 			const value = result.current;
 			if (value.length > 0) {
 				for (let i = 0; i < value.length; i++) {
@@ -77,7 +74,7 @@ export const FindDialog = (props: {
 			}
 			setCursor(cursor + 1);
 		}
-	}, [cursor, props.book, searchKey]);
+	}, [cursor, book, searchKey]);
 	useLayoutEffect(() => {
 		ele.current.ele = document.querySelector('#reader-scroll-ele')!;
 	}, []);
@@ -102,35 +99,40 @@ export const FindDialog = (props: {
 	useEffect(() => {
 		if (result.current.length === 0 || cursor === -1) return;
 		props.scrollToLine(result.current[cursor][0].index);
-		let arr = [] as any[];
-		for (let i = 0; i < result.current[cursor].length; i++) {
-			let value = result.current[cursor][i];
-			let width = 0,
-				offset = 0;
-			let line = props.book.getLine(value.index);
-			const metrics = textMetrics.init(
-				document.querySelector('p.text-line')!
-			);
-			offset =
-				value.offset === 0
-					? 0
-					: metrics.width(
-							line.content
-								.slice(0, value.offset)
-								.replaceAll(SPACE_CODE, '一')
-					  );
-			width = metrics.width(
-				line.content
-					.slice(value.offset, value.length + value.offset)
-					.replaceAll(SPACE_CODE, '一')
-			);
-			arr.push({
-				top: value.index * lineHeight - 3,
-				offset: 70 + offset,
-				width
-			});
-		}
-		setCursorStore([...arr]);
+		const arr = measureTextPosition(
+			result.current[cursor],
+			book,
+			document.querySelector('p.text-line')!
+		);
+		// let arr = [] as any[];
+		// for (let i = 0; i < result.current[cursor].length; i++) {
+		// 	let value = result.current[cursor][i];
+		// 	let width = 0,
+		// 		offset = 0;
+		// 	let line = book.getLine(value.index);
+		// 	const metrics = textMetrics.init(
+		// 		document.querySelector('p.text-line')!
+		// 	);
+		// 	offset =
+		// 		value.offset === 0
+		// 			? 0
+		// 			: metrics.width(
+		// 					line.content
+		// 						.slice(0, value.offset)
+		// 						.replaceAll(SPACE_CODE, '一')
+		// 			  );
+		// 	width = metrics.width(
+		// 		line.content
+		// 			.slice(value.offset, value.length + value.offset)
+		// 			.replaceAll(SPACE_CODE, '一')
+		// 	);
+		// 	arr.push({
+		// 		top: value.index * lineHeight - 3,
+		// 		offset: 70 + offset,
+		// 		width
+		// 	});
+		// }
+		setCursorStore(arr);
 	}, [cursor]);
 	return (
 		<>
@@ -142,7 +144,7 @@ export const FindDialog = (props: {
 					onClick={() => {
 						const divEle = ele.current.ele!;
 						if (result.current.length === 0) {
-							result.current = props.book.find(searchKey);
+							result.current = book.find(searchKey);
 							const value = result.current;
 							if (value.length > 0) {
 								for (let i = 0; i < value.length; i++) {

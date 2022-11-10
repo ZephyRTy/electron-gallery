@@ -10,7 +10,7 @@ const app = new Koa();
 const svgrPlugin = require('esbuild-plugin-svgr');
 const sassPlugin = require('esbuild-plugin-sass');
 const { ScssModulesPlugin } = require('../plugins/sassModulePlugin');
-const chalk = require('chalk').default;
+const chalk = require('react-dev-utils/chalk');
 // 启动编译好后自动刷新浏览器
 const livereload = require('livereload');
 const lrserver = livereload.createServer();

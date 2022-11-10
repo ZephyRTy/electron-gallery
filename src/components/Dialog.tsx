@@ -3,7 +3,7 @@
 /* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Store, useData } from 'syill';
 import galleryConfig, {
 	lineHeight,
@@ -11,16 +11,16 @@ import galleryConfig, {
 	translation
 } from '../types/constant';
 import { Chapter, DirectoryInfo } from '../types/global';
-import { BookDetail } from '../utils/BookDetail';
 import { DataOperator } from '../utils/DataOperator';
 import { GalleryOperator } from '../utils/galleryOperator';
 import {
-	catalogVisibleStore,
 	configVisibleStore,
 	dialogActive,
 	dirMapVisibleStore,
+	RegInputVisibleStore,
 	renameVisibleStore
 } from '../utils/store';
+import { BookContext } from './Reader/BookContent/Content';
 import styles from './style/dialog.module.scss';
 const fs = window.require('fs');
 const { dialog } = window.require('@electron/remote');
@@ -484,17 +484,17 @@ const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 };
 const RegExpSetContent = (props: {
 	setVisible: (v: boolean) => void;
-	book: BookDetail;
 	currentChapter: number;
 }) => {
-	const [reg, setReg] = useState(props.book?.reg || '');
-	const [catalog, setCatalog] = useState(props.book?.getCatalog() || []);
+	const book = useContext(BookContext);
+	const [reg, setReg] = useState(book?.reg || '');
+	const [catalog, setCatalog] = useState(book?.getCatalog() || []);
 	useEffect(() => {
-		setReg(props.book?.reg || '');
-	}, [props.book?.reg]);
+		setReg(book?.reg || '');
+	}, [book?.reg]);
 	useEffect(() => {
-		setCatalog(props.book?.getCatalog() || []);
-	}, [props.book]);
+		setCatalog(book?.getCatalog() || []);
+	}, [book]);
 	return (
 		<>
 			<textarea
@@ -525,8 +525,8 @@ const RegExpSetContent = (props: {
 						styles['dialog-button__confirm']
 					}
 					onClick={() => {
-						props.book.reParseCatalog(reg);
-						setCatalog(props.book.getCatalog());
+						book.reParseCatalog(reg);
+						setCatalog(book.getCatalog());
 						props.setVisible(false);
 					}}
 				>
@@ -540,4 +540,4 @@ export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
 export const Rename = createDialog(RenameContent, renameVisibleStore);
 export const Config = createDialog(configContent, configVisibleStore);
 
-export const RegExpSet = createDialog(RegExpSetContent, catalogVisibleStore);
+export const RegExpSet = createDialog(RegExpSetContent, RegInputVisibleStore);

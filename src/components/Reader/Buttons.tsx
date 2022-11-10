@@ -1,20 +1,27 @@
-import { MutableRefObject, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { useController } from 'syill';
+import { useController, useData } from 'syill';
 import { ReactComponent as AddBookmarkIcon } from '../../icon/addBookmark.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
+import { ReactComponent as CatalogIcon } from '../../icon/catalog.svg';
 import { ReactComponent as FindIcon } from '../../icon/find.svg';
 import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
 import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
 import { BookDetail } from '../../utils/BookDetail';
 import { formatDate, parseUrlQuery } from '../../utils/functions/functions';
 import { readerOperator } from '../../utils/galleryOperator';
-import { catalogVisibleStore, cursorStore, findStore } from '../../utils/store';
+import {
+	catalogShowStore,
+	cursorStore,
+	findStore,
+	marksShowStore,
+	RegInputVisibleStore
+} from '../../utils/store';
 export const RegExpBtn = () => {
-	const [, setVis] = useController(catalogVisibleStore);
+	const [, setVis] = useController(RegInputVisibleStore);
 	return (
 		<button
-			className={'btn-catalog icon'}
+			className={'btn-regexp icon'}
 			onClick={() => {
 				setVis(true);
 			}}
@@ -37,7 +44,7 @@ export const GotoGalleryBtn = () => {
 };
 export const Back = () => {
 	const navigate = useNavigate();
-	const addBookmark = useCallback(() => {
+	const addBookmark = useCallback(async () => {
 		const ele = document.querySelector('#reader-scroll-ele');
 		let urlObj = parseUrlQuery(window.location.href);
 		delete urlObj['undefined'];
@@ -45,7 +52,7 @@ export const Back = () => {
 		const id = readerOperator.packWillOpen()!.id;
 		let url =
 			`#/reader/book/${id}?` + new URLSearchParams(urlObj).toString();
-		readerOperator.UpdateBookmark({
+		await readerOperator.UpdateBookmark({
 			...readerOperator.packWillOpen()!,
 			url,
 			timeStamp: formatDate(new Date())
@@ -55,31 +62,27 @@ export const Back = () => {
 		<button
 			className="btn-back icon"
 			onClick={() => {
-				addBookmark();
-				navigate(-1);
+				addBookmark().then(() => {
+					navigate(-1);
+				});
 			}}
 		>
 			<BackBtn />
 		</button>
 	);
 };
-
-export const MarkBtn = (props: {
-	// eslint-disable-next-line no-unused-vars
-	bookmarkToast: MutableRefObject<(arg: boolean) => void>;
-	book: BookDetail;
-}) => {
+// eslint-disable-next-line no-unused-vars
+export const ShowMarksBtn = (props: { book: BookDetail }) => {
+	const [marksShow, setMarksShow] = useData(marksShowStore);
+	const [, setCatalogShow] = useController(catalogShowStore);
 	return (
 		<button
-			className="add-bookmark detail-icon"
+			className={
+				'btn-show-marks detail-icon' + (marksShow ? ' activeMode' : '')
+			}
 			onClick={() => {
-				props.book.mark();
-				// props.bookmarkToast.current(true);
-				// (e.target as HTMLButtonElement).disabled = true;
-				// setTimeout(() => {
-				// 	(e.target as HTMLButtonElement).disabled = false;
-				// 	props.bookmarkToast.current(false);
-				// }, 1000);
+				setMarksShow((v) => !v);
+				setCatalogShow(false);
 			}}
 		>
 			<AddBookmarkIcon />
@@ -87,6 +90,21 @@ export const MarkBtn = (props: {
 	);
 };
 
+export const CatalogBtn = () => {
+	const [catalogShow, setCatalogShow] = useData(catalogShowStore);
+	const [, setMarksShow] = useController(marksShowStore);
+	return (
+		<button
+			className={'btn-catalog icon' + (catalogShow ? ' activeMode' : '')}
+			onClick={() => {
+				setCatalogShow((v) => !v);
+				setMarksShow(false);
+			}}
+		>
+			<CatalogIcon />
+		</button>
+	);
+};
 export const Find = () => {
 	const [, setVis] = useController(findStore);
 	const [, setCursorStore] = useController(cursorStore);

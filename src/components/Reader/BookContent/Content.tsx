@@ -1,6 +1,13 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState
+} from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
 	contentRange,
@@ -18,15 +25,19 @@ import { RegExpSet } from '../../Dialog';
 import styles from '../style/reader.module.scss';
 import { SideCatalog } from './Catalog';
 import { FindDialog, FindMaskContainer } from './FindDialog';
-import { FloatMenu } from './FloatMenu';
+import { MarkedContext } from './MarkedLine';
 import { Placeholder } from './Placeholder';
+import { SideMarkDiv } from './SideMarkDiv';
+export const BookContext = React.createContext(null as any as BookDetail);
 const ContentLine = (props: { line: TextLine }) => {
 	const para = useRef<HTMLParagraphElement>(null);
+	const book = useContext(BookContext);
 	return (
 		<p
 			className={props.line.className.join(' ')}
 			onMouseDown={(e) => {
 				e.stopPropagation();
+				book.removeAllRange();
 				props.line.parent.setSelection('anchorIndex', props.line.index);
 				props.line.parent.setMousePosition(
 					e.clientX,
@@ -35,11 +46,13 @@ const ContentLine = (props: { line: TextLine }) => {
 				props.line.parent.showFloatMenu(false);
 			}}
 			onMouseUp={(e) => {
+				e.stopPropagation();
 				const selection = window.getSelection();
 				if (selection) {
 					if (
-						selection.anchorNode === selection.focusNode &&
-						selection.anchorOffset === selection.focusOffset
+						(selection.anchorNode === selection.focusNode &&
+							selection.anchorOffset === selection.focusOffset) ||
+						!selection.anchorNode
 					) {
 						props.line.parent.clearSelection();
 						props.line.parent.clearMousePosition();
@@ -57,8 +70,12 @@ const ContentLine = (props: { line: TextLine }) => {
 						'anchorOffset',
 						selection.anchorOffset
 					);
-					props.line.parent.fixSelection();
+					props.line.parent.confirmAndFixSelection();
 					props.line.parent.showFloatMenu(true);
+				} else {
+					props.line.parent.clearSelection();
+					props.line.parent.clearMousePosition();
+					return;
 				}
 			}}
 			ref={para}
@@ -104,10 +121,8 @@ export const BookContent = (props: {
 				lineIndex - deltaLine - overflowNum + contentRange <=
 					book.length
 			) {
-				bottom =
-					initBottom -
-					(eleScrollTop - (deltaLine + overflowNum) * lineHeight);
-				top = eleScrollTop - (deltaLine + overflowNum) * lineHeight;
+				top = startLine * lineHeight;
+				bottom = initBottom - top;
 			} else if (startLine === 0) {
 				bottom = initBottom;
 				top = 0;
@@ -247,15 +262,20 @@ export const BookContent = (props: {
 			jumpTo(scroll);
 		}
 	}, [book]);
-	useEffect(() => {
-		if (top >= 0) {
-			(scrollEle.current as any).scrollTop = scrollTop.current;
-		}
-	}, [top, bottom]);
+	// useEffect(() => {
+	// 	if (top >= 0) {
+	// 		console.log(
+	// 			scrollTop.current,
+	// 			(scrollEle.current as any).scrollTop
+	// 		);
+
+	// 		(scrollEle.current as any).scrollTop = scrollTop.current;
+	// 	}
+	// }, [top, bottom]);
 	const mainContent = useMemo(() => {
 		return (
 			<>
-				<FloatMenu book={book} />
+				<MarkedContext />
 				<Placeholder height={top} />
 				<article className={styles['reader-content']} ref={article}>
 					{content.map((line) => {
@@ -267,10 +287,10 @@ export const BookContent = (props: {
 		);
 	}, [content, top, bottom, book]);
 	return (
-		<>
-			<RegExpSet book={book} currentChapter={chapter} />
-			<SideCatalog book={book} currentChapter={chapter} />
-
+		<BookContext.Provider value={book}>
+			<RegExpSet currentChapter={chapter} />
+			<SideCatalog currentChapter={chapter} />
+			<SideMarkDiv />
 			{props.renderMenu(handleOpenInExplorer, book)}
 			<div
 				className={styles['scroll-content']}
@@ -282,7 +302,7 @@ export const BookContent = (props: {
 				<div className={styles['find-mask']}></div>
 				{mainContent}
 			</div>
-			<FindDialog book={book} scrollToLine={scrollToLineNum} />
-		</>
+			<FindDialog scrollToLine={scrollToLineNum} />
+		</BookContext.Provider>
 	);
 };

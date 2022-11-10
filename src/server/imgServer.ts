@@ -4,7 +4,6 @@ import { parseUrlQuery } from '../utils/functions/functions';
 import { GalleryOperator } from '../utils/galleryOperator';
 const fs = window.require('fs');
 const http = window.require('http');
-const titles = new Set();
 const replaceInvalidDirName = (str: string) => {
 	return str.replace(/[\\/:*?"<>|]/g, '_');
 };
@@ -13,6 +12,7 @@ export class ImgServer {
 	private readonly server;
 	private static instance: ImgServer;
 	private isActive = false;
+	private titleSet = new Set();
 	private taskQueue: {
 		imgList: string[];
 		title: string;
@@ -42,6 +42,7 @@ export class ImgServer {
 		if (this.isActive) {
 			return;
 		}
+		this.titleSet = new Set();
 		this.isActive = true;
 		this.server.listen('8081', () => console.log('http://localhost:8081/'));
 		this.server.on('request', (req: any, res: any) => {
@@ -61,11 +62,11 @@ export class ImgServer {
 					target?: string;
 				};
 				title = replaceInvalidDirName(title);
-				if (titles.has(title)) {
+				if (this.titleSet.has(title)) {
 					console.log(`${title} 已获取`);
 					return;
 				}
-				titles.add(title);
+				this.titleSet.add(title);
 				this.taskQueue.push({ imgList, title, target });
 				console.log(title, imgList.length, target ?? '', '加入队列');
 				if (this.taskQueue.length === 1 && !this.hasTask) {
