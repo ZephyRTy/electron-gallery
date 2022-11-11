@@ -11,7 +11,7 @@ import {
 	NormalImage,
 	SelectionInfo
 } from '../types/global';
-import { formatDate } from './functions/functions';
+import { formatDate, generateFileMd5 } from './functions/functions';
 import { getAllDrive } from './functions/process';
 import { RequestOperator } from './requestOperator';
 /* eslint-disable no-underscore-dangle */
@@ -149,6 +149,26 @@ export class SqliteOperator implements RequestOperator {
 		return this.hasExternalDriver;
 	}
 
+	/**
+	 *
+	 * @param id
+	 * @param md5
+	 * @returns 与数据库中的md5值相同则返回true
+	 */
+	async verifyBook(id: number, md5: string): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			this.db.get(
+				`select md5 from book_list where id = ${id}`,
+				(err: any, res: any) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(res.md5 === md5);
+					}
+				}
+			);
+		});
+	}
 	getPackById(id: number) {
 		const sql = `select * from ${this.mainTableName} where id = ?`;
 		return new Promise((resolve, reject) => {
@@ -487,7 +507,7 @@ export class SqliteOperator implements RequestOperator {
 		});
 	}
 
-	insertPack(
+	async insertPack(
 		newPack: {
 			title: string;
 			stared: 0 | 1;
@@ -496,7 +516,8 @@ export class SqliteOperator implements RequestOperator {
 		},
 		duplicate: boolean = false
 	) {
-		let sql = `insert into ${this.mainTableName} (title, stared, path) values ('${newPack.title}' , ${newPack.stared} , '${newPack.path}')`;
+		const md5 = generateFileMd5(newPack.path);
+		let sql = `insert into ${this.mainTableName} (title, stared, path, md5) values ('${newPack.title}' , ${newPack.stared} , '${newPack.path}', '${md5}')`;
 		return new Promise((resolve) => {
 			this.db.run(sql, (res) => {
 				if (res && !duplicate) {
@@ -508,6 +529,17 @@ export class SqliteOperator implements RequestOperator {
 		});
 	}
 
+	clearMarkInfo(bookId: number) {
+		let sql = `delete from mark where m_id = ?`;
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, [bookId], (err, res) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
 	updateGalleryBookmark(
 		bookmark: ImageBookmark,
 		marked: boolean,
@@ -589,7 +621,18 @@ export class SqliteOperator implements RequestOperator {
 			});
 		});
 	}
-
+	async updateMd5(id: number, md5: string) {
+		let sql = `update ${this.mainTableName} set md5 = ? where id = ?`;
+		let sqlParam = [md5, id];
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, sqlParam, (err, res) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
 	insertMark(id: number, selection: SelectionInfo) {
 		let sql = transformToSQL('mark', {
 			m_id: id,

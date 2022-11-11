@@ -1,7 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useData } from 'syill';
 import { lineHeight } from '../../../types/constant';
 import { LineSelectionPosition } from '../../../types/global';
 import { measureTextPosition } from '../../../utils/functions/functions';
+import { selectionStore } from '../../../utils/store';
 import styles from '../style/reader.module.scss';
 import { BookContext } from './Content';
 import { FloatMenu } from './FloatMenu';
@@ -71,9 +73,7 @@ export const MarkedLineContainer = (props: {
 
 export const MarkedContext = () => {
 	const book = useContext(BookContext);
-	const [selections, setSelections] = useState(
-		[] as LineSelectionPosition[][]
-	);
+	const [selections, setSelections] = useData(selectionStore);
 	const [active, setActive] = useState(
 		null as null | LineSelectionPosition[]
 	);
@@ -91,6 +91,9 @@ export const MarkedContext = () => {
 				);
 			});
 		}
+		return () => {
+			setSelections([]);
+		};
 	}, [book]);
 	return (
 		<>

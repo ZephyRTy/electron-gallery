@@ -4,13 +4,12 @@ import { ReactComponent as AnchorIcon } from '../../../icon/location.svg';
 import { enable3d, lineHeight } from '../../../types/constant';
 import { MarkAnchor } from '../../../types/global';
 import { stylesJoin } from '../../../utils/functions/functions';
-import { catalogShowStore, marksShowStore } from '../../../utils/store';
+import { marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
 import { BookContext } from './Content';
 export const SideMarkDiv = () => {
 	const book = useContext(BookContext);
-	const [show, setShow] = useData(marksShowStore);
-	const [catalogShow, setCatalogShow] = useData(catalogShowStore);
+	const [, setShow] = useData(marksShowStore);
 	const anchors = useMemo(() => {
 		return book?.generateMarkAnchor() || [];
 	}, [book, book?.getMarks().length]);

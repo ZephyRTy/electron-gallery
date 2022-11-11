@@ -9,6 +9,7 @@ import React, {
 	useState
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useController } from 'syill';
 import {
 	contentRange,
 	deltaLine,
@@ -22,7 +23,8 @@ import { TextLine } from '../../../types/global';
 import { BookDetail } from '../../../utils/BookDetail';
 import { openInExplorer } from '../../../utils/functions/process';
 import { readerOperator } from '../../../utils/galleryOperator';
-import { RegExpSet } from '../../Dialog';
+import { changedAlertStore } from '../../../utils/store';
+import { ChangedAlert, RegExpSet } from '../../Dialog';
 import styles from '../style/reader.module.scss';
 import { SideCatalog } from './Catalog';
 import { FindDialog, FindMaskContainer } from './FindDialog';
@@ -92,6 +94,7 @@ export const BookContent = (props: {
 	const article = useRef(null as HTMLDivElement | null);
 	let [searchParams] = useSearchParams();
 	const scrollTop = useRef(0);
+	const [, setAlert] = useController(changedAlertStore);
 	let scroll = Number(searchParams.get('scroll') || '0');
 	const [top, setTop] = useState(0);
 	const [bottom, setBottom] = useState(0);
@@ -254,9 +257,13 @@ export const BookContent = (props: {
 	}, [start, top, bottom]);
 	useEffect(() => {
 		readerOperator.loadText().then((res) => {
-			setBook(res);
-			setContent(res.getContent(start, start + contentRange));
-			setBottom((res.length - contentRange) * lineHeight);
+			const { book, changed } = res;
+			setBook(book);
+			setContent(book.getContent(start, start + contentRange));
+			setBottom((book.length - contentRange) * lineHeight);
+			if (changed) {
+				setAlert(true);
+			}
 		});
 	}, []);
 	useEffect(() => {
@@ -264,16 +271,6 @@ export const BookContent = (props: {
 			jumpTo(scroll);
 		}
 	}, [book]);
-	// useEffect(() => {
-	// 	if (top >= 0) {
-	// 		console.log(
-	// 			scrollTop.current,
-	// 			(scrollEle.current as any).scrollTop
-	// 		);
-
-	// 		(scrollEle.current as any).scrollTop = scrollTop.current;
-	// 	}
-	// }, [top, bottom]);
 	const mainContent = useMemo(() => {
 		return (
 			<>
@@ -291,6 +288,7 @@ export const BookContent = (props: {
 	return (
 		<BookContext.Provider value={book}>
 			<RegExpSet currentChapter={chapter} />
+			<ChangedAlert />
 			{enable3d ? (
 				<SideEnter3D chapter={chapter} />
 			) : (

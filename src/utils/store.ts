@@ -1,5 +1,6 @@
 import React from 'react';
 import { Store } from 'syill';
+import { LineSelectionPosition } from '../types/global';
 import { DataOperator } from './DataOperator';
 export const ImageStateStore = {
 	states: [] as React.Dispatch<React.SetStateAction<boolean>>[],
@@ -40,3 +41,5 @@ export const cursorStore = new Store(
 );
 export const catalogShowStore = new Store(false);
 export const marksShowStore = new Store(false);
+export const changedAlertStore = new Store(false);
+export const selectionStore = new Store([] as LineSelectionPosition[][]);

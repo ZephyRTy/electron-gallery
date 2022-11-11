@@ -63,7 +63,9 @@ export class ReaderOperator extends DataOperator<
 				await fs.readFile(this.currentBook!.path, 'binary')
 			);
 		}
-		return this.parseBook(text);
+		const book = this.parseBook(text);
+		const changed = !(await book.verify(text));
+		return { book, changed };
 	}
 	private parseBook(text: string) {
 		const book = new BookDetail(this.currentBook!, this.sql);

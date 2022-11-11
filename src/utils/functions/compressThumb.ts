@@ -1,5 +1,5 @@
-import { Buffer, fs, path } from './functions';
-
+import { Buffer, path } from './functions';
+const fs = window.require('fs');
 let canvas: HTMLCanvasElement = document.createElement('canvas');
 async function imageToCanvas(
 	src: string,

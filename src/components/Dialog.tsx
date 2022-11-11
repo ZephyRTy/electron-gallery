@@ -4,7 +4,8 @@
 // eslint-disable-next-line no-undef
 import { Seq } from 'immutable';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Store, useData } from 'syill';
+import { Store, useController, useData } from 'syill';
+import { dispatch } from 'syill/lib/type';
 import galleryConfig, {
 	lineHeight,
 	readerConfig,
@@ -14,23 +15,66 @@ import { Chapter, DirectoryInfo } from '../types/global';
 import { DataOperator } from '../utils/DataOperator';
 import { GalleryOperator } from '../utils/galleryOperator';
 import {
+	changedAlertStore,
 	configVisibleStore,
 	dialogActive,
 	dirMapVisibleStore,
 	RegInputVisibleStore,
-	renameVisibleStore
+	renameVisibleStore,
+	selectionStore
 } from '../utils/store';
 import { BookContext } from './Reader/BookContent/Content';
 import styles from './style/dialog.module.scss';
 const fs = window.require('fs');
 const { dialog } = window.require('@electron/remote');
 const { ipcRenderer } = window.require('electron');
+const dialogShowFlag = {
+	flags: new Map<string, dispatch<boolean>>(),
+	add(key: string, dispatch: dispatch<boolean>) {
+		if (!this.flags.has(key)) {
+			this.flags.set(key, dispatch);
+		} else {
+			throw new Error('key already exists');
+		}
+	},
+	remove(key: string) {
+		if (this.flags.has(key)) {
+			this.flags.delete(key);
+		} else {
+			throw new Error('key not exists');
+		}
+	},
+	hideOthers(key: string) {
+		for (const [k, v] of this.flags) {
+			if (k === key) {
+				v(true);
+			} else {
+				v(false);
+			}
+		}
+	}
+};
 function createDialog<T>(
-	Component: (props: T & { setVisible: any }) => JSX.Element,
-	store: Store<boolean>
+	Component: (
+		props: T & { setVisible: any; visible: boolean }
+	) => JSX.Element,
+	store: Store<boolean>,
+	id: string
 ) {
-	return (props: Omit<T, 'setVisible'>) => {
+	return (props: Omit<Omit<T, 'setVisible'>, 'visible'>) => {
 		const [visible, setVisible] = useData(store);
+		const storeId = useMemo(() => id, []);
+		useEffect(() => {
+			dialogShowFlag.add(storeId, setVisible);
+			return () => {
+				dialogShowFlag.remove(storeId);
+			};
+		}, []);
+		useEffect(() => {
+			if (visible) {
+				dialogShowFlag.hideOthers(storeId);
+			}
+		}, [visible]);
 		return (
 			<div
 				className={
@@ -536,8 +580,57 @@ const RegExpSetContent = (props: {
 		</>
 	);
 };
-export const DirMap = createDialog(DirMapContent, dirMapVisibleStore);
-export const Rename = createDialog(RenameContent, renameVisibleStore);
-export const Config = createDialog(configContent, configVisibleStore);
 
-export const RegExpSet = createDialog(RegExpSetContent, RegInputVisibleStore);
+const ChangedAlertContent = (props: { setVisible: (v: boolean) => void }) => {
+	const book = useContext(BookContext);
+	const [, setSelection] = useController(selectionStore);
+	return (
+		<div>
+			<span className={styles['changed-alert']}>
+				当前文件已被修改，是否保留标记信息？
+			</span>
+			<div className={styles['dialog-button-contain']}>
+				<button
+					className={
+						styles['dialog-button'] +
+						' ' +
+						styles['dialog-button__back']
+					}
+					onClick={() => {
+						props.setVisible(false);
+					}}
+				>
+					否
+				</button>
+				<button
+					className={
+						styles['dialog-button'] +
+						' ' +
+						styles['dialog-button__confirm']
+					}
+					onClick={() => {
+						book.clearMarkInfo().then(() => {
+							setSelection([]);
+						});
+						props.setVisible(false);
+					}}
+				>
+					是
+				</button>
+			</div>
+		</div>
+	);
+};
+export const DirMap = createDialog(DirMapContent, dirMapVisibleStore, 'dirMap');
+export const Rename = createDialog(RenameContent, renameVisibleStore, 'rename');
+export const Config = createDialog(configContent, configVisibleStore, 'config');
+export const RegExpSet = createDialog(
+	RegExpSetContent,
+	RegInputVisibleStore,
+	'regSet'
+);
+export const ChangedAlert = createDialog(
+	ChangedAlertContent,
+	changedAlertStore,
+	'changedAlert'
+);

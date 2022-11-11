@@ -6,7 +6,8 @@ import {
 } from '../../types/global';
 import { BookDetail } from '../BookDetail';
 
-export const fs = window.require('fs');
+const fs = window.require('fs');
+const crypto = window.require('crypto');
 export const path = window.require('path');
 export const Buffer = window.require('buffer').Buffer;
 export function formatDate(
@@ -227,4 +228,15 @@ export const LineSelectionEqual = (a: LineSelection, b: LineSelection) => {
 	return (
 		a.index === b.index && a.offset === b.offset && a.length === b.length
 	);
+};
+
+export const generateFileMd5 = (filePath: string): string => {
+	const md5 = crypto.createHash('md5');
+	const content = fs.readFileSync(filePath);
+	return md5.update(content).digest('hex');
+};
+
+export const generateTextMd5 = (text: string): string => {
+	const md5 = crypto.createHash('md5');
+	return md5.update(text).digest('hex');
 };
