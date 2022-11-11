@@ -4,7 +4,7 @@ import { useData } from 'syill';
 import { lineHeight } from '../../../types/constant';
 import { Chapter } from '../../../types/global';
 import { stylesJoin } from '../../../utils/functions/functions';
-import { catalogShowStore } from '../../../utils/store';
+import { catalogShowStore, marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
 import { BookContext } from './Content';
 const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
@@ -32,15 +32,21 @@ export const SideCatalog = (props: { currentChapter: number }) => {
 	const book = useContext(BookContext);
 	const [catalog, setCatalog] = useState(book?.getCatalog() || []);
 	const [show, setShow] = useData(catalogShowStore);
+	const [marksShow, setMarksShow] = useData(marksShowStore);
 	useEffect(() => {
 		setCatalog(book?.getCatalog() || []);
 	}, [book, book?.reg]);
+	useEffect(() => {
+		return () => {
+			setShow(false);
+		};
+	}, []);
 	return (
 		<>
 			<div
 				className={stylesJoin(
 					styles['side-enter-box'],
-					show ? '' : styles['hidden'],
+					show || marksShow ? '' : styles['hidden'],
 					styles['side-enter']
 				)}
 			>

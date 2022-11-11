@@ -14,6 +14,7 @@ import {
 	deltaLine,
 	DELTA_HEIGHT,
 	distanceToUpdate,
+	enable3d,
 	lineHeight,
 	overflowNum
 } from '../../../types/constant';
@@ -27,6 +28,7 @@ import { SideCatalog } from './Catalog';
 import { FindDialog, FindMaskContainer } from './FindDialog';
 import { MarkedContext } from './MarkedLine';
 import { Placeholder } from './Placeholder';
+import { SideEnter3D } from './SideEnter3D';
 import { SideMarkDiv } from './SideMarkDiv';
 export const BookContext = React.createContext(null as any as BookDetail);
 const ContentLine = (props: { line: TextLine }) => {
@@ -289,8 +291,14 @@ export const BookContent = (props: {
 	return (
 		<BookContext.Provider value={book}>
 			<RegExpSet currentChapter={chapter} />
-			<SideCatalog currentChapter={chapter} />
-			<SideMarkDiv />
+			{enable3d ? (
+				<SideEnter3D chapter={chapter} />
+			) : (
+				<>
+					<SideCatalog currentChapter={chapter} />
+					<SideMarkDiv />
+				</>
+			)}
 			{props.renderMenu(handleOpenInExplorer, book)}
 			<div
 				className={styles['scroll-content']}

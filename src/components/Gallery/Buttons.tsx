@@ -35,7 +35,7 @@ export const HomePage = (props: {
 	return (
 		<button
 			className={
-				'btn-homepage icon' +
+				'btn-homepage icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
@@ -76,7 +76,7 @@ export const Stared = (props: {
 	return (
 		<button
 			className={
-				'btn-stared icon' +
+				'btn-stared icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
@@ -119,7 +119,7 @@ export const BookmarkBtn = (props: {
 	return (
 		<button
 			className={
-				'btn-bookmark icon' +
+				'btn-bookmark icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
@@ -140,7 +140,7 @@ export const HistoryBtn = (props: {
 	return (
 		<button
 			className={
-				'btn-history icon' +
+				'btn-history icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
@@ -194,7 +194,7 @@ export const ShowDir = (props: {
 	return (
 		<button
 			className={
-				'btn-showDir icon' +
+				'btn-showDir icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {

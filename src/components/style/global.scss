@@ -1,7 +1,7 @@
 $height: 60%;
 $active-color: #ffcc99;
 @import './header.module.scss';
-@mixin btn-with-bar {
+@mixin btn-with-bar($x) {
 	&:hover::after {
 		background-color: $active-color !important;
 	}
@@ -13,7 +13,7 @@ $active-color: #ffcc99;
 		height: 31px;
 		background-color: #a7a7a7;
 		left: 96%;
-		transform: translateY(-108%);
+		transform: translateY($x);
 		position: absolute;
 	}
 }
@@ -72,6 +72,8 @@ $active-color: #ffcc99;
 	border: none;
 	cursor: pointer;
 	margin-top: 3px;
+	display: flex;
+	justify-content: center;
 }
 .btn {
 	&-back {
@@ -97,15 +99,11 @@ $active-color: #ffcc99;
 			top: 0;
 		}
 	}
-	&-history {
-		svg {
-			width: 28px !important;
-		}
+	&-catalog {
+		@include btn-with-bar(0);
 	}
-
-	&-catalog,
 	&-show-marks {
-		@include btn-with-bar;
+		@include btn-with-bar(-108%);
 	}
 
 	&-show-marks {
@@ -191,7 +189,11 @@ button.activeMode {
 		background-color: $active-color;
 	}
 }
-
+.middle-menu {
+	li {
+		margin-top: 10px;
+	}
+}
 .crawler--active {
 	fill: #3cfc52 !important;
 }
@@ -216,5 +218,60 @@ button.goto-btn {
 		&:hover {
 			fill: #ef881e;
 		}
+	}
+}
+@property --rotate {
+	syntax: '<angle>';
+	initial-value: 132deg;
+	inherits: false;
+}
+.cool-div {
+	&::before {
+		content: '';
+		width: 104%;
+		height: 102%;
+		border-radius: 8px;
+		background-image: linear-gradient(
+			var(--rotate),
+			#5ddcff,
+			#3c67e3 43%,
+			#4e00c2
+		);
+		position: absolute;
+		z-index: -1;
+		top: -1%;
+		left: -2%;
+		animation: spin 2.5s linear infinite;
+	}
+
+	&::after {
+		position: absolute;
+		content: '';
+		top: calc(var(--card-height) / 6);
+		left: 0;
+		right: 0;
+		z-index: -1;
+		height: 100%;
+		width: 100%;
+		margin: 0 auto;
+		transform: scale(0.8);
+		filter: blur(calc(var(--card-height) / 6));
+		background-image: linear-gradient(
+			var(--rotate),
+			#5ddcff,
+			#3c67e3 43%,
+			#4e00c2
+		);
+		opacity: 1;
+		transition: opacity 0.5s;
+		animation: spin 2.5s linear infinite;
+	}
+}
+@keyframes spin {
+	0% {
+		--rotate: 0deg;
+	}
+	100% {
+		--rotate: 360deg;
 	}
 }

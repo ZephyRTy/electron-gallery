@@ -42,6 +42,7 @@ export class BookDetail {
 		y: -1
 	};
 	regExp: RegExp;
+
 	constructor(book: Book, sqlOperator: SqliteOperator) {
 		this.book = book;
 		this.regExp = new RegExp(String.raw`${book.reg}`, 'g');

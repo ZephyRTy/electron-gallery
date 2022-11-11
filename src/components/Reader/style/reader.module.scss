@@ -6,10 +6,11 @@
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+	overflow: hidden;
 	position: relative;
-	overflow-y: auto;
 	height: fit-content !important;
 	&-content {
+		opacity: 1;
 		font-family: auto;
 		font-size: 16px;
 		display: block;

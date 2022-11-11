@@ -1,24 +1,30 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
 import { useData } from 'syill';
 import { ReactComponent as AnchorIcon } from '../../../icon/location.svg';
-import { lineHeight } from '../../../types/constant';
+import { enable3d, lineHeight } from '../../../types/constant';
 import { MarkAnchor } from '../../../types/global';
 import { stylesJoin } from '../../../utils/functions/functions';
-import { marksShowStore } from '../../../utils/store';
+import { catalogShowStore, marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
 import { BookContext } from './Content';
 export const SideMarkDiv = () => {
 	const book = useContext(BookContext);
-	const [show] = useData(marksShowStore);
+	const [show, setShow] = useData(marksShowStore);
+	const [catalogShow, setCatalogShow] = useData(catalogShowStore);
 	const anchors = useMemo(() => {
 		return book?.generateMarkAnchor() || [];
 	}, [book, book?.getMarks().length]);
+	useEffect(() => {
+		return () => {
+			setShow(false);
+		};
+	}, []);
 	return (
 		<div
 			className={stylesJoin(
 				styles['side-enter-box'],
 				styles['side-enter'],
-				show ? '' : styles['hidden']
+				enable3d ? styles['on-bottom'] : ''
 			)}
 		>
 			<ul className={styles['side-list']}>

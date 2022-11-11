@@ -15,6 +15,7 @@
 		"overflowNum": 20,
 		"distanceToUpdate": 2000,
 		"fontSize": 16,
+		"3d-animation": true,
 		"r18": true
 	}
 }
