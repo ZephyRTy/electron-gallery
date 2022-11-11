@@ -17,6 +17,7 @@ import {
 	marksShowStore,
 	RegInputVisibleStore
 } from '../../utils/store';
+import { TaskQueue } from '../../utils/TaskQueue';
 export const RegExpBtn = () => {
 	const [, setVis] = useController(RegInputVisibleStore);
 	return (
@@ -57,6 +58,14 @@ export const Back = () => {
 			url,
 			timeStamp: formatDate(new Date())
 		});
+	}, []);
+	useEffect(() => {
+		TaskQueue.add(() => {
+			return addBookmark();
+		}, 'addBookmark');
+		return () => {
+			TaskQueue.remove('addBookmark');
+		};
 	}, []);
 	return (
 		<button
