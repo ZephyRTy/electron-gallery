@@ -5,7 +5,7 @@ import {
 	DirectoryInfo,
 	ImageBookmark,
 	Mode
-} from '../types/global';
+} from '../../types/global';
 
 export interface RequestOperator {
 	select<A, B>(sqlParam: number[], mode: Mode): Promise<any[]>;

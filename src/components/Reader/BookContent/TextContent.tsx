@@ -20,9 +20,9 @@ import {
 	overflowNum
 } from '../../../types/constant';
 import { TextLine } from '../../../types/global';
-import { BookDetail } from '../../../utils/BookDetail';
+import { readerOperator } from '../../../utils/data/galleryOperator';
+import { TextDetail } from '../../../utils/data/TextDetail';
 import { openInExplorer } from '../../../utils/functions/process';
-import { readerOperator } from '../../../utils/galleryOperator';
 import { changedAlertStore } from '../../../utils/store';
 import { ChangedAlert, RegExpSet } from '../../Dialog';
 import styles from '../style/reader.module.scss';
@@ -32,10 +32,11 @@ import { MarkedContext } from './MarkedLine';
 import { Placeholder } from './Placeholder';
 import { SideEnter3D } from './SideEnter3D';
 import { SideMarkDiv } from './SideMarkDiv';
-export const BookContext = React.createContext(null as any as BookDetail);
+
+export const TextContext = React.createContext(null as any as TextDetail);
 const ContentLine = (props: { line: TextLine }) => {
 	const para = useRef<HTMLParagraphElement>(null);
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	return (
 		<p
 			className={props.line.className.join(' ')}
@@ -88,7 +89,7 @@ const ContentLine = (props: { line: TextLine }) => {
 		</p>
 	);
 };
-export const BookContent = (props: {
+export const TextContent = (props: {
 	renderMenu: (...args: any[]) => JSX.Element;
 }) => {
 	const article = useRef(null as HTMLDivElement | null);
@@ -99,7 +100,7 @@ export const BookContent = (props: {
 	const [top, setTop] = useState(0);
 	const [bottom, setBottom] = useState(0);
 	const [start, setStart] = useState(0);
-	const [book, setBook] = useState(null as any as BookDetail);
+	const [book, setBook] = useState(null as any as TextDetail);
 	const [content, setContent] = useState([] as TextLine[]);
 	const [chapter, setChapter] = useState(0);
 	const scrollEle = useRef(null);
@@ -286,7 +287,7 @@ export const BookContent = (props: {
 		);
 	}, [content, top, bottom, book]);
 	return (
-		<BookContext.Provider value={book}>
+		<TextContext.Provider value={book}>
 			<RegExpSet currentChapter={chapter} />
 			<ChangedAlert />
 			{enable3d ? (
@@ -309,6 +310,6 @@ export const BookContent = (props: {
 				{mainContent}
 			</div>
 			<FindDialog scrollToLine={scrollToLineNum} />
-		</BookContext.Provider>
+		</TextContext.Provider>
 	);
 };

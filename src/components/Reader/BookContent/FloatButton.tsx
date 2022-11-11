@@ -7,7 +7,7 @@ import {
 	stylesJoin
 } from '../../../utils/functions/functions';
 import styles from '../style/reader.module.scss';
-import { BookContext } from './Content';
+import { TextContext } from './TextContent';
 
 export const MarkLineBtn = (props: {
 	marked: LineSelectionPosition[] | null;
@@ -18,7 +18,7 @@ export const MarkLineBtn = (props: {
 		React.SetStateAction<LineSelectionPosition[] | null>
 	>;
 }) => {
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	const [marked, setMarked] = useState(!!props.marked);
 	return (
 		<button

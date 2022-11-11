@@ -6,9 +6,9 @@ import { MarkAnchor } from '../../../types/global';
 import { stylesJoin } from '../../../utils/functions/functions';
 import { marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
-import { BookContext } from './Content';
+import { TextContext } from './TextContent';
 export const SideMarkDiv = () => {
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	const [, setShow] = useData(marksShowStore);
 	const anchors = useMemo(() => {
 		return book?.generateMarkAnchor() || [];

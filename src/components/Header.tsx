@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as Console } from '../icon/console.svg';
-import { GalleryOperator } from '../utils/galleryOperator';
-import { mysqlOperator } from '../utils/mysqlOperator';
-import { ReaderOperator } from '../utils/readerOperator';
+import { GalleryOperator } from '../utils/data/galleryOperator';
+import { ReaderOperator } from '../utils/data/readerOperator';
+import { mysqlOperator } from '../utils/request/mysqlOperator';
 import { TaskQueue } from '../utils/TaskQueue';
 import { GallerySearch } from './Search';
 import styles from './style/header.module.scss';

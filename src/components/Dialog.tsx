@@ -12,8 +12,8 @@ import galleryConfig, {
 	translation
 } from '../types/constant';
 import { Chapter, DirectoryInfo } from '../types/global';
-import { DataOperator } from '../utils/DataOperator';
-import { GalleryOperator } from '../utils/galleryOperator';
+import { DataOperator } from '../utils/data/DataOperator';
+import { GalleryOperator } from '../utils/data/galleryOperator';
 import {
 	changedAlertStore,
 	configVisibleStore,
@@ -23,7 +23,7 @@ import {
 	renameVisibleStore,
 	selectionStore
 } from '../utils/store';
-import { BookContext } from './Reader/BookContent/Content';
+import { TextContext } from './Reader/BookContent/TextContent';
 import styles from './style/dialog.module.scss';
 const fs = window.require('fs');
 const { dialog } = window.require('@electron/remote');
@@ -530,7 +530,7 @@ const RegExpSetContent = (props: {
 	setVisible: (v: boolean) => void;
 	currentChapter: number;
 }) => {
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	const [reg, setReg] = useState(book?.reg || '');
 	const [catalog, setCatalog] = useState(book?.getCatalog() || []);
 	useEffect(() => {
@@ -582,7 +582,7 @@ const RegExpSetContent = (props: {
 };
 
 const ChangedAlertContent = (props: { setVisible: (v: boolean) => void }) => {
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	const [, setSelection] = useController(selectionStore);
 	return (
 		<div>

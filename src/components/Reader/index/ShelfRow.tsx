@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, Mode } from '../../../types/global';
+import { readerOperator } from '../../../utils/data/galleryOperator';
 import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
 import { isBookmarkOfBook } from '../../../utils/functions/typeAssertion';
-import { readerOperator } from '../../../utils/galleryOperator';
 import styles from '../style/bookshelf.module.scss';
 
 export const ShelfBookTitle = (props: { title: string; index: number }) => {

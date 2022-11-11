@@ -9,8 +9,8 @@ import galleryConfig, {
 	defaultCover,
 	imageCountOfSinglePage
 } from '../../../types/constant';
+import { GalleryOperator } from '../../../utils/data/galleryOperator';
 import { openInExplorer } from '../../../utils/functions/process';
-import { GalleryOperator } from '../../../utils/galleryOperator';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { OpenInExplorerBtn } from '../Buttons';
 import { Loading } from '../Loading';

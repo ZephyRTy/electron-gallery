@@ -25,7 +25,7 @@ import {
 	BasicFolder,
 	Mode
 } from '../../types/global';
-import { DataOperator } from '../../utils/DataOperator';
+import { DataOperator } from '../../utils/data/DataOperator';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
 export const HomePage = (props: {
 	activeMode: Mode;

@@ -1,17 +1,17 @@
 /* eslint-disable camelcase */
 import { Map } from 'immutable';
-import { SPACE_CODE } from '../types/constant';
+import { SPACE_CODE } from '../../types/constant';
 import {
 	Book,
 	BookDirectory,
 	BookmarkOfBook,
 	Mode,
 	TextLine
-} from '../types/global';
-import { BookDetail } from './BookDetail';
+} from '../../types/global';
+import { deleteUselessWords } from '../functions/functions';
+import { sqliteOperator } from '../request/sqliteOperator';
 import { DataOperator } from './DataOperator';
-import { deleteUselessWords } from './functions/functions';
-import { sqliteOperator } from './sqliteOperator';
+import { TextDetail } from './TextDetail';
 const fs = window.require('fs/promises');
 const iconv = window.require('iconv-lite');
 const path = window.require('path');
@@ -68,7 +68,7 @@ export class ReaderOperator extends DataOperator<
 		return { book, changed };
 	}
 	private parseBook(text: string) {
-		const book = new BookDetail(this.currentBook!, this.sql);
+		const book = new TextDetail(this.currentBook!, this.sql);
 		const lines = text.split('\n');
 		let lineNum = 0;
 		let paragraphIndex = 0;

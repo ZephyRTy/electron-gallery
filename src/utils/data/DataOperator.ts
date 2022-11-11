@@ -7,25 +7,29 @@ import {
 	defaultCover,
 	getBookmarkThumb,
 	packCountOfSinglePage
-} from '../types/constant';
+} from '../../types/constant';
 import {
 	BasicBookmark,
 	BasicData,
 	BasicFolder,
 	DirectoryInfo,
 	Mode
-} from '../types/global';
-import { compress } from './functions/compressThumb';
+} from '../../types/global';
+import { compress } from '../functions/compressThumb';
 import {
 	convertJsRegToMysqlReg,
 	endsWith,
 	notMoreThanOne,
 	parseUrlQuery
-} from './functions/functions';
-import { hasCover } from './functions/typeAssertion';
-import { createBookmarkModel, createStarModel, selectionModel } from './models';
-import { RequestOperator } from './requestOperator';
-import { currentOperator } from './store';
+} from '../functions/functions';
+import { hasCover } from '../functions/typeAssertion';
+import {
+	createBookmarkModel,
+	createStarModel,
+	selectionModel
+} from '../models';
+import { RequestOperator } from '../request/requestOperator';
+import { currentOperator } from '../store';
 const fs = window.require('fs');
 const isImage = (v: string) =>
 	endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg', 'webp');

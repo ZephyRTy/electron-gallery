@@ -8,9 +8,9 @@ import {
 	ImageDirectory,
 	Mode,
 	NormalImage
-} from '../types/global';
-import { formatDate } from './functions/functions';
-import { getAllDrive } from './functions/process';
+} from '../../types/global';
+import { formatDate } from '../functions/functions';
+import { getAllDrive } from '../functions/process';
 import { RequestOperator } from './requestOperator';
 /* eslint-disable no-underscore-dangle */
 const mysql = window.require('mysql');

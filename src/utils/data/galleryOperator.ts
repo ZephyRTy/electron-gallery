@@ -7,12 +7,12 @@ import {
 	ImageDirectory,
 	Mode,
 	NormalImage
-} from '../types/global';
+} from '../../types/global';
+import { compress } from '../functions/compressThumb';
+import { endsWith, rmDir } from '../functions/functions';
+import { ImgWaterfallCache } from '../ImgWaterFallCache';
+import { MysqlOperator, mysqlOperator } from '../request/mysqlOperator';
 import { DataOperator } from './DataOperator';
-import { compress } from './functions/compressThumb';
-import { endsWith, rmDir } from './functions/functions';
-import { ImgWaterfallCache } from './ImgWaterFallCache';
-import { MysqlOperator, mysqlOperator } from './mysqlOperator';
 import { ReaderOperator } from './readerOperator';
 const fs = window.require('fs');
 const isImage = (v: string) =>

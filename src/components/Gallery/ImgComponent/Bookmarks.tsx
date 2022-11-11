@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
 import { ImageBookmark, ImageComponent } from '../../../types/global';
-import { GalleryOperator } from '../../../utils/galleryOperator';
+import { GalleryOperator } from '../../../utils/data/galleryOperator';
 import styles from '../style/img.module.scss';
 export const BookmarkItem: ImageComponent<ImageBookmark> = (props: {
 	src: string;

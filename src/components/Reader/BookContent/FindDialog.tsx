@@ -15,7 +15,7 @@ import { LineSelection } from '../../../types/global';
 import { measureTextPosition } from '../../../utils/functions/functions';
 import { cursorStore, findStore } from '../../../utils/store';
 import styles from '../style/reader.module.scss';
-import { BookContext } from './Content';
+import { TextContext } from './TextContent';
 const textMetrics = window.require('text-metrics');
 export const FindMask = (props: {
 	storeInfo: { top: number; offset: number; width: number };
@@ -45,7 +45,7 @@ export const FindMaskContainer = () => {
 export const FindDialog = (props: {
 	scrollToLine: (lineNum: number) => void;
 }) => {
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	const [vis] = useData(findStore);
 	const inputEle = useRef<HTMLInputElement>(null);
 	const ele = useRef({ ele: null as HTMLDivElement | null });

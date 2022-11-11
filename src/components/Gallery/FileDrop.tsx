@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useModel } from 'syill';
 import { BasicBookmark, BasicData, BasicFolder } from '../../types/global';
-import { DataOperator } from '../../utils/DataOperator';
+import { DataOperator } from '../../utils/data/DataOperator';
 import { fileDropVisibleStore } from '../../utils/store';
 import styles from './style/fileDrop.module.scss';
 // eslint-disable-next-line no-unused-vars

@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { LineSelectionPosition } from '../../../types/global';
 import styles from '../style/reader.module.scss';
-import { BookContext } from './Content';
 import { MarkLineBtn } from './FloatButton';
+import { TextContext } from './TextContent';
 
 const pixelOrOther = (value: string | number) => {
 	return typeof value === 'string' ? value : `${value}px`;
@@ -20,7 +20,7 @@ export const FloatMenu = (props: {
 		x: string | number;
 		y: number | string;
 	});
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	useEffect(() => {
 		book?.registerFloatMenu(setPosition);
 	}, [book]);

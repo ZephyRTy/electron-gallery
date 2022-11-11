@@ -1,7 +1,7 @@
 import { getImg } from '../crawler/utils/getImg';
 import { downloadPath, otherPath } from '../types/constant';
+import { GalleryOperator } from '../utils/data/galleryOperator';
 import { parseUrlQuery } from '../utils/functions/functions';
-import { GalleryOperator } from '../utils/galleryOperator';
 const fs = window.require('fs');
 const http = window.require('http');
 const replaceInvalidDirName = (str: string) => {

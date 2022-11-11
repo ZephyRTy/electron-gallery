@@ -9,7 +9,7 @@ import { ImageComponent, Mode, NormalImage } from '../../../types/global';
 import {
 	galleryOperator,
 	GalleryOperator
-} from '../../../utils/galleryOperator';
+} from '../../../utils/data/galleryOperator';
 import { dialogActive, renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
 export const minIndex = (arr: number[]) => {

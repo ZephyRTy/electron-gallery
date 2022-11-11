@@ -7,9 +7,9 @@ import { ReactComponent as CatalogIcon } from '../../icon/catalog.svg';
 import { ReactComponent as FindIcon } from '../../icon/find.svg';
 import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
 import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
-import { BookDetail } from '../../utils/BookDetail';
+import { readerOperator } from '../../utils/data/galleryOperator';
+import { TextDetail } from '../../utils/data/TextDetail';
 import { formatDate, parseUrlQuery } from '../../utils/functions/functions';
-import { readerOperator } from '../../utils/galleryOperator';
 import {
 	catalogShowStore,
 	cursorStore,
@@ -81,7 +81,7 @@ export const Back = () => {
 	);
 };
 // eslint-disable-next-line no-unused-vars
-export const ShowMarksBtn = (props: { book: BookDetail }) => {
+export const ShowMarksBtn = (props: { book: TextDetail }) => {
 	const [marksShow, setMarksShow] = useData(marksShowStore);
 	const [, setCatalogShow] = useController(catalogShowStore);
 	return (

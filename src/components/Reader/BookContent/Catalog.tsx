@@ -6,7 +6,7 @@ import { Chapter } from '../../../types/global';
 import { stylesJoin } from '../../../utils/functions/functions';
 import { catalogShowStore, marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
-import { BookContext } from './Content';
+import { TextContext } from './TextContent';
 const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	const item = useMemo(() => {
 		return (
@@ -29,7 +29,7 @@ const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	return <>{item}</>;
 };
 export const SideCatalog = (props: { currentChapter: number }) => {
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	const [catalog, setCatalog] = useState(book?.getCatalog() || []);
 	const [show, setShow] = useData(catalogShowStore);
 	const [marksShow, setMarksShow] = useData(marksShowStore);

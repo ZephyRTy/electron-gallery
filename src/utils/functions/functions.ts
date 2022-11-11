@@ -4,7 +4,7 @@ import {
 	LineSelectionPosition,
 	SelectionInfo
 } from '../../types/global';
-import { BookDetail } from '../BookDetail';
+import { TextDetail } from '../data/TextDetail';
 
 const fs = window.require('fs');
 const crypto = window.require('crypto');
@@ -126,7 +126,7 @@ export const rmDir = async (dirPath: string) => {
 const textMetrics = window.require('text-metrics');
 export const measureTextPosition = (
 	textInfo: LineSelection[],
-	book: BookDetail,
+	book: TextDetail,
 	ele: HTMLElement
 ): LineSelectionPosition[] => {
 	const arr = [] as LineSelectionPosition[];

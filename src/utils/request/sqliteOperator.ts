@@ -10,9 +10,9 @@ import {
 	Mode,
 	NormalImage,
 	SelectionInfo
-} from '../types/global';
-import { formatDate, generateFileMd5 } from './functions/functions';
-import { getAllDrive } from './functions/process';
+} from '../../types/global';
+import { formatDate, generateFileMd5 } from '../functions/functions';
+import { getAllDrive } from '../functions/process';
 import { RequestOperator } from './requestOperator';
 /* eslint-disable no-underscore-dangle */
 const sq3 = window.require('sqlite3');
@@ -35,8 +35,9 @@ const transformToSQL = <T extends object>(table: string, obj: T) => {
 	return `insert into ${table} ` + columns + ' VALUES (' + values + ')';
 };
 // 封装数据库操作
-export class SqliteOperator implements RequestOperator {
-	private static _instance: SqliteOperator;
+//TODO 重构，将图片数据库和文本数据库操作分开
+export class SqliteOperatorForBook implements RequestOperator {
+	private static _instance: SqliteOperatorForBook;
 	private db;
 	private _pool: any;
 	private hasExternalDriver: boolean = false;
@@ -105,11 +106,11 @@ export class SqliteOperator implements RequestOperator {
 			if (arg) console.log(arg);
 		});
 	}
-	static getInstance(): SqliteOperator {
-		if (!SqliteOperator._instance) {
-			SqliteOperator._instance = new SqliteOperator();
+	static getInstance(): SqliteOperatorForBook {
+		if (!SqliteOperatorForBook._instance) {
+			SqliteOperatorForBook._instance = new SqliteOperatorForBook();
 		}
-		return SqliteOperator._instance;
+		return SqliteOperatorForBook._instance;
 	}
 
 	async getMarks(bookId: number): Promise<SelectionInfo[]> {
@@ -633,6 +634,9 @@ export class SqliteOperator implements RequestOperator {
 			});
 		});
 	}
+
+	//TODO 插入注释
+
 	insertMark(id: number, selection: SelectionInfo) {
 		let sql = transformToSQL('mark', {
 			m_id: id,
@@ -722,4 +726,4 @@ export class SqliteOperator implements RequestOperator {
 		});
 	}
 }
-export const sqliteOperator = SqliteOperator.getInstance();
+export const sqliteOperator = SqliteOperatorForBook.getInstance();

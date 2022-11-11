@@ -5,8 +5,8 @@ import { LineSelectionPosition } from '../../../types/global';
 import { measureTextPosition } from '../../../utils/functions/functions';
 import { selectionStore } from '../../../utils/store';
 import styles from '../style/reader.module.scss';
-import { BookContext } from './Content';
 import { FloatMenu } from './FloatMenu';
+import { TextContext } from './TextContent';
 const MarkedLine = (props: {
 	selection: LineSelectionPosition[];
 	setActive: React.Dispatch<
@@ -14,7 +14,7 @@ const MarkedLine = (props: {
 	>;
 }) => {
 	const [hover, setHover] = useState(false);
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	return (
 		<div className={styles['marked-line-container']}>
 			{props.selection.map((e, i) => {
@@ -72,7 +72,7 @@ export const MarkedLineContainer = (props: {
 };
 
 export const MarkedContext = () => {
-	const book = useContext(BookContext);
+	const book = useContext(TextContext);
 	const [selections, setSelections] = useData(selectionStore);
 	const [active, setActive] = useState(
 		null as null | LineSelectionPosition[]

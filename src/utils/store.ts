@@ -1,7 +1,7 @@
 import React from 'react';
 import { Store } from 'syill';
 import { LineSelectionPosition } from '../types/global';
-import { DataOperator } from './DataOperator';
+import { DataOperator } from './data/DataOperator';
 export const ImageStateStore = {
 	states: [] as React.Dispatch<React.SetStateAction<boolean>>[],
 	setState: (state: React.Dispatch<React.SetStateAction<boolean>>) => {

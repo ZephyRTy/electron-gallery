@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { SetStateAction } from 'react';
-import { lineHeight } from '../types/constant';
+import { lineHeight } from '../../types/constant';
 import {
 	Book,
 	Chapter,
@@ -8,13 +8,13 @@ import {
 	MarkAnchor,
 	SelectionInfo,
 	TextLine
-} from '../types/global';
+} from '../../types/global';
 import {
 	formatDate,
 	generateTextMd5,
 	selectionContains
-} from './functions/functions';
-import { SqliteOperator } from './sqliteOperator';
+} from '../functions/functions';
+import { SqliteOperatorForBook } from '../request/sqliteOperator';
 const ensurePositive = (num: number | string) => {
 	if (typeof num === 'string') {
 		return num;
@@ -23,13 +23,14 @@ const ensurePositive = (num: number | string) => {
 };
 const round = (n, decimals = 0) =>
 	Number(`${Math.round(Number(`${n}e${decimals}`))}e-${decimals}`);
-export class BookDetail {
+
+export class TextDetail {
 	private book: Book;
 	private contentSize = { start: 0, end: 0 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
 	private currentChapter = 0;
-	private sqlOperator: SqliteOperator;
+	private sqlOperator: SqliteOperatorForBook;
 	// eslint-disable-next-line no-unused-vars
 	private floatMenuControl = (...args: any[]) => {};
 	private currentSelection: SelectionInfo = {
@@ -47,7 +48,7 @@ export class BookDetail {
 	};
 	regExp: RegExp;
 
-	constructor(book: Book, sqlOperator: SqliteOperator) {
+	constructor(book: Book, sqlOperator: SqliteOperatorForBook) {
 		this.book = book;
 		this.regExp = new RegExp(String.raw`${book.reg}`, 'g');
 		this.sqlOperator = sqlOperator;
