@@ -13,7 +13,8 @@ import {
 	BasicData,
 	BasicFolder,
 	DirectoryInfo,
-	Mode
+	Mode,
+	Model
 } from '../../types/global';
 import { compress } from '../functions/compressThumb';
 import {
@@ -61,8 +62,8 @@ export abstract class DataOperator<
 	protected total = 0;
 	protected currentPacks = [] as normal[];
 	dirMap = fromJS({}) as Map<string, DirectoryInfo>;
-	protected readonly starModel;
-	protected readonly bookmarkModel;
+	protected readonly starModel: Model<normal>;
+	protected readonly bookmarkModel: Model<bookmark>;
 	protected selection = selectionModel;
 	protected nextTitle = '';
 	protected searchCache = {

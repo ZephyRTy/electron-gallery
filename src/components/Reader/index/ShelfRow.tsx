@@ -33,7 +33,10 @@ export const ShelfItem = (props: {
 					gotoHash(props.bookItem.url);
 					return;
 				}
-				gotoHash(`#/reader/book/${props.bookItem.id}`);
+				gotoHash(
+					readerOperator.getProgress(props.bookItem.id) ||
+						`#/reader/book/${props.bookItem.id}`
+				);
 			}
 		},
 		[props.bookItem.id, props.inSelect]

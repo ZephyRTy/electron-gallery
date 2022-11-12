@@ -215,4 +215,8 @@ export class ReaderOperator extends DataOperator<
 		this.titleWillUpdate(book.title);
 		this.currentBook = book;
 	}
+
+	getProgress(id: number) {
+		return this.bookmarkModel.data.find((v) => v.id === id)?.url;
+	}
 }
