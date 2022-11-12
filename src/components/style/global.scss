@@ -1,5 +1,5 @@
 $height: 60%;
-$active-color: #ffcc99;
+$active-color: #fedc3d;
 @import './header.module.scss';
 @mixin btn-with-bar($x) {
 	&:hover::after {
@@ -192,6 +192,12 @@ button.activeMode {
 .middle-menu {
 	li {
 		margin-top: 10px;
+	}
+	button.activeMode {
+		svg {
+			fill: white;
+			filter: brightness(1.14) drop-shadow(0px 0px 6px $active-color);
+		}
 	}
 }
 .crawler--active {

@@ -17,7 +17,7 @@ import {
 	marksShowStore,
 	RegInputVisibleStore
 } from '../../utils/store';
-import { TaskQueue } from '../../utils/TaskQueue';
+import { TaskQueueBeforeQuit } from '../../utils/TaskQueue';
 export const RegExpBtn = () => {
 	const [, setVis] = useController(RegInputVisibleStore);
 	return (
@@ -60,11 +60,11 @@ export const Back = () => {
 		});
 	}, []);
 	useEffect(() => {
-		TaskQueue.add(() => {
+		TaskQueueBeforeQuit.add(() => {
 			return addBookmark();
 		}, 'addBookmark');
 		return () => {
-			TaskQueue.remove('addBookmark');
+			TaskQueueBeforeQuit.remove('addBookmark');
 		};
 	}, []);
 	return (

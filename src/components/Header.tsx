@@ -3,7 +3,7 @@ import { ReactComponent as Console } from '../icon/console.svg';
 import { GalleryOperator } from '../utils/data/galleryOperator';
 import { ReaderOperator } from '../utils/data/readerOperator';
 import { mysqlOperator } from '../utils/request/mysqlOperator';
-import { TaskQueue } from '../utils/TaskQueue';
+import { TaskQueueBeforeQuit } from '../utils/TaskQueue';
 import { GallerySearch } from './Search';
 import styles from './style/header.module.scss';
 const { ipcRenderer } = window.require('electron');
@@ -34,7 +34,7 @@ const WindowButtons = () => {
 				<button
 					id={styles['close']}
 					onClick={() => {
-						TaskQueue.run().then(() => {
+						TaskQueueBeforeQuit.run().then(() => {
 							ipcRenderer.send('close');
 							mysqlOperator.end();
 						});

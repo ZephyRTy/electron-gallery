@@ -9,25 +9,34 @@
 	width: 400px;
 	height: fit-content;
 	max-height: 600px;
-	min-height: 150px;
-	border-radius: 20px;
 	&-button {
 		&-contain {
 			display: flex;
 			justify-content: center;
+			position: absolute;
+			width: 400px;
+			transform-style: preserve-3d;
+			perspective: 1000px;
+
+			* {
+				height: 40px;
+			}
 		}
-		width: 80px;
-		height: 30px;
+		transition: all 0.2s ease-in-out;
+		transform-origin: top center;
+		width: 50%;
+		height: 40px;
 		margin: {
 			bottom: 20px;
-			left: 30px;
-			right: 30px;
 		}
-		border: none {
-			radius: 4px;
+		border: none;
+		font-family: SimHei;
+		font-size: 18px;
+		&:hover {
+			cursor: pointer;
+			transform: rotateX(-25deg);
 		}
 		&__confirm {
-			margin-left: 30px;
 			color: white;
 			background-color: rgb(64, 202, 244);
 			&:hover {
@@ -36,10 +45,24 @@
 		}
 		&__back {
 			color: white;
-			background-color: rgb(244, 190, 64);
+			background-color: rgb(247, 214, 68);
 			&:hover {
-				background-color: rgb(207, 143, 40);
+				background-color: rgb(244, 190, 64);
 			}
+		}
+
+		&-left,
+		&-right {
+			width: 20%;
+		}
+
+		&-left {
+			background-color: rgb(247, 214, 68);
+			border-radius: 0 0 0 10px;
+		}
+		&-right {
+			background-color: rgb(64, 202, 244);
+			border-radius: 0 0 10px 0;
 		}
 	}
 
@@ -77,6 +100,14 @@
 		&::-webkit-scrollbar-thumb {
 			background-color: cornflowerblue;
 			border-radius: 3px;
+		}
+		&-wrap {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			width: 400px;
+			max-height: 550px;
 		}
 	}
 	&-item {
@@ -136,6 +167,9 @@
 		width: 70%;
 		height: 25px;
 		margin-bottom: 10px;
+		display: block;
+		margin: 0px auto;
+		margin-bottom: 20px;
 		&:focus-visible {
 			outline: none;
 		}
@@ -147,7 +181,6 @@
 
 .rename {
 	&-contain {
-		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
@@ -158,6 +191,8 @@
 	&-input {
 		width: 70%;
 		height: 20px;
+		display: block;
+		margin: 0 auto;
 		margin-bottom: 20px;
 		&:focus-visible {
 			outline: none;
@@ -171,11 +206,11 @@
 	&-list {
 		width: 100%;
 		list-style: none;
-		margin-bottom: 35px;
+		padding: 0;
 	}
 	&-item {
 		font-size: 15px;
-		margin: 10px;
+		margin: 10px auto;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -183,6 +218,9 @@
 		overflow: hidden;
 		white-space: nowrap;
 		text-overflow: ellipsis;
+		&:last-child {
+			margin-bottom: 0;
+		}
 		.config-file-label {
 			overflow: hidden;
 			white-space: nowrap;
@@ -265,7 +303,9 @@
 	min-height: 50px;
 	width: 350px;
 	height: 50px;
-	margin-bottom: 20px;
+	display: block;
+	margin: 20px auto;
+	margin-bottom: 24px;
 	&:focus-visible {
 		outline: none;
 	}
@@ -273,4 +313,20 @@
 
 .current-chapter {
 	font-weight: bold;
+}
+
+.regexp-container {
+	width: 100%;
+	height: auto;
+}
+
+.changed-alert {
+	display: block;
+	height: 40px;
+	text-align: center;
+	line-height: 40px;
+	margin: 20px auto;
+	&-container {
+		width: 100%;
+	}
 }

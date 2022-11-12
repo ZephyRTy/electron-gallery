@@ -23,6 +23,7 @@ import {
 	renameVisibleStore,
 	selectionStore
 } from '../utils/store';
+import { ButtonContainer } from './ButtonContainer';
 import { TextContext } from './Reader/BookContent/TextContent';
 import styles from './style/dialog.module.scss';
 const fs = window.require('fs');
@@ -161,54 +162,62 @@ const DirMapContent = (props: {
 	}, [checked, props.visible]);
 	const dirList = useMemo(() => {
 		return (
-			<ul className={styles['dir-map-list']} ref={ul}>
-				{dirs.map((dir: [string, DirectoryInfo], v) => {
-					const dirIndex = dir[0];
-					return (
-						<li
-							className={styles['dir-map-item']}
-							id={'input-' + dirIndex}
-							key={dirIndex}
-						>
-							<input
-								checked={checked === dirIndex}
-								className={styles['dir-map-checkbox']}
-								disabled={!galleryConfig.r18}
-								id={'checkbox-' + dirIndex}
-								onClick={() => {
-									if (checked === dirIndex) {
-										setChecked('');
-										setDestination('');
-										return;
-									}
-									setChecked(dirIndex);
-									setDestination(dirIndex);
-								}}
-								readOnly
-								type={'checkbox'}
-							/>
-							<label htmlFor={'checkbox-' + dirIndex}>
-								<div className={styles['dir-map-item-content']}>
-									<span>
-										{galleryConfig.r18
-											? dir[1].title
-											: `文件夹${v}`}
-									</span>
-									<span
-										className={styles['dir-map-item-count']}
+			<div className={styles['dir-map-list-wrap']}>
+				<ul className={styles['dir-map-list']} ref={ul}>
+					{dirs.map((dir: [string, DirectoryInfo], v) => {
+						const dirIndex = dir[0];
+						return (
+							<li
+								className={styles['dir-map-item']}
+								id={'input-' + dirIndex}
+								key={dirIndex}
+							>
+								<input
+									checked={checked === dirIndex}
+									className={styles['dir-map-checkbox']}
+									disabled={!galleryConfig.r18}
+									id={'checkbox-' + dirIndex}
+									onClick={() => {
+										if (checked === dirIndex) {
+											setChecked('');
+											setDestination('');
+											return;
+										}
+										setChecked(dirIndex);
+										setDestination(dirIndex);
+									}}
+									readOnly
+									type={'checkbox'}
+								/>
+								<label htmlFor={'checkbox-' + dirIndex}>
+									<div
+										className={
+											styles['dir-map-item-content']
+										}
 									>
-										{dir[1].count}
-									</span>
-								</div>
-							</label>
-						</li>
-					);
-				})}
-			</ul>
+										<span>
+											{galleryConfig.r18
+												? dir[1].title
+												: `文件夹${v}`}
+										</span>
+										<span
+											className={
+												styles['dir-map-item-count']
+											}
+										>
+											{dir[1].count}
+										</span>
+									</div>
+								</label>
+							</li>
+						);
+					})}
+				</ul>
+			</div>
 		);
 	}, [dirs, checked]);
 	return (
-		<>
+		<div className={styles['dir-map-container']}>
 			{dirList}
 			<input
 				className={`${styles['dir-map-input']} ${
@@ -242,42 +251,24 @@ const DirMapContent = (props: {
 				}}
 				type={'text'}
 			/>
-			<div className={styles['dialog-button-contain']}>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__back']
+			<ButtonContainer
+				handleCancel={() => {
+					dialogActive.setActive(false);
+					props.setVisible(false);
+				}}
+				handleConfirm={() => {
+					if (destination.length === 0 || !galleryConfig.r18) {
+						return;
+					} else if (isNaN(parseInt(destination))) {
+						throw new Error('Wrong destination directory');
 					}
-					onClick={() => {
-						dialogActive.setActive(false);
-						props.setVisible(false);
-					}}
-				>
-					返回
-				</button>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__confirm']
-					}
-					onClick={() => {
-						if (destination.length === 0 || !galleryConfig.r18) {
-							return;
-						} else if (isNaN(parseInt(destination))) {
-							throw new Error('Wrong destination directory');
-						}
-						props.util.addFileToDir(parseInt(destination));
-						dialogActive.setActive(false);
-						props.setVisible(false);
-						props.setInSelect((v: number) => v + 1);
-					}}
-				>
-					确认
-				</button>
-			</div>
-		</>
+					props.util.addFileToDir(parseInt(destination));
+					dialogActive.setActive(false);
+					props.setVisible(false);
+					props.setInSelect((v: number) => v + 1);
+				}}
+			/>
+		</div>
 	);
 };
 const RenameContent = (props: {
@@ -297,46 +288,28 @@ const RenameContent = (props: {
 				}}
 				value={newTitle}
 			/>
-			<div className={styles['dialog-button-contain']}>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__back']
-					}
-					onClick={() => {
+			<ButtonContainer
+				handleCancel={() => {
+					dialogActive.setActive(false);
+					props.setVisible(false);
+					props.util.packToBeRenamed = { id: -1, oldTitle: '' };
+				}}
+				handleConfirm={() => {
+					if (!galleryConfig.r18) {
 						dialogActive.setActive(false);
 						props.setVisible(false);
-						props.util.packToBeRenamed = { id: -1, oldTitle: '' };
-					}}
-				>
-					返回
-				</button>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__confirm']
+						return;
 					}
-					onClick={() => {
-						if (!galleryConfig.r18) {
+					props.util.rename(newTitle).then((res) => {
+						if (res) {
 							dialogActive.setActive(false);
 							props.setVisible(false);
-							return;
+						} else {
+							console.log('rename fail');
 						}
-						props.util.rename(newTitle).then((res) => {
-							if (res) {
-								dialogActive.setActive(false);
-								props.setVisible(false);
-							} else {
-								console.log('rename fail');
-							}
-						});
-					}}
-				>
-					确认
-				</button>
-			</div>
+					});
+				}}
+			/>
 		</div>
 	);
 };
@@ -362,44 +335,26 @@ const configContent = (props: {
 					/>
 				))}
 			</ul>
-			<div className={styles['dialog-button-contain']}>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__back']
-					}
-					onClick={() => {
-						dialogActive.setActive(false);
-						newConfig.current = { ...globalConfig };
-						props.setVisible(false);
-						setConfirmed((v) => !v);
-					}}
-				>
-					返回
-				</button>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__confirm']
-					}
-					onClick={() => {
-						let obj = {
-							gallery: galleryConfig,
-							reader: readerConfig
-						};
-						obj[props.type] = newConfig.current;
-						fs.writeFileSync(
-							'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
-							JSON.stringify(obj)
-						);
-						ipcRenderer.send('relaunch');
-					}}
-				>
-					确认
-				</button>
-			</div>
+			<ButtonContainer
+				handleCancel={() => {
+					dialogActive.setActive(false);
+					newConfig.current = { ...globalConfig };
+					props.setVisible(false);
+					setConfirmed((v) => !v);
+				}}
+				handleConfirm={() => {
+					let obj = {
+						gallery: galleryConfig,
+						reader: readerConfig
+					};
+					obj[props.type] = newConfig.current;
+					fs.writeFileSync(
+						'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
+						JSON.stringify(obj)
+					);
+					ipcRenderer.send('relaunch');
+				}}
+			/>
 		</div>
 	);
 };
@@ -455,12 +410,6 @@ const ConfigItem = (props: {
 										.showOpenDialog({
 											title: '选择路径', //默认路径,默认选择的文件
 											defaultPath: props.value, //过滤文件后缀
-											// filters: [
-											// 	{
-											// 		name: '文件夹',
-											// 		extensions: ['jpg', 'png']
-											// 	}
-											// ],
 											properties: ['openDirectory']
 										})
 										.then((result) => {
@@ -540,7 +489,7 @@ const RegExpSetContent = (props: {
 		setCatalog(book?.getCatalog() || []);
 	}, [book]);
 	return (
-		<>
+		<div className={styles['regexp-container']}>
 			<textarea
 				className={styles['catalog-reg-input']}
 				onChange={(e) => {
@@ -548,36 +497,18 @@ const RegExpSetContent = (props: {
 				}}
 				value={reg.toString()}
 			/>
-			<div className={styles['dialog-button-contain']}>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__back']
-					}
-					onClick={() => {
-						dialogActive.setActive(false);
-						props.setVisible(false);
-					}}
-				>
-					返回
-				</button>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__confirm']
-					}
-					onClick={() => {
-						book.reParseCatalog(reg);
-						setCatalog(book.getCatalog());
-						props.setVisible(false);
-					}}
-				>
-					确认
-				</button>
-			</div>
-		</>
+			<ButtonContainer
+				handleCancel={() => {
+					dialogActive.setActive(false);
+					props.setVisible(false);
+				}}
+				handleConfirm={() => {
+					book.reParseCatalog(reg);
+					setCatalog(book.getCatalog());
+					props.setVisible(false);
+				}}
+			/>
+		</div>
 	);
 };
 
@@ -585,39 +516,21 @@ const ChangedAlertContent = (props: { setVisible: (v: boolean) => void }) => {
 	const book = useContext(TextContext);
 	const [, setSelection] = useController(selectionStore);
 	return (
-		<div>
+		<div className={styles['changed-alert-container']}>
 			<span className={styles['changed-alert']}>
 				当前文件已被修改，是否保留标记信息？
 			</span>
-			<div className={styles['dialog-button-contain']}>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__back']
-					}
-					onClick={() => {
-						props.setVisible(false);
-					}}
-				>
-					否
-				</button>
-				<button
-					className={
-						styles['dialog-button'] +
-						' ' +
-						styles['dialog-button__confirm']
-					}
-					onClick={() => {
-						book.clearMarkInfo().then(() => {
-							setSelection([]);
-						});
-						props.setVisible(false);
-					}}
-				>
-					是
-				</button>
-			</div>
+			<ButtonContainer
+				handleCancel={() => {
+					props.setVisible(false);
+				}}
+				handleConfirm={() => {
+					book.clearMarkInfo().then(() => {
+						setSelection([]);
+					});
+					props.setVisible(false);
+				}}
+			/>
 		</div>
 	);
 };
