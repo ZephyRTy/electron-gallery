@@ -22,7 +22,7 @@ export const MainRouter = () => {
 					element={<PackDetail />}
 					path="gallery/pack/:pack"
 				></Route>
-				<Route element={<Gallery />} index />
+				<Route element={<Bookshelf />} index />
 			</Routes>
 		</HashRouter>
 	);

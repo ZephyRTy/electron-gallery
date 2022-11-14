@@ -1,7 +1,7 @@
 import { useController } from 'syill';
 import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
 import { ImageComponent, ImageDirectory } from '../../../types/global';
-import { GalleryOperator } from '../../../utils/galleryOperator';
+import { GalleryOperator } from '../../../utils/data/galleryOperator';
 import { renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
 export const ImageDir: ImageComponent<ImageDirectory> = (props: {

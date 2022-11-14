@@ -3,8 +3,11 @@ import { useSearchParams } from 'react-router-dom';
 import { useController } from 'syill';
 import { readerConfig } from '../../../types/constant';
 import { Book } from '../../../types/global';
-import { isBookDir, isBookmarkOfBook } from '../../../utils/functions';
-import { readerOperator as readerOp } from '../../../utils/galleryOperator';
+import { readerOperator as readerOp } from '../../../utils/data/galleryOperator';
+import {
+	isBookDir,
+	isBookmarkOfBook
+} from '../../../utils/functions/typeAssertion';
 import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
 import { Config, DirMap } from '../../Dialog';
 import {

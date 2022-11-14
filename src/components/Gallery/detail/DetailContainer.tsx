@@ -8,7 +8,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as SetCover } from '../../../icon/cover.svg';
 import { imageCountOfSinglePage } from '../../../types/constant';
-import { GalleryOperator } from '../../../utils/galleryOperator';
+import { GalleryOperator } from '../../../utils/data/galleryOperator';
 import { imageStateStore } from '../../../utils/store';
 import { Toast } from '../Toast';
 import { ImageZoomIn } from './ZoomIn';

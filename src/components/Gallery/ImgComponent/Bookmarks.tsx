@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
 import { ImageBookmark, ImageComponent } from '../../../types/global';
-import { GalleryOperator } from '../../../utils/galleryOperator';
+import { GalleryOperator } from '../../../utils/data/galleryOperator';
 import styles from '../style/img.module.scss';
 export const BookmarkItem: ImageComponent<ImageBookmark> = (props: {
 	src: string;
@@ -12,7 +12,7 @@ export const BookmarkItem: ImageComponent<ImageBookmark> = (props: {
 	const [changed, setChanged] = useState(false);
 	useEffect(() => {
 		if (changed) {
-			props.util.bookmarksUpdate(props.data, marked);
+			props.util.UpdateBookmark(props.data, marked);
 		}
 	}, [changed, marked, props.data, props.util]);
 	const clickHandler = useCallback(() => {

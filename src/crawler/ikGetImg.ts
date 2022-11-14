@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { downloadPath } from '../types/constant';
-import { GalleryOperator } from '../utils/galleryOperator';
+import { GalleryOperator } from '../utils/data/galleryOperator';
 import { getImg } from './utils/getImg';
 const fs = window.require('fs');
 // let { imgList, title } = JSON.parse(

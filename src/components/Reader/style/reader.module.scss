@@ -1,11 +1,16 @@
+@mixin marked-hover {
+	background-color: rgba(188, 188, 188, 0.428);
+}
+
 .reader {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+	overflow: hidden;
 	position: relative;
-	overflow-y: auto;
 	height: fit-content !important;
 	&-content {
+		opacity: 1;
 		font-family: auto;
 		font-size: 16px;
 		display: block;
@@ -41,6 +46,7 @@
 
 .find {
 	&-dialog {
+		z-index: 20;
 		top: 30px;
 		right: 20px;
 		width: 300px;
@@ -82,7 +88,60 @@
 		top: 0;
 		left: 70px;
 		height: 30px;
-		background-color: #fffb2a7d;
-		z-index: 100;
+		background-color: #fffb2ab7;
+		z-index: 9;
+	}
+}
+#text-width-calc {
+	visibility: hidden;
+	position: absolute;
+	height: auto;
+	width: auto;
+	white-space: nowrap;
+}
+
+.float {
+	&-menu {
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 40;
+		width: 100px;
+		height: 23px;
+		background-color: #eff0f2;
+		transform: translateY(-20%);
+		border: 1px solid #b4b4b4 {
+			radius: 3px;
+		}
+	}
+
+	&-btn {
+		height: 100%;
+		outline: none;
+		background-color: transparent;
+		border: none;
+		svg {
+			fill: #b2b2b2;
+		}
+		&--marked {
+			svg {
+				fill: #00b2b3;
+			}
+		}
+	}
+}
+
+.marked {
+	&-line {
+		position: absolute;
+		border-bottom: 2px #00b2b3 dotted;
+		height: 26px;
+		z-index: 20;
+		&.marked-line-hover {
+			@include marked-hover();
+		}
+	}
+	&-line-container {
+		position: absolute;
 	}
 }

@@ -1,7 +1,14 @@
 /* eslint-disable no-undef */
 // 引入electron并创建一个BrowserWindow
 
-const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
+const {
+	app,
+	BrowserWindow,
+	ipcMain,
+	Tray,
+	Menu,
+	session
+} = require('electron');
 const path = require('path');
 const url = require('url');
 const remote = require('@electron/remote/main');
@@ -13,7 +20,7 @@ remote.initialize();
 module.exports = { mainWindow: mainWindow };
 function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
-	tray = new Tray('D:\\webDemo\\desktop-reader\\public\\photos.ico'); // 用ico图标格式
+	tray = new Tray('D:\\webDemo\\desktop-reader\\public\\photo_circle.ico'); // 用ico图标格式
 	mainWindow = new BrowserWindow({
 		width: 1000,
 		height: 900,
@@ -28,12 +35,14 @@ function createWindow() {
 	remote.enable(mainWindow.webContents);
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
-		mainWindow.loadURL('http://localhost:3000/');
+		mainWindow.loadURL(
+			`http://localhost:${parseInt(process.env.PORT, 10) || 8097}/`
+		);
 	} else {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
-				pathname: path.join(__dirname, 'build', 'index.html'),
+				pathname: path.join(__dirname, 'dist', 'index.html'),
 				protocol: 'file:',
 				slashes: true
 			})
@@ -66,6 +75,7 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
 	app.quit();
 } else {
+	// eslint-disable-next-line no-unused-vars
 	app.on('second-instance', (event, commandLine, workingDirectory) => {
 		// 当运行第二个实例时,将会聚焦到mainWindow这个窗口
 		if (mainWindow) {
@@ -88,14 +98,14 @@ if (!gotTheLock) {
 	});
 
 	if (!app.isPackaged) {
-		const {
-			default: installExtension,
-			REACT_DEVELOPER_TOOLS
-		} = require('electron-devtools-installer');
-		app.whenReady().then(() => {
-			installExtension(REACT_DEVELOPER_TOOLS)
-				.then((name) => console.log(`Added Extension:  ${name}`))
-				.catch((err) => console.log('An error occurred: ', err));
+		// const {
+		// 	default: installExtension,
+		// 	REACT_DEVELOPER_TOOLS
+		// } = require('electron-devtools-installer');
+		app.whenReady().then(async () => {
+			await session.defaultSession.loadExtension(
+				String.raw`C:\Users\Yang\AppData\Local\Microsoft\Edge Dev\User Data\Default\Extensions\gpphkfbcpidddadnkolkpfckpihlkkil\4.25.0_0`
+			);
 		});
 	}
 	ipcMain.on('min', () => mainWindow.minimize());

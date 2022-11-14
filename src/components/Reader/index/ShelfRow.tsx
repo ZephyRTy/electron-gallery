@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, Mode } from '../../../types/global';
-import { gotoHash, isBookmarkOfBook } from '../../../utils/functions';
-import { readerOperator } from '../../../utils/galleryOperator';
+import { readerOperator } from '../../../utils/data/galleryOperator';
+import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
+import { isBookmarkOfBook } from '../../../utils/functions/typeAssertion';
 import styles from '../style/bookshelf.module.scss';
 
 export const ShelfBookTitle = (props: { title: string; index: number }) => {
@@ -32,7 +33,10 @@ export const ShelfItem = (props: {
 					gotoHash(props.bookItem.url);
 					return;
 				}
-				gotoHash(`#/reader/book/${props.bookItem.id}`);
+				gotoHash(
+					readerOperator.getProgress(props.bookItem.id) ||
+						`#/reader/book/${props.bookItem.id}`
+				);
 			}
 		},
 		[props.bookItem.id, props.inSelect]
@@ -55,7 +59,7 @@ export const ShelfItem = (props: {
 	}, [props.bookItem?.stared]);
 	const selectHandler = useCallback(
 		(e: any) => {
-			readerOperator.selectionUpdate(props.bookItem.id, e.target.checked);
+			readerOperator.updateSelection(props.bookItem.id, e.target.checked);
 		},
 		[props.bookItem.id]
 	);
@@ -63,15 +67,12 @@ export const ShelfItem = (props: {
 		return null;
 	}
 	return (
-		<div
-			className={styles['bookshelf-row-item']}
-			title={props.bookItem.title}
-		>
+		<div className={styles['bookshelf-row-item']}>
 			<div
-				className={
-					styles['bookshelf-row-cover'] +
-					(stared ? ' ' + styles['bookshelf-stared'] : '')
-				}
+				className={stylesJoin(
+					styles['bookshelf-row-cover'],
+					stared ? styles['bookshelf-stared'] : ''
+				)}
 				// onClick={() => {
 				// 	readerOperator.mountBook(props.bookItem);
 				// 	if (isBookmarkOfBook(props.bookItem)) {
@@ -82,6 +83,7 @@ export const ShelfItem = (props: {
 				// }}
 				onMouseDown={down}
 				onMouseUp={up}
+				title={props.bookItem.title}
 			>
 				<ShelfBookTitle
 					index={1}
@@ -118,7 +120,7 @@ export const ShelfItem = (props: {
 				className={styles['bookshelf-star-button']}
 				onClick={() => {
 					setStared(!stared);
-					readerOperator.staredUpdate(props.bookItem);
+					readerOperator.updateStared(props.bookItem);
 				}}
 			></button>
 		</div>

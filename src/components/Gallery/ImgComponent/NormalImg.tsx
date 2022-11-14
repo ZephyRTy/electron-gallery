@@ -9,7 +9,7 @@ import { ImageComponent, Mode, NormalImage } from '../../../types/global';
 import {
 	galleryOperator,
 	GalleryOperator
-} from '../../../utils/galleryOperator';
+} from '../../../utils/data/galleryOperator';
 import { dialogActive, renameVisibleStore } from '../../../utils/store';
 import styles from '../style/img.module.scss';
 export const minIndex = (arr: number[]) => {
@@ -58,7 +58,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 	}, [props]);
 	const staredClick = useCallback(() => {
 		setStared((v) => !v);
-		props.util.staredUpdate(props.data);
+		props.util.updateStared(props.data);
 	}, [props.data, props.util, stared]);
 	const removePack = useCallback(() => {
 		props.util.removeFileFromDir(
@@ -69,7 +69,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 	}, [props.data.id, props.util]);
 	const selectHandler = useCallback(
 		(e: any) => {
-			props.util.selectionUpdate(props.data.id, e.target.checked);
+			props.util.updateSelection(props.data.id, e.target.checked);
 		},
 		[props.data.id, props.util]
 	);

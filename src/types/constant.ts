@@ -50,7 +50,9 @@ export const {
 	contentRange,
 	overflowNum,
 	distanceToUpdate,
-	r18: readerR18
+	fontSize,
+	r18: readerR18,
+	'3d-animation': enable3d
 } = readerConfig;
 export const DELTA_HEIGHT = lineHeight * deltaLine;
 export const CATALOG_REG =

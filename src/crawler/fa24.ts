@@ -3,7 +3,7 @@ import galleryConfig, {
 	downloadPath,
 	proxyEnabled
 } from '../types/constant';
-import { GalleryOperator } from '../utils/galleryOperator';
+import { GalleryOperator } from '../utils/data/galleryOperator';
 import { Circuit } from './stream/Circuit';
 import { Req } from './stream/req';
 import { Stream } from './stream/stream';

@@ -1,0 +1,283 @@
+$height: 60%;
+$active-color: #fedc3d;
+@import './header.module.scss';
+@mixin btn-with-bar($x) {
+	&:hover::after {
+		background-color: $active-color !important;
+	}
+	&::after {
+		transition: all 0.15s ease-in;
+		content: '';
+		display: block;
+		width: 4px;
+		height: 31px;
+		background-color: #a7a7a7;
+		left: 96%;
+		transform: translateY($x);
+		position: absolute;
+	}
+}
+.main-content {
+	width: 100%;
+	height: $fullscreen-height;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	background-color: whitesmoke;
+	margin: 0 auto;
+	max-width: 1200px;
+	padding: 0;
+	margin: {
+		top: $header-height;
+	}
+}
+.search {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: fixed;
+	z-index: 100;
+	top: 10px;
+	left: 0px;
+	width: 260px;
+	background-color: white;
+	height: 50px;
+	border: 1px solid rgb(42, 163, 233);
+	&.hidden {
+		border: 1px solid transparent;
+		background-color: transparent;
+	}
+	button {
+		display: block;
+		background-color: transparent;
+		width: 16%;
+		height: $height;
+		border: none;
+		&:hover {
+			cursor: pointer;
+		}
+	}
+	&-input {
+		&.hidden {
+			visibility: hidden;
+		}
+		display: block;
+		width: 75%;
+		height: $height;
+		margin-right: 20px;
+	}
+}
+.icon {
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+	margin-top: 3px;
+	display: flex;
+	justify-content: center;
+}
+.btn {
+	&-back {
+		top: 0;
+	}
+
+	&-newDir,
+	&-rename,
+	&-crawler {
+		margin-top: 1px;
+	}
+	&-showDir {
+		position: relative;
+		left: 1px;
+	}
+	&-setting {
+		margin-top: 7px;
+	}
+	&-open-folder {
+		width: 40px !important;
+		margin: {
+			left: 2px;
+			top: 0;
+		}
+	}
+	&-catalog {
+		@include btn-with-bar(0);
+	}
+	&-show-marks {
+		@include btn-with-bar(-108%);
+	}
+
+	&-show-marks {
+		margin-top: 2px;
+	}
+}
+#file-input {
+	display: none;
+}
+.crawler {
+	&--active {
+		fill: rgb(42, 163, 233);
+		color: white;
+	}
+	&--error {
+		fill: red;
+		color: white;
+	}
+}
+svg {
+	width: 100%;
+	height: 100%;
+	fill: currentColor;
+}
+
+.current-search {
+	display: block;
+	height: 30px;
+	font-size: 20px;
+	margin-bottom: 10px;
+}
+
+.top-menu {
+	top: 10px;
+	position: absolute;
+}
+
+.bottom-menu {
+	bottom: 10px;
+	position: absolute;
+}
+.sidebar-container {
+	position: fixed;
+	list-style: none;
+	position: fixed;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	left: -40px;
+	height: 96vh;
+	width: 90px;
+	display: flex;
+	background-color: #f3f3f3;
+	box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
+	z-index: 2000;
+	ul {
+		margin: 0;
+		list-style: none;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	button {
+		width: 42px;
+		svg {
+			fill: gray;
+			transition: all 0.15s ease-in;
+		}
+		&:hover {
+			svg {
+				fill: $active-color;
+			}
+		}
+	}
+}
+
+button.activeMode {
+	svg {
+		fill: $active-color;
+	}
+	&::after {
+		background-color: $active-color;
+	}
+}
+.middle-menu {
+	li {
+		margin-top: 10px;
+	}
+	button.activeMode {
+		svg {
+			fill: white;
+			filter: brightness(1.14) drop-shadow(0px 0px 6px $active-color);
+		}
+	}
+}
+.crawler--active {
+	fill: #3cfc52 !important;
+}
+.text {
+	&-br,
+	&-line {
+		height: 30px;
+		margin: 0;
+		user-select: initial;
+		position: relative;
+		z-index: 10;
+	}
+}
+
+.chapter-title {
+	font-weight: bold;
+}
+
+button.goto-btn {
+	svg {
+		fill: #f1b01ffa;
+		&:hover {
+			fill: #ef881e;
+		}
+	}
+}
+@property --rotate {
+	syntax: '<angle>';
+	initial-value: 132deg;
+	inherits: false;
+}
+.cool-div {
+	&::before {
+		content: '';
+		width: 104%;
+		height: 102%;
+		border-radius: 8px;
+		background-image: linear-gradient(
+			var(--rotate),
+			#5ddcff,
+			#3c67e3 43%,
+			#4e00c2
+		);
+		position: absolute;
+		z-index: -1;
+		top: -1%;
+		left: -2%;
+		animation: spin 2.5s linear infinite;
+	}
+
+	&::after {
+		position: absolute;
+		content: '';
+		top: calc(var(--card-height) / 6);
+		left: 0;
+		right: 0;
+		z-index: -1;
+		height: 100%;
+		width: 100%;
+		margin: 0 auto;
+		transform: scale(0.8);
+		filter: blur(calc(var(--card-height) / 6));
+		background-image: linear-gradient(
+			var(--rotate),
+			#5ddcff,
+			#3c67e3 43%,
+			#4e00c2
+		);
+		opacity: 1;
+		transition: opacity 0.5s;
+		animation: spin 2.5s linear infinite;
+	}
+}
+@keyframes spin {
+	0% {
+		--rotate: 0deg;
+	}
+	100% {
+		--rotate: 360deg;
+	}
+}

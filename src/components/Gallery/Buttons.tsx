@@ -10,6 +10,7 @@ import { ReactComponent as GotoReaderIcon } from '../../icon/books.svg';
 import { ReactComponent as Crawler } from '../../icon/crawler.svg';
 import { ReactComponent as ShowDirs } from '../../icon/directory.svg';
 import { ReactComponent as OpenInExplorerIcon } from '../../icon/folder-open.svg';
+import { ReactComponent as HistoryIcon } from '../../icon/history.svg';
 import { ReactComponent as HomePageIcon } from '../../icon/homepage.svg';
 import { ReactComponent as RefreshIcon } from '../../icon/refresh.svg';
 import { ReactComponent as RenameIcon } from '../../icon/rename.svg';
@@ -24,7 +25,7 @@ import {
 	BasicFolder,
 	Mode
 } from '../../types/global';
-import { FileOperator } from '../../utils/fileOperator';
+import { DataOperator } from '../../utils/data/DataOperator';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
 export const HomePage = (props: {
 	activeMode: Mode;
@@ -34,7 +35,7 @@ export const HomePage = (props: {
 	return (
 		<button
 			className={
-				'btn-homepage icon' +
+				'btn-homepage icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
@@ -75,7 +76,7 @@ export const Stared = (props: {
 	return (
 		<button
 			className={
-				'btn-stared icon' +
+				'btn-stared icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
@@ -93,7 +94,7 @@ export const Add = <
 	B extends BasicBookmark,
 	C extends BasicFolder
 >(props: {
-	util: FileOperator<A, B, C>;
+	util: DataOperator<A, B, C>;
 }) => {
 	const [visible, setVisible] = useController(fileDropVisibleStore);
 	return (
@@ -118,7 +119,7 @@ export const BookmarkBtn = (props: {
 	return (
 		<button
 			className={
-				'btn-bookmark icon' +
+				'btn-bookmark icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {
@@ -130,12 +131,33 @@ export const BookmarkBtn = (props: {
 		</button>
 	);
 };
+
+export const HistoryBtn = (props: {
+	activeMode: Mode;
+	currentMode: Mode;
+	type: 'reader' | 'gallery';
+}) => {
+	return (
+		<button
+			className={
+				'btn-history icon index-btn' +
+				(props.activeMode === props.currentMode ? ' activeMode' : '')
+			}
+			onClick={() => {
+				window.location.href =
+					'#/' + props.type + '?bookmark=true&page=1';
+			}}
+		>
+			<HistoryIcon />
+		</button>
+	);
+};
 export const Refresh = <
 	A extends BasicData,
 	B extends BasicBookmark,
 	C extends BasicFolder
 >(props: {
-	util: FileOperator<A, B, C>;
+	util: DataOperator<A, B, C>;
 }) => {
 	return (
 		<button
@@ -172,7 +194,7 @@ export const ShowDir = (props: {
 	return (
 		<button
 			className={
-				'btn-showDir icon' +
+				'btn-showDir icon index-btn' +
 				(props.activeMode === props.currentMode ? ' activeMode' : '')
 			}
 			onClick={() => {

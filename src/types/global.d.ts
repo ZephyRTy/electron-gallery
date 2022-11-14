@@ -10,3 +10,10 @@ declare module '*.svg' {
 	export { ReactComponent };
 	export default icon;
 }
+
+declare module 'sq3' {
+	const sq3: any;
+	const Database: any;
+	export default sq3;
+	export { Database };
+}

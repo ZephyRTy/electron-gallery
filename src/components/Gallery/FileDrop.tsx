@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useModel } from 'syill';
 import { BasicBookmark, BasicData, BasicFolder } from '../../types/global';
-import { FileOperator } from '../../utils/fileOperator';
+import { DataOperator } from '../../utils/data/DataOperator';
 import { fileDropVisibleStore } from '../../utils/store';
 import styles from './style/fileDrop.module.scss';
 // eslint-disable-next-line no-unused-vars
@@ -12,7 +12,7 @@ export const FileDrop = <
 	B extends BasicBookmark,
 	C extends BasicFolder
 >(props: {
-	operator: FileOperator<A, B, C>;
+	operator: DataOperator<A, B, C>;
 	itemType: 'file' | 'folder';
 }) => {
 	const visible = useModel(fileDropVisibleStore);

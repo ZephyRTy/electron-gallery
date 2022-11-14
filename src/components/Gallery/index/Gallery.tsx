@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ImageBookmark, NormalImage } from '../../../types/global';
-import { GalleryOperator } from '../../../utils/galleryOperator';
+import { GalleryOperator } from '../../../utils/data/galleryOperator';
+import '../../style/global.scss';
 import { FileDrop } from '../FileDrop';
-import '../style/gallery.scss';
 import { ImgContainer } from './ImgContainer';
 
 //const p = readDirAndSortByDate(root);

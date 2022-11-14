@@ -6,7 +6,7 @@ import { ReactComponent as LeftArrow } from '../../icon/leftArrow.svg';
 import { ReactComponent as LeftDoubleArrow } from '../../icon/leftDoubleArrow.svg';
 import { ReactComponent as RightArrow } from '../../icon/rightArrow.svg';
 import { ReactComponent as RightDoubleArrow } from '../../icon/rightDoubleArrow.svg';
-import { parseUrlQuery } from '../../utils/functions';
+import { parseUrlQuery } from '../../utils/functions/functions';
 import './style/nav.scss';
 export const range = (start: number, end: number) => {
 	if (start === end) {

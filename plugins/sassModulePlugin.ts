@@ -101,7 +101,13 @@ export const ScssModulesPlugin = (options: Partial<PluginOptions> = {}) =>
 			const { outdir, bundle } = build.initialOptions;
 			const results = new Map();
 			const fullOptions = { ...DefaultOptions, ...options };
-
+			build.onStart(async () => {
+				await fsp.writeFile(
+					path.join(outdir, '_modules.css'),
+					'@charset "UTF-8";'
+				);
+				console.log(chalk.green('Created _modules.css'));
+			});
 			build.onResolve(
 				{ filter: /\.modules?\.scss$/, namespace: 'file' },
 				async (args) => {
@@ -190,10 +196,7 @@ export const ScssModulesPlugin = (options: Partial<PluginOptions> = {}) =>
 							style
 						);
 					} catch {
-						await fsp.writeFile(
-							cssOutPath,
-							'@charset "UTF-8";' + style
-						);
+						await fsp.writeFile(cssOutPath, style);
 					}
 
 					return {

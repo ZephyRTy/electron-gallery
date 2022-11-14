@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BookmarkOfBook } from '../../../types/global';
-import { gotoHash } from '../../../utils/functions';
-import { readerOperator } from '../../../utils/galleryOperator';
+import { readerOperator } from '../../../utils/data/galleryOperator';
+import { gotoHash } from '../../../utils/functions/functions';
 import styles from '../style/bookshelf.module.scss';
 import { ShelfBookTitle } from './ShelfRow';
 export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
@@ -40,7 +40,7 @@ export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 				className={styles['bookshelf-bookmark-button']}
 				onClick={() => {
 					setMarked(!marked);
-					readerOperator.bookmarksUpdate(props.bookItem, !marked);
+					readerOperator.UpdateBookmark(props.bookItem, !marked);
 				}}
 			></button>
 		</div>

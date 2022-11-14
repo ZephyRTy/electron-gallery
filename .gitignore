@@ -7,9 +7,10 @@
 /.history
 # testing
 /coverage
-
+/dev
 # production
 /build
+/dist
 /~
 # misc
 .DS_Store
@@ -26,6 +27,7 @@ txt.js
 /*.ts
 /*.js
 /sql
+/*.sql
 /.VSCodeCounter
 txt.ts
 text.txt
@@ -33,3 +35,4 @@ text.txt
 src/config/config.json
 /storage
 /out
+/app
