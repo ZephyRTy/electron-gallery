@@ -1,3 +1,5 @@
+$cancel-btn-color: rgb(247, 214, 68);
+$confirm-btn-color: rgb(64, 202, 244);
 .dialog {
 	background-color: white;
 	z-index: 2000;
@@ -9,6 +11,7 @@
 	width: 400px;
 	height: fit-content;
 	max-height: 600px;
+	border-radius: 10px 10px 0 0;
 	&-button {
 		&-contain {
 			display: flex;
@@ -38,14 +41,14 @@
 		}
 		&__confirm {
 			color: white;
-			background-color: rgb(64, 202, 244);
+			background-color: $confirm-btn-color;
 			&:hover {
 				background-color: rgb(40, 168, 207);
 			}
 		}
 		&__back {
 			color: white;
-			background-color: rgb(247, 214, 68);
+			background-color: $cancel-btn-color;
 			&:hover {
 				background-color: rgb(244, 190, 64);
 			}
@@ -54,14 +57,17 @@
 		&-left,
 		&-right {
 			width: 20%;
+			transform-origin: top center;
+			animation: swing 1.5s 0.2s ease;
 		}
 
 		&-left {
-			background-color: rgb(247, 214, 68);
+			background-color: $cancel-btn-color;
 			border-radius: 0 0 0 10px;
 		}
 		&-right {
-			background-color: rgb(64, 202, 244);
+			background-color: $confirm-btn-color;
+
 			border-radius: 0 0 10px 0;
 		}
 	}
@@ -75,9 +81,31 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		&:not(.hidden) {
+			.dialog-button-contain button {
+				animation: swing 1.5s 0.4s ease;
+			}
+		}
 	}
 }
 
+@keyframes swing {
+	10% {
+		transform: rotateX(25deg);
+	}
+	50% {
+		transform: rotateX(-15deg);
+	}
+	75% {
+		transform: rotateX(5deg);
+	}
+	90% {
+		transform: rotateX(-2.5deg);
+	}
+	100% {
+		transform: rotateX(0deg);
+	}
+}
 .dir-map {
 	&-list {
 		transform: translateZ(0);
@@ -250,6 +278,7 @@
 .hidden.dialog-cover {
 	display: none;
 }
+
 .catalog-list {
 	list-style: none;
 	transform: translateZ(0);

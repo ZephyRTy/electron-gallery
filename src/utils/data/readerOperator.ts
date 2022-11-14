@@ -150,11 +150,7 @@ export class ReaderOperator extends DataOperator<
 			//NOTE 正式发布时删除
 			const novelPath = path.resolve('D:/小说', path.basename(e.path));
 			if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
-				fs.rename(e.path, novelPath, (err) => {
-					if (err) {
-						console.error(err);
-					}
-				});
+				fs.renameSync(e.path, novelPath);
 				e.path = novelPath;
 			}
 			let newPack = {
