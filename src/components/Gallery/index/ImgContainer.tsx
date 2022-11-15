@@ -125,8 +125,10 @@ export const ImgContainer = (props: {
 						'/thumb.jpg';
 				}
 				img.src = String.raw`${coverPath.replace(/\\/g, '/')}`
+					.replaceAll(/%/g, encodeURIComponent('%'))
 					.replaceAll(/\s/g, encodeURIComponent(' '))
 					.replaceAll(/#/g, encodeURIComponent('#'));
+
 				img.onload = () => {
 					img.onload = null;
 					buffer.push({ img, data: v });

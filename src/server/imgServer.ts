@@ -92,14 +92,13 @@ export class ImgServer {
 		title: string,
 		target?: string
 	) {
+		const max = 10;
 		console.log(title, imgList.length, target ?? '', '开始下载');
 		this.hasTask = true;
 		let dirTitle = target || title;
 		let srcList = imgList;
-		let index = 0;
-		let i = 1;
+		let n = 1;
 		let path = downloadPath + '/' + dirTitle;
-		let interval = 0;
 		let o: {
 			title: string;
 			stared: 0 | 1;
@@ -114,44 +113,57 @@ export class ImgServer {
 
 		try {
 			if (target) {
-				i = (fs.readdirSync(otherPath + '/' + target)?.length ?? 0) + 1;
+				n = (fs.readdirSync(otherPath + '/' + target)?.length ?? 0) + 1;
 				o.path = otherPath + '/' + target;
 			}
 		} catch (e) {
-			i = 1;
+			n = 1;
 		}
-		let id = setInterval(() => {
-			if (interval >= 15) {
-				interval = 0;
-			} else if (interval >= 10) {
-				++interval;
-				return;
-			}
-			++interval;
-			getImg({
-				src: srcList[index++],
+		const queues = [] as {
+			src: string;
+			id: number;
+			title: string;
+			path?: string | undefined;
+		}[][];
+		for (let i = 0; i < max; i++) {
+			queues.push([]);
+		}
+		for (let index = 0; index < srcList.length; index++) {
+			queues[index % max].push({
+				src: srcList[index],
 				title: dirTitle, // 文件夹名
-				id: i++,
+				id: n++,
 				path: target ? otherPath : downloadPath
 			});
-			if (index >= srcList.length) {
-				// fs.writeFileSync(
-				// 	'D:\\webDemo\\desktop-reader\\json\\catalog.json',
-				// 	JSON.stringify(catalog)
-				// );
-				clearInterval(id);
-				try {
-					GalleryOperator.getInstance().addNewPack(o, true);
-				} catch (e) {
-					if (!target) {
-						console.log(e);
-					}
-				}
-				console.log(title, '完成');
-				this.hasTask = false;
-				this.nextTask();
+		}
+		const promises = queues.map((queue) => {
+			return this.runPipe(queue);
+		});
+		await Promise.all(promises);
+		try {
+			GalleryOperator.getInstance().addNewPack(o, true);
+		} catch (e) {
+			if (!target) {
+				console.log(e);
 			}
-		}, 500);
+		}
+		console.log(title, '完成');
+		this.hasTask = false;
+		this.nextTask();
+	}
+
+	private async runPipe(
+		imgList: {
+			src: string;
+			id: number;
+			title: string;
+			path?: string | undefined;
+		}[]
+	) {
+		for (let i = 0; i < imgList.length; i++) {
+			await getImg(imgList[i]);
+		}
+		return true;
 	}
 
 	private nextTask() {
