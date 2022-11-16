@@ -7,14 +7,15 @@ import { stylesJoin } from '../../../utils/functions/functions';
 import { catalogShowStore, marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
 import { TextContext } from './TextContent';
-const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
+export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	const item = useMemo(() => {
 		return (
 			<li
 				className={stylesJoin(
 					styles['side-list-item'],
 					styles['catalog-list-item'],
-					props.current ? styles['current-chapter'] : ''
+					props.current ? styles['current-chapter'] : '',
+					styles['text-center']
 				)}
 				onClick={() => {
 					document.querySelector('#reader-scroll-ele')!.scrollTop =

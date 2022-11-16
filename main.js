@@ -48,6 +48,7 @@ function createWindow() {
 			})
 		);
 	}
+
 	const contextMenu = Menu.buildFromTemplate([
 		{
 			// 应用退出

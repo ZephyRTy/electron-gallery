@@ -2,10 +2,10 @@
 import { SetStateAction } from 'react';
 import { lineHeight } from '../../types/constant';
 import {
-	Book,
 	Chapter,
 	LineSelection,
 	MarkAnchor,
+	MetaBook,
 	SelectionInfo,
 	TextLine
 } from '../../types/global';
@@ -25,7 +25,7 @@ const round = (n, decimals = 0) =>
 	Number(`${Math.round(Number(`${n}e${decimals}`))}e-${decimals}`);
 
 export class TextDetail {
-	private book: Book;
+	private metaBook: MetaBook;
 	private contentSize = { start: 0, end: 0 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
@@ -48,8 +48,8 @@ export class TextDetail {
 	};
 	regExp: RegExp;
 
-	constructor(book: Book, sqlOperator: SqliteOperatorForBook) {
-		this.book = book;
+	constructor(book: MetaBook, sqlOperator: SqliteOperatorForBook) {
+		this.metaBook = book;
 		this.regExp = new RegExp(String.raw`${book.reg}`, 'g');
 		this.sqlOperator = sqlOperator;
 	}
@@ -100,7 +100,7 @@ export class TextDetail {
 			return true;
 		}
 		const md5 = generateTextMd5(text);
-		window.sessionStorage.setItem(this.book.id.toString(), 'true');
+		window.sessionStorage.setItem(this.metaBook.id.toString(), 'true');
 		if (await this.sqlOperator.verifyBook(this.id, md5)) {
 			return true;
 		} else {
@@ -150,13 +150,13 @@ export class TextDetail {
 		return chapter;
 	}
 	reParseCatalog(reg: string) {
-		this.book.reg = reg;
+		this.metaBook.reg = reg;
 		this.regExp = new RegExp(String.raw`${reg}`, 'g');
 		this.catalog = [];
 		for (let i = 0; i < this.content.length; i++) {
 			this.parseCatalog(this.content[i]);
 		}
-		this.sqlOperator.updateReg(this.book.id, reg);
+		this.sqlOperator.updateReg(this.metaBook.id, reg);
 	}
 	getCatalog() {
 		return this.catalog;
@@ -225,15 +225,19 @@ export class TextDetail {
 	}
 
 	get reg() {
-		return this.book.reg;
+		return this.metaBook.reg;
 	}
 
 	get path() {
-		return this.book.path;
+		return this.metaBook.path;
 	}
 
 	get id() {
-		return this.book.id;
+		return this.metaBook.id;
+	}
+
+	get meta() {
+		return this.metaBook;
 	}
 
 	getLine(lineNum: number) {

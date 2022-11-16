@@ -26,6 +26,7 @@ import {
 	Mode
 } from '../../types/global';
 import { DataOperator } from '../../utils/data/DataOperator';
+import { openInExplorer } from '../../utils/functions/process';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
 export const HomePage = (props: {
 	activeMode: Mode;
@@ -276,12 +277,15 @@ export const ConfigBtn = () => {
 	);
 };
 
-export const OpenInExplorerBtn = (props: { handleClick: () => void }) => {
+export const OpenInExplorerBtn = (props: { filePath: string }) => {
 	return (
 		<button
 			className={'btn-open-folder icon'}
 			onClick={() => {
-				props.handleClick();
+				if (!props.filePath) {
+					return;
+				}
+				openInExplorer(props.filePath);
 			}}
 		>
 			<OpenInExplorerIcon />

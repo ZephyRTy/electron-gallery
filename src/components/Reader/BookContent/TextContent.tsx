@@ -15,23 +15,24 @@ import {
 	deltaLine,
 	DELTA_HEIGHT,
 	distanceToUpdate,
-	enable3d,
 	lineHeight,
 	overflowNum
 } from '../../../types/constant';
 import { TextLine } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
 import { TextDetail } from '../../../utils/data/TextDetail';
-import { openInExplorer } from '../../../utils/functions/process';
+import { formatDate, parseUrlQuery } from '../../../utils/functions/functions';
 import { changedAlertStore } from '../../../utils/store';
 import { ChangedAlert, RegExpSet } from '../../Dialog';
+import { OpenInExplorerBtn } from '../../Gallery/Buttons';
+import { Sidebar, SidebarContainer } from '../../Menu';
+import { Back, CatalogBtn, Find, RegExpBtn, ShowMarksBtn } from '../Buttons';
 import styles from '../style/reader.module.scss';
 import { SideCatalog } from './Catalog';
 import { FindDialog, FindMaskContainer } from './FindDialog';
 import { MarkedContext } from './MarkedLine';
 import { Placeholder } from './Placeholder';
 import { SideEnter3D } from './SideEnter3D';
-import { SideMarkDiv } from './SideMarkDiv';
 
 export const TextContext = React.createContext(null as any as TextDetail);
 const ContentLine = (props: { line: TextLine }) => {
@@ -89,9 +90,7 @@ const ContentLine = (props: { line: TextLine }) => {
 		</p>
 	);
 };
-export const TextContent = (props: {
-	renderMenu: (...args: any[]) => JSX.Element;
-}) => {
+export const TextContent = () => {
 	const article = useRef(null as HTMLDivElement | null);
 	let [searchParams] = useSearchParams();
 	const scrollTop = useRef(0);
@@ -170,10 +169,6 @@ export const TextContent = (props: {
 		[updateWhenDrag]
 	);
 	const beforeScrollTop = useRef(0);
-
-	const handleOpenInExplorer = useCallback(() => {
-		if (book) openInExplorer(book.path);
-	}, [book]);
 
 	const handleScroll = useMemo(() => {
 		let timer: number;
@@ -286,19 +281,43 @@ export const TextContent = (props: {
 			</>
 		);
 	}, [content, top, bottom, book]);
+
 	return (
 		<TextContext.Provider value={book}>
 			<RegExpSet currentChapter={chapter} />
 			<ChangedAlert />
-			{enable3d ? (
-				<SideEnter3D chapter={chapter} />
-			) : (
-				<>
-					<SideCatalog currentChapter={chapter} />
-					<SideMarkDiv />
-				</>
-			)}
-			{props.renderMenu(handleOpenInExplorer, book)}
+			<SideEnter3D
+				render={() => {
+					return <SideCatalog currentChapter={chapter} />;
+				}}
+			/>
+			<SidebarContainer>
+				<Sidebar menuPosition="middle">
+					<Back
+						quitBehavior={async () => {
+							const ele =
+								document.querySelector('#reader-scroll-ele');
+							let urlObj = parseUrlQuery(window.location.href);
+							delete urlObj['undefined'];
+							urlObj['scroll'] = ele!.scrollTop;
+							const id = readerOperator.packWillOpen()!.id;
+							let url =
+								`#/reader/book/${id}?` +
+								new URLSearchParams(urlObj).toString();
+							await readerOperator.UpdateBookmark({
+								...readerOperator.packWillOpen()!,
+								url,
+								timeStamp: formatDate(new Date())
+							});
+						}}
+					/>
+					<RegExpBtn />
+					<CatalogBtn />
+					<ShowMarksBtn book={book} />
+					<Find />
+					<OpenInExplorerBtn filePath={book?.path} />
+				</Sidebar>
+			</SidebarContainer>
 			<div
 				className={styles['scroll-content']}
 				id="reader-scroll-ele"

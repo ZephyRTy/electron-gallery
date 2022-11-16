@@ -43,7 +43,7 @@ export const GotoGalleryBtn = () => {
 		</button>
 	);
 };
-export const Back = () => {
+export const Back = (props: { quitBehavior?: () => void | Promise<any> }) => {
 	const navigate = useNavigate();
 	const addBookmark = useCallback(async () => {
 		const ele = document.querySelector('#reader-scroll-ele');
@@ -70,10 +70,11 @@ export const Back = () => {
 	return (
 		<button
 			className="btn-back icon"
-			onClick={() => {
-				addBookmark().then(() => {
-					navigate(-1);
-				});
+			onClick={async () => {
+				if (props.quitBehavior) {
+					await props.quitBehavior();
+				}
+				navigate(-1);
 			}}
 		>
 			<BackBtn />

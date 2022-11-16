@@ -47,9 +47,7 @@ $after-border-color: rgb(26, 224, 254);
 		padding: 12px 0;
 		//border-bottom: 1px solid #00000026;
 		width: 85%;
-
 		span {
-			text-align: center;
 			display: block;
 			max-width: 300px;
 			overflow: hidden;
@@ -57,6 +55,9 @@ $after-border-color: rgb(26, 224, 254);
 			text-overflow: ellipsis;
 		}
 	}
+}
+.text-center span {
+	text-align: center;
 }
 .side-enter-box {
 	background-color: #eff0f2;
@@ -79,7 +80,7 @@ $after-border-color: rgb(26, 224, 254);
 		transform: translateX(-50%);
 		position: relative;
 	}
-	&:hover {
+	& span:hover {
 		color: rgb(14, 202, 254);
 		&::after {
 			background-color: rgb(14, 202, 254);
@@ -221,4 +222,33 @@ $after-border-color: rgb(26, 224, 254);
 
 .bottom-side {
 	transform: rotateY(180deg);
+}
+
+.show-submenu {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 15px;
+	height: 15px;
+	border: none;
+	position: absolute;
+	left: 0px;
+	padding: 0px;
+	&--active {
+		transform: rotate(90deg);
+	}
+}
+
+.parent-menu-info {
+	display: flex;
+	align-items: center;
+	width: 100%;
+}
+
+ul.submenu-contain {
+	transition: all 0.3s ease-in-out;
+	&--hidden {
+		display: none;
+		max-height: 0;
+	}
 }

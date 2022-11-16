@@ -83,12 +83,19 @@ export interface Chapter {
 	title: string;
 	index: number;
 }
-export interface Book extends BasicData {
+
+export interface EpubChapter {
+	title: string;
+	href: string;
+	id: string;
+}
+export interface MetaBook extends BasicData {
 	reg: string;
+	type: 'txt' | 'epub';
 }
 
 export interface BookDirectory extends BasicFolder {}
-export interface BookmarkOfBook extends Book, BasicBookmark {}
+export interface BookmarkOfBook extends MetaBook, BasicBookmark {}
 /**
  * 每一行选区的逻辑形式
  */

@@ -36,6 +36,7 @@
 		"dotenv": "^10.0.0",
 		"dotenv-expand": "^5.1.0",
 		"electron-drag": "^2.0.0",
+		"epubjs": "^0.3.93",
 		"esbuild": "^0.15.12",
 		"esbuild-plugin-sass": "^1.0.1",
 		"eslint-config-react-app": "^7.0.0",
@@ -47,6 +48,8 @@
 		"iconv-lite": "^0.6.3",
 		"identity-obj-proxy": "^3.0.0",
 		"immutable": "^4.0.0",
+		"iohook": "^0.9.3",
+		"jszip": "^3.10.1",
 		"lodash": "^4.17.21",
 		"mini-css-extract-plugin": "^2.4.5",
 		"mock-aws-s3": "^4.0.2",
@@ -154,6 +157,7 @@
 		"koa-static": "^5.0.0",
 		"lighthouse": "^9.6.3",
 		"livereload": "^0.9.3",
+		"node-abi": "^3.28.0",
 		"node-sass": "^7.0.1",
 		"postcss-modules": "^6.0.0",
 		"rollup": "^2.70.1",
@@ -213,6 +217,21 @@
 			"jest-watch-typeahead/testname"
 		],
 		"resetMocks": true
+	},
+	"iohook": {
+		"targets": [
+			"node-83",
+			"electron-101"
+		],
+		"platforms": [
+			"win32",
+			"darwin",
+			"linux"
+		],
+		"arches": [
+			"x64",
+			"ia32"
+		]
 	},
 	"build": {
 		"appId": "com.media.reader",

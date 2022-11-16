@@ -312,13 +312,13 @@ export abstract class DataOperator<
 	abstract packWillOpen(packId: number, change: boolean);
 
 	async UpdateBookmark(newBookmark: bookmark, marked: boolean = true) {
+		await this.bookmarkModel.update(newBookmark, marked);
 		if (hasCover(newBookmark)) {
 			await compress(
 				newBookmark.path + newBookmark.cover,
 				getBookmarkThumb(newBookmark)
 			);
 		}
-		await this.bookmarkModel.update(newBookmark, marked);
 	}
 
 	//更新选区

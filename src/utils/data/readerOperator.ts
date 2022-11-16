@@ -2,9 +2,9 @@
 import { Map } from 'immutable';
 import { SPACE_CODE } from '../../types/constant';
 import {
-	Book,
 	BookDirectory,
 	BookmarkOfBook,
+	MetaBook,
 	Mode,
 	TextLine
 } from '../../types/global';
@@ -24,18 +24,20 @@ const splitWords = (str: string, len: number) => {
 	}
 	return result;
 };
-export const isText = (file: string) => file.endsWith('.txt');
+export const isText = (file: string) =>
+	file.toLocaleLowerCase().endsWith('.txt') ||
+	file.toLocaleLowerCase().endsWith('.epub');
 // eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
 
 export class ReaderOperator extends DataOperator<
-	Book,
+	MetaBook,
 	BookmarkOfBook,
 	BookDirectory
 > {
 	private static instance: ReaderOperator;
 	protected override sql = sqliteOperator;
-	private currentBook: Book | null = null;
+	private currentBook: MetaBook | null = null;
 	private constructor() {
 		super({ database: 'book', tableName: 'book_list' }, sqliteOperator);
 	}
@@ -66,6 +68,13 @@ export class ReaderOperator extends DataOperator<
 		const book = this.parseBook(text);
 		const changed = !(await book.verify(text));
 		return { book, changed };
+	}
+
+	loadEpub() {
+		if (!this.currentBook?.path.toLocaleLowerCase().endsWith('.epub')) {
+			throw new Error('not epub');
+		}
+		return this.currentBook.path;
 	}
 	private parseBook(text: string) {
 		const book = new TextDetail(this.currentBook!, this.sql);
@@ -143,16 +152,16 @@ export class ReaderOperator extends DataOperator<
 		let result = [] as string[];
 		let successCount = 0;
 		let success = [] as Promise<any>[];
-		data.forEach((e, i) => {
+		for (const [i, e] of data.entries()) {
 			if (!e.path || !e.title || !isText(e.path)) {
 				return;
 			}
 			//NOTE 正式发布时删除
-			const novelPath = path.resolve('D:/小说', path.basename(e.path));
-			if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
-				fs.renameSync(e.path, novelPath);
-				e.path = novelPath;
-			}
+			// const novelPath = path.resolve('D:/小说', path.basename(e.path));
+			// if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
+			// 	await fs.rename(e.path, novelPath, () => {});
+			// 	e.path = novelPath;
+			// }
 			let newPack = {
 				path: e.path,
 				title: deleteUselessWords(
@@ -178,7 +187,7 @@ export class ReaderOperator extends DataOperator<
 					}
 				})
 			);
-		});
+		}
 		return Promise.all(success).then(() => {
 			if (successCount) {
 				result.unshift(`${successCount}个文件:::成功`);
@@ -206,7 +215,7 @@ export class ReaderOperator extends DataOperator<
 	packWillOpen() {
 		return this.currentBook;
 	}
-	mountBook(book: Book) {
+	mountBook(book: MetaBook) {
 		window.sessionStorage.setItem('currentBook', JSON.stringify(book));
 		this.titleWillUpdate(book.title);
 		this.currentBook = book;

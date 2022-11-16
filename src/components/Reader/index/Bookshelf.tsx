@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useController } from 'syill';
 import { readerConfig } from '../../../types/constant';
-import { Book } from '../../../types/global';
+import { MetaBook } from '../../../types/global';
 import { readerOperator as readerOp } from '../../../utils/data/galleryOperator';
 import {
 	isBookDir,
@@ -26,7 +26,7 @@ import { ShelfBookFolder } from './BookFolder';
 import { ShelfBookmark } from './BookmarkOfBook';
 import { ShelfItem } from './ShelfRow';
 export const Bookshelf = () => {
-	const [books, setBooks] = useState([] as Book[]);
+	const [books, setBooks] = useState([] as MetaBook[]);
 	const [total, setTotal] = useState(0);
 	const readerOperator = useRef(readerOp).current;
 	const [searchParam] = useSearchParams();

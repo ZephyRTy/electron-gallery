@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Book, Mode } from '../../../types/global';
+import { MetaBook, Mode } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
 import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
 import { isBookmarkOfBook } from '../../../utils/functions/typeAssertion';
 import styles from '../style/bookshelf.module.scss';
-
+const path = window.require('path');
 export const ShelfBookTitle = (props: { title: string; index: number }) => {
 	return (
 		<span
@@ -17,7 +17,7 @@ export const ShelfBookTitle = (props: { title: string; index: number }) => {
 	);
 };
 export const ShelfItem = (props: {
-	bookItem: Book;
+	bookItem: MetaBook;
 	inSelect?: number;
 	setInSelect?: any;
 }) => {
@@ -73,14 +73,6 @@ export const ShelfItem = (props: {
 					styles['bookshelf-row-cover'],
 					stared ? styles['bookshelf-stared'] : ''
 				)}
-				// onClick={() => {
-				// 	readerOperator.mountBook(props.bookItem);
-				// 	if (isBookmarkOfBook(props.bookItem)) {
-				// 		gotoHash(props.bookItem.url);
-				// 		return;
-				// 	}
-				// 	gotoHash(`#/reader/book/${props.bookItem.id}`);
-				// }}
 				onMouseDown={down}
 				onMouseUp={up}
 				title={props.bookItem.title}

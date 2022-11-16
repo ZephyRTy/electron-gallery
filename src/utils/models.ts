@@ -40,22 +40,22 @@ export const createBookmarkModel = <T extends BasicBookmark>(
 			);
 			if (isImageBookmark(newData)) {
 				if (dataIndex !== -1) {
+					this.data = [
+						newData,
+						...this.data.filter((e) => e.id !== newData.id)
+					];
 					await this.sqlOperator.updateGalleryBookmark(
 						newData,
 						marked,
 						'update'
 					);
-					this.data = [
-						newData,
-						...this.data.filter((e) => e.id !== newData.id)
-					];
 				} else {
+					this.data = [newData, ...this.data];
 					await this.sqlOperator.updateGalleryBookmark(
 						newData,
 						marked,
 						'insert'
 					);
-					this.data = [newData, ...this.data];
 				}
 			} else if (isBookmarkOfBook(newData)) {
 				if (dataIndex !== -1) {

@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Back } from '../../../icon/back.svg';
@@ -10,7 +10,6 @@ import galleryConfig, {
 	imageCountOfSinglePage
 } from '../../../types/constant';
 import { GalleryOperator } from '../../../utils/data/galleryOperator';
-import { openInExplorer } from '../../../utils/functions/process';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { OpenInExplorerBtn } from '../Buttons';
 import { Loading } from '../Loading';
@@ -55,10 +54,7 @@ export const PackDetail = () => {
 	const length = useRef({ value: 0 }).current;
 	const [total, setTotal] = useState(0);
 	const bookmarkToast = useRef((arg: boolean) => {});
-	const handleOpenFolder = useCallback(() => {
-		if (!pack) return;
-		openInExplorer(currentPath.current);
-	}, [pack]);
+
 	useEffect(() => {
 		fileOperator.titleUpdate();
 		(document.scrollingElement as any).scrollTop = 0;
@@ -199,7 +195,7 @@ export const PackDetail = () => {
 						fileOperator={fileOperator}
 						pack={pack}
 					/>
-					<OpenInExplorerBtn handleClick={handleOpenFolder} />
+					<OpenInExplorerBtn filePath={currentPath?.current} />
 				</Sidebar>
 			</SidebarContainer>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />
