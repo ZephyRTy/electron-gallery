@@ -464,45 +464,26 @@ export class SqliteOperatorForBook implements RequestOperator {
 	async updateDir(
 		dirId: number,
 		packId: number,
-		status: 0 | 1,
-		cover?: string
+		status: 0 | 1 //0: remove, 1: add
 	) {
-		let sql = `update ${this.mainTableName} set  parent = ? where id = ?`;
-		let sqlParam = [status ? dirId : null, packId] as [
-			number | null,
-			number
-		];
-		if (cover) {
-			if (status) {
-				this.db.run(
-					'update directory set cover_id = ? where  dir_id = ?',
-					[packId, dirId],
-					(err: any) => {
-						if (err) {
-							console.error(err);
-						}
-					}
-				);
-			} else {
-				this.db.run(
-					`update directory, (select id, title, parent from pack_list where id in 
-						(select max(id) from pack_list where parent > 0 group by parent having id != ?)) as t
-						set cover_id = t.id where  dir_id = ? and t.parent = dir_id`,
-					[packId, dirId],
-					(err: any) => {
-						if (err) {
-							console.error(err);
-						}
-					}
-				);
-			}
+		let stmt;
+		if (status) {
+			stmt = this.db.prepare(
+				`update ${this.mainTableName} set  parent = ? where id = ?`,
+				[dirId, packId]
+			);
+		} else {
+			stmt = this.db.prepare(
+				'update book_list  set parent = null where id = ?',
+				[packId]
+			);
 		}
 		return new Promise((resolve, reject) => {
-			this.db.run(sql, sqlParam, (err: any, res: any) => {
+			stmt.run((err: any) => {
 				if (err) {
 					reject(err);
 				}
-				resolve(res);
+				resolve('ok');
 			});
 		});
 	}

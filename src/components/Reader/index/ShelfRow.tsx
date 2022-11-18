@@ -1,5 +1,6 @@
 import { Book } from 'epubjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ReactComponent as DeleteIcon } from '../../../icon/cross.svg';
 import { ReactComponent as StarIcon } from '../../../icon/star.svg';
 import { ReactComponent as TrashIcon } from '../../../icon/trash.svg';
 import { MetaBook, Mode } from '../../../types/global';
@@ -155,6 +156,20 @@ export const ShelfItem = (props: {
 						readerOperator.updateStared(props.bookItem);
 					}}
 				/>
+				{props.bookItem.parent ? (
+					<DeleteIcon
+						className={stylesJoin(
+							styles['icon'],
+							styles['icon--cross']
+						)}
+						onClick={() => {
+							readerOperator.removeFileFromDir(
+								props.bookItem.id,
+								props.bookItem.parent!
+							);
+						}}
+					/>
+				) : null}
 			</span>
 		</div>
 	);

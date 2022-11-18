@@ -225,10 +225,17 @@ export class ReaderOperator extends DataOperator<
 		return -1;
 	}
 
-	// async removeBook(id: number) {
-	// 	await this.sql.delete(id);
-	// 	this.refresh();
-	// }
+	override removeFileFromDir(packId: number, dirId: number) {
+		let e = this.currentPacks.find((e) => e.id !== packId);
+		this.sql.updateDir(dirId, packId, 0).then((e) => {
+			this.dirMap.get(dirId.toString())!.count--;
+			this.currentPacks = this.currentPacks.filter(
+				(v) => v.id !== packId
+			);
+			this.refresh();
+		});
+		this.switchMode(Mode.Init);
+	}
 	packWillOpen() {
 		return this.currentBook;
 	}
