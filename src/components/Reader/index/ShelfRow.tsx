@@ -31,7 +31,9 @@ export const ShelfItem = (props: {
 	const id = useRef(null as any);
 	const [confirmed, setConfirmed] = useState(false);
 	const [src, setSrc] = useState(
-		'D:\\webDemo\\desktop-reader\\public\\Txt.jpg'
+		props.bookItem.stared
+			? 'D:\\webDemo\\desktop-reader\\public\\favorite.jpg'
+			: 'D:\\webDemo\\desktop-reader\\public\\Txt.jpg'
 	);
 	const up = useCallback(
 		(e: any) => {
