@@ -96,3 +96,5 @@ export const selectionModel = {
 	},
 	submit() {}
 };
+
+export const epubCoverCache = new Map<number, string>();

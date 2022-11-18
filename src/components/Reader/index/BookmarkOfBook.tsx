@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
 import { BookmarkOfBook } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
-import { gotoHash } from '../../../utils/functions/functions';
+import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
 import styles from '../style/bookshelf.module.scss';
-import { ShelfBookTitle } from './ShelfRow';
+import { BookTitle } from './BookTitle';
 export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 	const [marked, setMarked] = useState(true);
 	return (
@@ -22,27 +23,25 @@ export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 					return;
 				}}
 			>
-				<ShelfBookTitle
-					index={1}
-					title={props.bookItem?.title.slice(0, 8)}
-				/>
-				<ShelfBookTitle
-					index={2}
-					title={props.bookItem?.title.slice(8, 16)}
-				/>
-				<ShelfBookTitle
-					index={3}
-					title={props.bookItem?.title.slice(16)}
-				/>
+				<img
+					className={styles['book-cover']}
+					src="D:\webDemo\desktop-reader\public\default-cover.webp"
+				></img>
 			</div>
-			<div className={styles['bookshelf-row-bar']}></div>
-			<button
-				className={styles['bookshelf-bookmark-button']}
-				onClick={() => {
-					setMarked(!marked);
-					readerOperator.UpdateBookmark(props.bookItem, !marked);
-				}}
-			></button>
+			<BookTitle title={props.bookItem.title} />
+			<span className={styles['icon-span']}>
+				<BookmarkIcon
+					className={stylesJoin(
+						styles['icon'],
+						styles['icon--bookmark'],
+						marked ? styles['icon--bookmark__marked'] : ''
+					)}
+					onClick={() => {
+						setMarked(!marked);
+						readerOperator.UpdateBookmark(props.bookItem, !marked);
+					}}
+				/>
+			</span>
 		</div>
 	);
 };

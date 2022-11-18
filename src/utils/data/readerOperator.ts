@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { Book } from 'epubjs';
 import { Map } from 'immutable';
 import { SPACE_CODE } from '../../types/constant';
 import {
@@ -8,13 +9,13 @@ import {
 	Mode,
 	TextLine
 } from '../../types/global';
-import { deleteUselessWords } from '../functions/functions';
+import { deleteUselessWords, getEpubTitle } from '../functions/functions';
 import { sqliteOperator } from '../request/sqliteOperator';
 import { DataOperator } from './DataOperator';
+import { EpubDetail } from './EpubDetail';
 import { TextDetail } from './TextDetail';
 const fs = window.require('fs/promises');
 const iconv = window.require('iconv-lite');
-const path = window.require('path');
 iconv.skipDecodeWarning = true;
 const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
@@ -70,11 +71,18 @@ export class ReaderOperator extends DataOperator<
 		return { book, changed };
 	}
 
-	loadEpub() {
+	async loadEpub() {
+		if (!this.currentBook) {
+			this.currentBook = JSON.parse(
+				window.sessionStorage.getItem('currentBook')!
+			);
+		}
 		if (!this.currentBook?.path.toLocaleLowerCase().endsWith('.epub')) {
 			throw new Error('not epub');
 		}
-		return this.currentBook.path;
+		const epubBook = new Book(this.currentBook.path);
+		const book = new EpubDetail(epubBook, this.currentBook, this.sql);
+		return book;
 	}
 	private parseBook(text: string) {
 		const book = new TextDetail(this.currentBook!, this.sql);
@@ -162,15 +170,20 @@ export class ReaderOperator extends DataOperator<
 			// 	await fs.rename(e.path, novelPath, () => {});
 			// 	e.path = novelPath;
 			// }
+			let title = e.title;
+			if (e.path.endsWith('.epub')) {
+				title = await getEpubTitle(e.path);
+			}
 			let newPack = {
 				path: e.path,
 				title: deleteUselessWords(
-					e.title,
+					title,
 					'soushu2022.com@',
 					'[搜书吧]',
 					'-soushu2022.com-[搜书吧网址]',
 					'-soushu555.org-[搜书吧网址]',
-					'.txt'
+					'.txt',
+					'.epub'
 				),
 				stared: 0 as 0
 			};
@@ -212,6 +225,10 @@ export class ReaderOperator extends DataOperator<
 		return -1;
 	}
 
+	// async removeBook(id: number) {
+	// 	await this.sql.delete(id);
+	// 	this.refresh();
+	// }
 	packWillOpen() {
 		return this.currentBook;
 	}

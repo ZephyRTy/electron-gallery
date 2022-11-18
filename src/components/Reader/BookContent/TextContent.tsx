@@ -33,6 +33,7 @@ import { FindDialog, FindMaskContainer } from './FindDialog';
 import { MarkedContext } from './MarkedLine';
 import { Placeholder } from './Placeholder';
 import { SideEnter3D } from './SideEnter3D';
+import { SideMarkDiv } from './SideMarkDiv';
 
 export const TextContext = React.createContext(null as any as TextDetail);
 const ContentLine = (props: { line: TextLine }) => {
@@ -287,8 +288,11 @@ export const TextContent = () => {
 			<RegExpSet currentChapter={chapter} />
 			<ChangedAlert />
 			<SideEnter3D
-				render={() => {
+				renderCatalog={() => {
 					return <SideCatalog currentChapter={chapter} />;
+				}}
+				renderMarkDiv={() => {
+					return <SideMarkDiv />;
 				}}
 			/>
 			<SidebarContainer>
@@ -313,7 +317,7 @@ export const TextContent = () => {
 					/>
 					<RegExpBtn />
 					<CatalogBtn />
-					<ShowMarksBtn book={book} />
+					<ShowMarksBtn />
 					<Find />
 					<OpenInExplorerBtn filePath={book?.path} />
 				</Sidebar>

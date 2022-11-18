@@ -1,13 +1,14 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import { useData } from 'syill';
 import { stylesJoin } from '../../../utils/functions/functions';
 import { catalogShowStore, marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
-import { SideMarkDiv } from './SideMarkDiv';
 // eslint-disable-next-line no-undef
 export const SideEnter3D = (props: {
 	// eslint-disable-next-line no-unused-vars
-	render: (...args: any[]) => JSX.Element;
+	renderCatalog: (...args: any[]) => JSX.Element;
+	renderMarkDiv: (...args: any[]) => JSX.Element;
 }) => {
 	const [catalogShow] = useData(catalogShowStore);
 	const [marksShow] = useData(marksShowStore);
@@ -24,8 +25,8 @@ export const SideEnter3D = (props: {
 					marksShow ? styles['bottom-side'] : styles['top-side']
 				)}
 			>
-				<props.render />
-				<SideMarkDiv />
+				<props.renderCatalog />
+				<props.renderMarkDiv />
 			</div>
 		</div>
 	);

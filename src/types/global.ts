@@ -91,7 +91,7 @@ export interface EpubChapter {
 }
 export interface MetaBook extends BasicData {
 	reg: string;
-	type: 'txt' | 'epub';
+	bookCover?: string;
 }
 
 export interface BookDirectory extends BasicFolder {}
@@ -131,4 +131,11 @@ export interface MarkAnchor {
 	anchorIndex: number;
 	content: string;
 	timestamp: string;
+}
+
+export interface EpubMark {
+	cfi: string;
+	timestamp: string;
+	comment: string;
+	data: string;
 }

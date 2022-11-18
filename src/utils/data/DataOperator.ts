@@ -525,4 +525,19 @@ export abstract class DataOperator<
 			await this.load();
 		}
 	}
+
+	removePack(pack: normal, shouldDelete = false) {
+		if (pack.parent) {
+			this.removeFileFromDir(pack.id, pack.parent);
+		}
+		this.deletePack(pack.id);
+		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
+		this.starModel.remove(pack.id);
+		this.bookmarkModel.remove(pack.id);
+		this.searchCache.res = this.searchCache.res.filter(
+			(e) => e.id !== pack.id
+		);
+		this.refresh();
+	}
 }
+

@@ -21,8 +21,6 @@ const ensurePositive = (num: number | string) => {
 	}
 	return num < 0 ? 0 : num;
 };
-const round = (n, decimals = 0) =>
-	Number(`${Math.round(Number(`${n}e${decimals}`))}e-${decimals}`);
 
 export class TextDetail {
 	private metaBook: MetaBook;
@@ -342,13 +340,6 @@ export class TextDetail {
 		this.mousePosition = { x: -1, y: -1 };
 	}
 
-	mark() {
-		for (let key in this.currentSelection) {
-			if (this.currentSelection[key] === -1) {
-				return;
-			}
-		}
-	}
 	registerFloatMenu(setState: {
 		(
 			value: SetStateAction<{ x: number | string; y: number | string }>

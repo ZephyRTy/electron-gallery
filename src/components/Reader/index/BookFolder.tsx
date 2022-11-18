@@ -1,6 +1,6 @@
 import { BookDirectory } from '../../../types/global';
 import styles from '../style/bookshelf.module.scss';
-import { ShelfBookTitle } from './ShelfRow';
+import { BookTitle } from './BookTitle';
 export const ShelfBookFolder = (props: { bookItem: BookDirectory }) => {
 	return (
 		<div
@@ -18,21 +18,12 @@ export const ShelfBookFolder = (props: { bookItem: BookDirectory }) => {
 						'#/reader?' + `directory=${props.bookItem.id}&page=1`;
 				}}
 			>
-				<ShelfBookTitle
-					index={1}
-					title={props.bookItem?.title.slice(0, 8)}
-				/>
-				<ShelfBookTitle
-					index={2}
-					title={props.bookItem?.title.slice(8, 16)}
-				/>
-				<ShelfBookTitle
-					index={3}
-					title={props.bookItem?.title.slice(16)}
-				/>
+				<img
+					className={styles['book-cover']}
+					src="D:\webDemo\desktop-reader\public\default-cover.webp"
+				></img>
 			</div>
-			<div className={styles['bookshelf-row-bar']}></div>
-			<button className={styles['bookshelf-folder-button']}></button>
+			<BookTitle title={props.bookItem.title} />
 		</div>
 	);
 };

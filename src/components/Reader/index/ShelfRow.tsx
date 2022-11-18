@@ -1,10 +1,14 @@
+import { Book } from 'epubjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ReactComponent as StarIcon } from '../../../icon/star.svg';
+import { ReactComponent as TrashIcon } from '../../../icon/trash.svg';
 import { MetaBook, Mode } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
 import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
 import { isBookmarkOfBook } from '../../../utils/functions/typeAssertion';
+import { epubCoverCache } from '../../../utils/models';
 import styles from '../style/bookshelf.module.scss';
-const path = window.require('path');
+import { BookTitle } from './BookTitle';
 export const ShelfBookTitle = (props: { title: string; index: number }) => {
 	return (
 		<span
@@ -23,6 +27,11 @@ export const ShelfItem = (props: {
 }) => {
 	const [stared, setStared] = useState(props.bookItem.stared);
 	const flag = useRef({ id: null as any, isDown: false, holding: false });
+	const id = useRef(null as any);
+	const [confirmed, setConfirmed] = useState(false);
+	const [src, setSrc] = useState(
+		'D:\\webDemo\\desktop-reader\\public\\Txt.jpg'
+	);
 	const up = useCallback(
 		(e: any) => {
 			flag.current.isDown = false;
@@ -57,6 +66,21 @@ export const ShelfItem = (props: {
 	useEffect(() => {
 		if (props.bookItem) setStared(props.bookItem.stared);
 	}, [props.bookItem?.stared]);
+	useEffect(() => {
+		if (props.bookItem.path.endsWith('.epub')) {
+			if (!epubCoverCache.has(props.bookItem.id)) {
+				const e = new Book();
+				e.open(props.bookItem.path).then(() => {
+					e.coverUrl().then((url) => {
+						setSrc(url || src);
+						epubCoverCache.set(props.bookItem.id, url || src);
+					});
+				});
+			} else {
+				setSrc(epubCoverCache.get(props.bookItem.id)!);
+			}
+		}
+	}, [props.bookItem]);
 	const selectHandler = useCallback(
 		(e: any) => {
 			readerOperator.updateSelection(props.bookItem.id, e.target.checked);
@@ -77,18 +101,7 @@ export const ShelfItem = (props: {
 				onMouseUp={up}
 				title={props.bookItem.title}
 			>
-				<ShelfBookTitle
-					index={1}
-					title={props.bookItem?.title.slice(0, 8)}
-				/>
-				<ShelfBookTitle
-					index={2}
-					title={props.bookItem?.title.slice(8, 16)}
-				/>
-				<ShelfBookTitle
-					index={3}
-					title={props.bookItem?.title.slice(16)}
-				/>
+				<img className={styles['book-cover']} src={src}></img>
 				<input
 					className={styles['check-box'] + ' img__checkbox'}
 					disabled={Boolean(props.bookItem.parent) || !props.inSelect}
@@ -107,14 +120,42 @@ export const ShelfItem = (props: {
 					type="checkbox"
 				/>
 			</div>
-			<div className={styles['bookshelf-row-bar']}></div>
-			<button
-				className={styles['bookshelf-star-button']}
-				onClick={() => {
-					setStared(!stared);
-					readerOperator.updateStared(props.bookItem);
-				}}
-			></button>
+			<BookTitle title={props.bookItem.title} />
+			<span className={styles['icon-span']}>
+				<TrashIcon
+					className={stylesJoin(
+						styles['icon'],
+						styles['icon--trash'],
+						confirmed ? styles['icon--trash__confirmed'] : ''
+					)}
+					onClick={() => {
+						if (confirmed) {
+							console.log('delete');
+							readerOperator.removePack(props.bookItem);
+							if (id) {
+								clearTimeout(id.current);
+								id.current = null;
+							}
+						} else {
+							setConfirmed(true);
+							id.current = setTimeout(() => {
+								setConfirmed(false);
+							}, 2000);
+						}
+					}}
+				/>
+				<StarIcon
+					className={stylesJoin(
+						styles['icon'],
+						styles['icon--star'],
+						stared ? styles['icon--star__stared'] : ''
+					)}
+					onClick={() => {
+						setStared(!stared);
+						readerOperator.updateStared(props.bookItem);
+					}}
+				/>
+			</span>
 		</div>
 	);
 };

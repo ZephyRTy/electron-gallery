@@ -32,6 +32,7 @@ export const Bookshelf = () => {
 	const [searchParam] = useSearchParams();
 	const [refresh, setRefresh] = useState(false);
 	const [inSelect, setInSelect] = useState(0);
+
 	const [, setDirMapVis] = useController(dirMapVisibleStore);
 	const page = parseInt(
 		searchParam.get('page') ? (searchParam.get('page') as string) : '1',
@@ -95,7 +96,7 @@ export const Bookshelf = () => {
 							<ShelfItem
 								bookItem={e}
 								inSelect={inSelect}
-								key={i}
+								key={e.id}
 								setInSelect={setInSelect}
 							/>
 						);

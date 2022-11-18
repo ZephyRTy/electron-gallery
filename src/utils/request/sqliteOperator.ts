@@ -5,6 +5,7 @@ import {
 	BasicData,
 	BookmarkOfBook,
 	DirectoryInfo,
+	EpubMark,
 	ImageBookmark,
 	ImageDirectory,
 	Mode,
@@ -93,6 +94,14 @@ export class SqliteOperatorForBook implements RequestOperator {
 			PRIMARY KEY (m_id, anchor_index, anchor_offset),
 			CONSTRAINT fk_mark_id FOREIGN KEY (m_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
 		  )`;
+		const stmt5 = `CREATE TABLE if not exists epub_mark (
+			m_id int NOT NULL,
+			m_timeStamp timestamp NULL DEFAULT NULL,
+			cfi varchar(100) NOT NULL,
+			comment varchar(600) default NULL,
+			PRIMARY KEY (m_id, cfi),
+			CONSTRAINT fk_epub_mark_id FOREIGN KEY (m_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
+		  )`;
 		this.db.run(stmt1, (arg: any) => {
 			if (arg) console.log(arg);
 		});
@@ -103,6 +112,9 @@ export class SqliteOperatorForBook implements RequestOperator {
 			if (arg) console.log(arg);
 		});
 		this.db.run(stmt4, (arg: any) => {
+			if (arg) console.log(arg);
+		});
+		this.db.run(stmt5, (arg: any) => {
 			if (arg) console.log(arg);
 		});
 	}
@@ -131,6 +143,29 @@ export class SqliteOperatorForBook implements RequestOperator {
 									comment: e.comment,
 									timestamp: e.m_timeStamp
 								} as SelectionInfo;
+							})
+						);
+					}
+				}
+			);
+		});
+	}
+
+	async getEpubMarks(bookId: number): Promise<EpubMark[]> {
+		return new Promise((resolve, reject) => {
+			this.db.all(
+				`select * from epub_mark where m_id = ${bookId}`,
+				(err: any, res: any) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(
+							res.map((e) => {
+								return {
+									cfi: e.cfi,
+									comment: e.comment,
+									timestamp: e.m_timeStamp
+								} as EpubMark;
 							})
 						);
 					}
@@ -658,7 +693,23 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
+	insertEpubMark(id: number, cfi: string, timestamp: string) {
+		let sql = transformToSQL('epub_mark', {
+			m_id: id,
+			m_timeStamp: timestamp,
+			cfi
+		});
 
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, (err: any, res: any) => {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
 	async removeMark(id: number, selection: SelectionInfo | null) {
 		if (!selection) {
 			throw new Error('selection is null');
@@ -674,6 +725,23 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
+
+	async removeEpubMark(id: number, cfi: string) {
+		if (!cfi) {
+			throw new Error('epubMark is null');
+		}
+		let sql = `delete from epub_mark where m_id = ? and cfi = ?`;
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, [id, cfi], (err: any, res: any) => {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
+
 	renamePack(packID: number, title: string) {
 		let sql = `update ${this.mainTableName} set title = ? where id = ?`;
 		return new Promise((resolve, reject) => {
