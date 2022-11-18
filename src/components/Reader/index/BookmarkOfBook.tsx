@@ -1,5 +1,6 @@
 import { Book } from 'epubjs';
 import { useEffect, useState } from 'react';
+import bookmarkCover from '../../../assets/bookmark-cover.jpg';
 import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
 import { BookmarkOfBook } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
@@ -9,9 +10,7 @@ import styles from '../style/bookshelf.module.scss';
 import { BookTitle } from './BookTitle';
 export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 	const [marked, setMarked] = useState(true);
-	const [src, setSrc] = useState(
-		'D:\\webDemo\\desktop-reader\\public\\bookmark-cover.jpg'
-	);
+	const [src, setSrc] = useState(bookmarkCover);
 	useEffect(() => {
 		if (props.bookItem.path.endsWith('.epub')) {
 			if (!epubCoverCache.has(props.bookItem.id)) {

@@ -246,7 +246,7 @@
 			}
 		],
 		"files": [
-			"dist/",
+			"build/",
 			"main.js"
 		],
 		"nsis": {

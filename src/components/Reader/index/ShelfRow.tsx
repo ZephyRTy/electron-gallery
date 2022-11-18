@@ -1,5 +1,7 @@
 import { Book } from 'epubjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import favoriteCover from '../../../assets/favorite.jpg';
+import txtCover from '../../../assets/Txt.jpg';
 import { ReactComponent as DeleteIcon } from '../../../icon/cross.svg';
 import { ReactComponent as StarIcon } from '../../../icon/star.svg';
 import { ReactComponent as TrashIcon } from '../../../icon/trash.svg';
@@ -31,9 +33,7 @@ export const ShelfItem = (props: {
 	const id = useRef(null as any);
 	const [confirmed, setConfirmed] = useState(false);
 	const [src, setSrc] = useState(
-		props.bookItem.stared
-			? 'D:\\webDemo\\desktop-reader\\public\\favorite.jpg'
-			: 'D:\\webDemo\\desktop-reader\\public\\Txt.jpg'
+		props.bookItem.stared ? favoriteCover : txtCover
 	);
 	const up = useCallback(
 		(e: any) => {
