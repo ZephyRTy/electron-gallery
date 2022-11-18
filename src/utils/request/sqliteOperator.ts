@@ -164,7 +164,8 @@ export class SqliteOperatorForBook implements RequestOperator {
 								return {
 									cfi: e.cfi,
 									comment: e.comment,
-									timestamp: e.m_timeStamp
+									timestamp: e.m_timeStamp,
+									data: ''
 								} as EpubMark;
 							})
 						);
@@ -527,19 +528,18 @@ export class SqliteOperatorForBook implements RequestOperator {
 	}
 
 	insertDir(newDir: { dir_title: string }): Promise<number | null> {
-		let sql = 'insert into directory (dir_title, update_time) values (?,?)';
+		let stmt = this.db.prepare(
+			'insert into directory (dir_title, update_time) values (?,?)',
+			[newDir.dir_title, formatDate(new Date())]
+		);
 		return new Promise((resolve, reject) => {
-			this.db.get(
-				sql,
-				[newDir.dir_title, formatDate(new Date())],
-				(err: any, res: any) => {
-					if (err) {
-						console.error(err);
-						reject(null);
-					}
-					resolve(res.lastID as number);
+			stmt.run((err: any) => {
+				if (err) {
+					console.error(err);
+					reject(null);
 				}
-			);
+				resolve(stmt.lastID);
+			});
 		});
 	}
 

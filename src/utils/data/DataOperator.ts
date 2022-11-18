@@ -383,7 +383,7 @@ export abstract class DataOperator<
 	modeType(mode: Mode) {
 		switch (mode) {
 			case Mode.Init:
-				return 'Integration';
+				return '首页';
 			case Mode.Detail:
 				return 'Detail';
 			case Mode.Bookmark:
@@ -399,7 +399,7 @@ export abstract class DataOperator<
 					)?.title ?? 'Directories'
 				);
 			default:
-				return 'Integration';
+				return '首页';
 		}
 	}
 
@@ -540,4 +540,3 @@ export abstract class DataOperator<
 		this.refresh();
 	}
 }
-

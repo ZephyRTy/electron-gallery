@@ -20,7 +20,7 @@ export const ShelfBookFolder = (props: { bookItem: BookDirectory }) => {
 			>
 				<img
 					className={styles['book-cover']}
-					src="D:\webDemo\desktop-reader\public\default-cover.webp"
+					src="D:\webDemo\desktop-reader\public\folder-cover.jpg"
 				></img>
 			</div>
 			<BookTitle title={props.bookItem.title} />

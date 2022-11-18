@@ -86,11 +86,11 @@ export const Bookshelf = () => {
 			<FileDrop itemType="file" operator={readerOperator} />
 			<main className={styles['bookshelf-container']}>
 				<div className={styles['bookshelf-grid']}>
-					{books.map((e, i) => {
+					{books.map((e) => {
 						if (isBookmarkOfBook(e)) {
-							return <ShelfBookmark bookItem={e} key={i} />;
+							return <ShelfBookmark bookItem={e} key={e.id} />;
 						} else if (isBookDir(e)) {
-							return <ShelfBookFolder bookItem={e} key={i} />;
+							return <ShelfBookFolder bookItem={e} key={e.id} />;
 						}
 						return (
 							<ShelfItem

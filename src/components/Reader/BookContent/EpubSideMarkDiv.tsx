@@ -1,10 +1,10 @@
 import { Rendition } from 'epubjs';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { useData } from 'syill';
 import { enable3d } from '../../../types/constant';
 import { EpubMark } from '../../../types/global';
 import { stylesJoin } from '../../../utils/functions/functions';
-import { marksShowStore } from '../../../utils/store';
+import { marksShowStore, tocStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
 import { EpubContext } from './EpubContent';
 
@@ -36,19 +36,19 @@ const MarkItem = (props: { mark: EpubMark }) => {
 export const EpubSideMarkDiv = (props: { rendition: Rendition | null }) => {
 	const book = useContext(EpubContext);
 	const [, setShow] = useData(marksShowStore);
-	const [items, setItems] = useState([] as EpubMark[]);
+	const [items, setItems] = useData(tocStore);
 	useEffect(() => {
 		if (!props.rendition || !book) {
 			return;
 		}
-		book.initMarks(setItems).then((marks) => {
+		book.initMarks().then((marks) => {
 			setItems([...marks]);
 			book.highlightAllMarks();
 		});
 		return () => {
 			setShow(false);
 		};
-	}, [book, props.rendition]);
+	}, [props.rendition, book]);
 	return (
 		<div
 			className={stylesJoin(

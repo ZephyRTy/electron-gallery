@@ -11,6 +11,7 @@ import { Sidebar, SidebarContainer } from '../../Menu';
 import { Back, CatalogBtn, Find, ShowMarksBtn } from '../Buttons';
 import { EpubSideCatalog } from './EpubSideCatalog';
 import { EpubSideMarkDiv } from './EpubSideMarkDiv';
+import { Progress } from './Progress';
 import { SideEnter3D } from './SideEnter3D';
 function viewportToPixels(value) {
 	let parts = value.match(/([0-9\.]+)(vh|vw)/);
@@ -35,7 +36,10 @@ export const EpubContent = () => {
 			} else {
 				await rendition.display();
 			}
+			console.log('rendition', rendition);
 			setRendition(rendition);
+			(window as any).book = book;
+			(window as any).rendition = rendition;
 		});
 
 		return () => {
@@ -51,10 +55,6 @@ export const EpubContent = () => {
 			timeStamp: formatDate(new Date())
 		});
 	}, [book, rendition]);
-	useEffect(() => {
-		if (!rendition) return;
-		(window as any).rendition = rendition;
-	}, [rendition]);
 	return (
 		<EpubContext.Provider value={book}>
 			<SideEnter3D
@@ -75,6 +75,7 @@ export const EpubContent = () => {
 				</Sidebar>
 			</SidebarContainer>
 			<div id="viewer"></div>
+			<Progress rendition={rendition} />
 		</EpubContext.Provider>
 	);
 };

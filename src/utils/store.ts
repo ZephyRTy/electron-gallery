@@ -1,6 +1,6 @@
 import React from 'react';
 import { Store } from 'syill';
-import { LineSelectionPosition } from '../types/global';
+import { EpubMark, LineSelectionPosition } from '../types/global';
 import { DataOperator } from './data/DataOperator';
 export const ImageStateStore = {
 	states: [] as React.Dispatch<React.SetStateAction<boolean>>[],
@@ -43,3 +43,5 @@ export const catalogShowStore = new Store(false);
 export const marksShowStore = new Store(false);
 export const changedAlertStore = new Store(false);
 export const selectionStore = new Store([] as LineSelectionPosition[][]);
+export const tocStore = new Store([] as EpubMark[]);
+export const percentageStore = new Store(0);

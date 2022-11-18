@@ -45,7 +45,7 @@ const WindowButtons = () => {
 	);
 };
 export const Header = () => {
-	const [title, setTitle] = useState('Integration');
+	const [title, setTitle] = useState('首页');
 	const galleryOperator = useRef(GalleryOperator.getInstance()).current;
 	const readerOperator = useRef(ReaderOperator.getInstance()).current;
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {

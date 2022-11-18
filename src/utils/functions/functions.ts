@@ -247,3 +247,16 @@ export const getEpubTitle = async (filePath: string): Promise<string> => {
 	await book.open(filePath);
 	return book.packaging.metadata.title;
 };
+
+export function debounce(fn: Function, delay: number) {
+	let timer: any = null;
+	// eslint-disable-next-line no-unused-vars
+	return function (this: any, ...args: any[]) {
+		if (timer) {
+			clearTimeout(timer);
+		}
+		timer = setTimeout(() => {
+			fn.apply(this, arguments);
+		}, delay);
+	};
+}

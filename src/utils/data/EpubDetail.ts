@@ -1,8 +1,8 @@
 import { Book, Rendition } from 'epubjs';
-import React from 'react';
 import { EpubMark, MetaBook } from '../../types/global';
 import { formatDate } from '../functions/functions';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
+import { percentageStore, tocStore } from '../store';
 function viewportToPixels(value) {
 	let parts = value.match(/([0-9\.]+)(vh|vw)/);
 	let q = Number(parts[1]);
@@ -16,8 +16,8 @@ export class EpubDetail {
 	private metaBook: MetaBook;
 	private sqlOperator: SqliteOperatorForBook;
 	private marks: EpubMark[] = [];
-	private setItems: React.Dispatch<React.SetStateAction<EpubMark[]>> | null =
-		null;
+	private setItems = tocStore.createController();
+	private setPercentage = percentageStore.createController();
 	constructor(
 		book: Book,
 		meta: MetaBook,
@@ -34,6 +34,12 @@ export class EpubDetail {
 			height: viewportToPixels('96vh'),
 			manager: 'continuous',
 			flow: 'paginated'
+		});
+		this.rendition.on('relocated', (loc) => {
+			let percent =
+				this.book?.locations.percentageFromCfi(loc.start.cfi!) || 0;
+			percent = Math.round(percent * 1000);
+			this.setPercentage(percent);
 		});
 		this.rendition.hooks.render.register((content) => {
 			if (content.document?.body) {
@@ -52,6 +58,8 @@ export class EpubDetail {
 			});
 		});
 		this.rendition.on('selected', (cfiRange, contents) => {
+			console.log(cfiRange);
+
 			this.highlightMark(cfiRange, 'yellow');
 			this.addMark(cfiRange);
 			contents.window.getSelection().removeAllRanges();
@@ -94,23 +102,20 @@ export class EpubDetail {
 		this.setItems!(this.marks);
 		return await this.sqlOperator.removeEpubMark(this.metaBook.id, cfi);
 	}
-	async initMarks(
-		controller: React.Dispatch<React.SetStateAction<EpubMark[]>>
-	) {
-		this.setItems = controller;
-		this.marks = (
-			await this.sqlOperator.getEpubMarks(this.metaBook.id)
-		).map((e) => {
-			// eslint-disable-next-line no-unused-vars
-			const { startContainer, endContainer, startOffset, endOffset } =
-				this.rendition!.getRange(e.cfi);
-			return {
+	async initMarks() {
+		const arr = await this.sqlOperator.getEpubMarks(this.metaBook.id);
+		const res = [] as EpubMark[];
+		for (let e of arr) {
+			const { startContainer, startOffset, endOffset } =
+				await this.book!.getRange(e.cfi);
+			res.push({
 				...e,
 				data:
 					startContainer.textContent?.slice(startOffset, endOffset) ||
 					''
-			};
-		});
+			});
+		}
+		this.marks = res;
 		return this.marks;
 	}
 
@@ -137,7 +142,17 @@ export class EpubDetail {
 		}
 	}
 
-	jumpTo(cfi: string) {
-		this.rendition?.display(cfi);
+	async jumpTo(cfi: string) {
+		return await this.rendition?.display(cfi);
+	}
+
+	getPercentage() {
+		return this.book!.locations.percentageFromCfi(
+			this.rendition?.location.start.cfi!
+		);
+	}
+
+	getBook() {
+		return this.book;
 	}
 }
