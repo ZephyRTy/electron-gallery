@@ -108,11 +108,9 @@ export const ImgContainer = (props: {
 			props.packs.forEach(async (v) => {
 				let img = new Image();
 				let hasExternalDriver = props.util.external;
-				let imgPath =
-					(!hasExternalDriver && v.cover.startsWith('E')) ||
-					!galleryConfig.r18
-						? defaultCover
-						: ((v.path ?? '') + v.cover).replace(/\\/g, '/');
+				let imgPath = !galleryConfig.r18
+					? defaultCover
+					: ((v.path ?? '') + v.cover).replace(/\\/g, '/');
 				let coverPath = imgPath;
 				if (isImageBookmark(v)) {
 					coverPath =

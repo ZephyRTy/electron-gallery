@@ -97,7 +97,7 @@
 		"package": "npm run build && npm run pack",
 		"package:esbuild": "npm run esbuild && npm run pack",
 		"package:bishe": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photo.ico --out=app/ --asar --app-version=0.0.1 --overwrite",
-		"package:electron-builder": "npm run build && electron-builder --dir"
+		"package:electron-builder": "npm run esbuild && electron-builder --dir"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -246,7 +246,7 @@
 			}
 		],
 		"files": [
-			"build/",
+			"dist/",
 			"main.js"
 		],
 		"nsis": {

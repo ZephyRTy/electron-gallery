@@ -12,6 +12,12 @@ require('esbuild')
 		entryPoints: ['./src/index.tsx'],
 		bundle: true,
 		outdir: './dist',
+		loader: {
+			'.png': 'file',
+			'.jpg': 'file',
+			'.gif': 'file',
+			'.webp': 'file'
+		},
 		define: {
 			'process.env.NODE_ENV': '"production"',
 			'process.env.DEBUG': false

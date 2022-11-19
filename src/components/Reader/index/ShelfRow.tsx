@@ -90,6 +90,11 @@ export const ShelfItem = (props: {
 		},
 		[props.bookItem.id]
 	);
+	useEffect(() => {
+		if (!props.bookItem.path.endsWith('.epub')) {
+			setSrc(props.bookItem.stared ? favoriteCover : txtCover);
+		}
+	}, [stared]);
 	if (!props.bookItem) {
 		return null;
 	}
@@ -98,7 +103,8 @@ export const ShelfItem = (props: {
 			<div
 				className={stylesJoin(
 					styles['bookshelf-row-cover'],
-					stared ? styles['bookshelf-stared'] : ''
+					stared ? styles['bookshelf-stared'] : '',
+					'cool-div'
 				)}
 				onMouseDown={down}
 				onMouseUp={up}
@@ -158,7 +164,7 @@ export const ShelfItem = (props: {
 						readerOperator.updateStared(props.bookItem);
 					}}
 				/>
-				{props.bookItem.parent ? (
+				{readerOperator.getMode() === Mode.DirContent ? (
 					<DeleteIcon
 						className={stylesJoin(
 							styles['icon'],
