@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { SetStateAction } from 'react';
-import { lineHeight } from '../../types/constant';
+import { lineHeight, LinesOfEachEpisode } from '../../types/constant';
 import {
 	Chapter,
 	LineSelection,
@@ -21,16 +21,16 @@ const ensurePositive = (num: number | string) => {
 	}
 	return num < 0 ? 0 : num;
 };
-
 export class TextDetail {
 	private metaBook: MetaBook;
-	private contentSize = { start: 0, end: 0 };
+	private contentSize = { start: 0, end: 0, episode: 1 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
 	private currentChapter = 0;
 	private sqlOperator: SqliteOperatorForBook;
 	// eslint-disable-next-line no-unused-vars
 	private floatMenuControl = (...args: any[]) => {};
+	private maxEpisode = 1;
 	private currentSelection: SelectionInfo = {
 		anchorIndex: -1,
 		focusIndex: -1,
@@ -55,11 +55,19 @@ export class TextDetail {
 	public addChapter(chapter: Chapter) {
 		this.catalog.push(chapter);
 	}
-	public getContent(start: number, end: number): TextLine[] {
-		this.contentSize = { start, end };
-		return this.content.slice(start, end);
+	public getContent(start: number, end: number, episode: number): TextLine[] {
+		let endLine = Math.min(end + 1, LinesOfEachEpisode);
+		this.contentSize = { start, end: endLine, episode };
+		return this.content.slice(
+			start + (episode - 1) * LinesOfEachEpisode,
+			endLine + (episode - 1) * LinesOfEachEpisode
+		);
 	}
-
+	public calcEpisodes() {
+		const total = this.content.length;
+		const episode = Math.ceil(total / LinesOfEachEpisode);
+		this.maxEpisode = episode;
+	}
 	public addContent(content: TextLine[] | TextLine) {
 		if (Array.isArray(content)) {
 			for (let i = 0; i < content.length; i++) {
@@ -180,7 +188,6 @@ export class TextDetail {
 				index: i,
 				offset: -1,
 				length: 0,
-				offsetInKey,
 				isBlank: false
 			};
 			for (let j = 0; j < content.length; ++j) {
@@ -285,14 +292,17 @@ export class TextDetail {
 			return;
 		}
 		this.mousePosition.y =
-			lineHeight * this.currentSelection.anchorIndex - 10;
+			lineHeight *
+				(this.currentSelection.anchorIndex % LinesOfEachEpisode) -
+			10;
 
 		for (let i = anchorIndex; i <= focusIndex; i++) {
 			if (!this.getLine(i).className.includes('text-br')) {
 				if (i !== anchorIndex) {
 					this.currentSelection.anchorIndex = i;
 					this.currentSelection.anchorOffset = 0;
-					this.mousePosition.y = i * lineHeight;
+					this.mousePosition.y =
+						(i % LinesOfEachEpisode) * lineHeight;
 				}
 				break;
 			}
@@ -447,9 +457,6 @@ export class TextDetail {
 					.catch((e) => {
 						console.log(this.selections);
 						console.log(logicLine);
-					})
-					.then(() => {
-						console.log('删除成功');
 					});
 			} else {
 				arr.push(selection);
@@ -466,7 +473,9 @@ export class TextDetail {
 	getMarks() {
 		return this.selections;
 	}
-
+	getMaxEpisode() {
+		return this.maxEpisode;
+	}
 	generateMarkAnchor() {
 		const maxLength = 19;
 		const arr = [] as MarkAnchor[];

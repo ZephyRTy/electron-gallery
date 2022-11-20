@@ -1,12 +1,16 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useContext, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useController, useData } from 'syill';
 import { ReactComponent as AddBookmarkIcon } from '../../icon/addBookmark.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as CatalogIcon } from '../../icon/catalog.svg';
 import { ReactComponent as FindIcon } from '../../icon/find.svg';
 import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
+import { ReactComponent as NextEpisodeIcon } from '../../icon/next.svg';
+import { ReactComponent as PrevEpisodeIcon } from '../../icon/prev.svg';
 import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
+import { readerOperator } from '../../utils/data/galleryOperator';
+import { parseUrlQuery } from '../../utils/functions/functions';
 import {
 	catalogShowStore,
 	cursorStore,
@@ -15,6 +19,7 @@ import {
 	RegInputVisibleStore
 } from '../../utils/store';
 import { TaskQueueBeforeQuit } from '../../utils/TaskQueue';
+import { TextContext } from './BookContent/TextContent';
 export const RegExpBtn = () => {
 	const [, setVis] = useController(RegInputVisibleStore);
 	return (
@@ -41,7 +46,8 @@ export const GotoGalleryBtn = () => {
 	);
 };
 export const Back = (props: { quitBehavior?: () => Promise<any> }) => {
-	const navigate = useNavigate();
+	const navigator = useNavigate();
+	const book = useContext(TextContext);
 	useEffect(() => {
 		if (!props.quitBehavior) return;
 		TaskQueueBeforeQuit.add(() => {
@@ -59,7 +65,11 @@ export const Back = (props: { quitBehavior?: () => Promise<any> }) => {
 				if (props.quitBehavior) {
 					await props.quitBehavior();
 				}
-				navigate(-1);
+				if (book.getMaxEpisode() === 1) {
+					navigator(-1);
+				} else {
+					window.location.href = readerOperator.loadPrevPage();
+				}
 			}}
 		>
 			<BackBtn />
@@ -153,6 +163,49 @@ export const FindInEpub = () => {
 			}}
 		>
 			<FindIcon />
+		</button>
+	);
+};
+
+export const PrevEpisodesBtn = () => {
+	let [searchParams] = useSearchParams();
+	let currentEpisode = Number(searchParams.get('episode') || '1');
+	const book = useContext(TextContext);
+	return (
+		<button
+			className={'btn-find icon episode-btn'}
+			disabled={currentEpisode === 1}
+			onClick={() => {
+				const urlObj = parseUrlQuery(window.location.href);
+				urlObj.scroll = 0;
+				urlObj.episode = currentEpisode - 1;
+				window.location.href = `#/reader/book/${
+					book.id
+				}?${new URLSearchParams(urlObj).toString()}`;
+			}}
+		>
+			<PrevEpisodeIcon />
+		</button>
+	);
+};
+export const NextEpisodesBtn = () => {
+	let [searchParams] = useSearchParams();
+	const book = useContext(TextContext);
+	let currentEpisode = Number(searchParams.get('episode') || '1');
+	return (
+		<button
+			className={'btn-find icon episode-btn'}
+			disabled={book ? currentEpisode === book.getMaxEpisode() : true}
+			onClick={() => {
+				const urlObj = parseUrlQuery(window.location.href);
+				urlObj.scroll = 0;
+				urlObj.episode = currentEpisode + 1;
+				window.location.href = `#/reader/book/${
+					book.id
+				}?${new URLSearchParams(urlObj).toString()}`;
+			}}
+		>
+			<NextEpisodeIcon />
 		</button>
 	);
 };

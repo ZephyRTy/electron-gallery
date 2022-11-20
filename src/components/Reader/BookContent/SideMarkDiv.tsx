@@ -1,9 +1,15 @@
 import { useContext, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useData } from 'syill';
 import { ReactComponent as AnchorIcon } from '../../../icon/location.svg';
-import { enable3d, lineHeight } from '../../../types/constant';
+import {
+	enable3d,
+	lineHeight,
+	LinesOfEachEpisode
+} from '../../../types/constant';
 import { MarkAnchor } from '../../../types/global';
-import { stylesJoin } from '../../../utils/functions/functions';
+import { readerOperator } from '../../../utils/data/galleryOperator';
+import { parseUrlQuery, stylesJoin } from '../../../utils/functions/functions';
 import { marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
 import { TextContext } from './TextContent';
@@ -49,6 +55,8 @@ const AnchorBtn = (props: { index: number }) => {
 	);
 };
 const AnchorItem = (props: { anchor: MarkAnchor }) => {
+	let [searchParams] = useSearchParams();
+	let currentEpisode = Number(searchParams.get('episode') || '1');
 	return (
 		<li
 			className={stylesJoin(
@@ -60,9 +68,28 @@ const AnchorItem = (props: { anchor: MarkAnchor }) => {
 				<span
 					className={stylesJoin(styles['side-anchor-content'])}
 					onClick={() => {
-						document.querySelector(
-							'#reader-scroll-ele'
-						)!.scrollTop = props.anchor.anchorIndex * lineHeight;
+						const episode = Math.ceil(
+							props.anchor.anchorIndex / LinesOfEachEpisode
+						);
+						const scroll =
+							(props.anchor.anchorIndex % LinesOfEachEpisode) *
+							lineHeight;
+
+						if (currentEpisode !== episode) {
+							let urlObj = parseUrlQuery(window.location.href);
+							delete urlObj['undefined'];
+							urlObj['scroll'] = scroll;
+							urlObj['episode'] = episode;
+							const id = readerOperator.packWillOpen()!.id;
+							let url =
+								`#/reader/book/${id}?` +
+								new URLSearchParams(urlObj).toString();
+							window.location.href = url;
+						} else {
+							document.querySelector(
+								'#reader-scroll-ele'
+							)!.scrollTop = scroll;
+						}
 					}}
 				>
 					{props.anchor.content}
