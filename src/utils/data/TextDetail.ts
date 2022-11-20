@@ -9,12 +9,10 @@ import {
 	SelectionInfo,
 	TextLine
 } from '../../types/global';
-import {
-	formatDate,
-	generateTextMd5,
-	selectionContains
-} from '../functions/functions';
+import { formatDate, selectionContains } from '../functions/functions';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
+import { catalogCache } from './indexDB';
+const iconv = window.require('iconv-lite');
 const ensurePositive = (num: number | string) => {
 	if (typeof num === 'string') {
 		return num;
@@ -28,9 +26,11 @@ export class TextDetail {
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
 	private currentChapter = 0;
+	private encoding: 'gbk' | 'utf8';
 	private sqlOperator: SqliteOperatorForBook;
 	// eslint-disable-next-line no-unused-vars
 	private floatMenuControl = (...args: any[]) => {};
+	private catalogIsCached = false;
 	private currentSelection: SelectionInfo = {
 		anchorIndex: -1,
 		focusIndex: -1,
@@ -46,32 +46,65 @@ export class TextDetail {
 	};
 	regExp: RegExp;
 
-	constructor(book: MetaBook, sqlOperator: SqliteOperatorForBook) {
+	constructor(
+		book: MetaBook,
+		sqlOperator: SqliteOperatorForBook,
+		encoding: 'gbk' | 'utf8',
+		hasCatalogCached: boolean
+	) {
 		this.metaBook = book;
 		this.regExp = new RegExp(String.raw`${book.reg}`, 'g');
 		this.sqlOperator = sqlOperator;
+		this.encoding = encoding;
+		this.catalogIsCached = hasCatalogCached;
 	}
 
+	public cacheCatalog() {
+		catalogCache.setCachedCatalog(
+			this.id,
+			JSON.stringify(this.catalog.map((item) => item.index))
+		);
+	}
 	public addChapter(chapter: Chapter) {
 		this.catalog.push(chapter);
 	}
 	public getContent(start: number, end: number): TextLine[] {
 		this.contentSize = { start, end };
-		return this.content.slice(start, end);
+		const res = this.content.slice(start, end);
+		res.forEach((line) => {
+			if (!line.isDecoded) {
+				line.content = this.binaryToGBK(line.content).replaceAll(
+					'\x00',
+					''
+				);
+				line.isDecoded = true;
+			}
+		});
+		return res;
 	}
 
 	public addContent(content: TextLine[] | TextLine) {
 		if (Array.isArray(content)) {
 			for (let i = 0; i < content.length; i++) {
-				this.parseCatalog(content[i]);
+				if (this.encoding === 'utf8' && !this.catalogIsCached) {
+					this.parseCatalog(content[i]);
+				}
 				this.content.push(content[i]);
 			}
 		} else {
-			this.parseCatalog(content);
+			if (this.encoding === 'utf8' && !this.catalogIsCached) {
+				this.parseCatalog(content);
+			}
 			this.content.push(content);
 		}
 	}
 
+	parseCachedCatalog(catalog: number[]) {
+		for (let i of catalog) {
+			const item = this.decodeLine(i);
+			this.parseCatalog(item);
+		}
+	}
 	private parseCatalog(line: TextLine) {
 		let title = line.content.match(this.regExp)?.[0];
 		if (title) {
@@ -93,20 +126,22 @@ export class TextDetail {
 	 * @param text
 	 * @returns 与数据库中的md5值相同则返回true，否则返回false
 	 */
-	async verify(text: string) {
-		if (window.sessionStorage.getItem(this.id.toString())) {
-			return true;
-		}
-		const md5 = generateTextMd5(text);
-		window.sessionStorage.setItem(this.metaBook.id.toString(), 'true');
-		if (await this.sqlOperator.verifyBook(this.id, md5)) {
-			return true;
-		} else {
-			await this.sqlOperator.updateMd5(this.id, md5);
-			return false;
-		}
+	// async verify(text: string) {
+	// 	if (window.sessionStorage.getItem(this.id.toString())) {
+	// 		return true;
+	// 	}
+	// 	const md5 = generateTextMd5(text);
+	// 	window.sessionStorage.setItem(this.metaBook.id.toString(), 'true');
+	// 	if (await this.sqlOperator.verifyBook(this.id, md5)) {
+	// 		return true;
+	// 	} else {
+	// 		await this.sqlOperator.updateMd5(this.id, md5);
+	// 		return false;
+	// 	}
+	// }
+	private binaryToGBK(str: string) {
+		return iconv.decode(str, 'gbk');
 	}
-
 	async clearMarkInfo() {
 		await this.sqlOperator.clearMarkInfo(this.id);
 	}
@@ -147,6 +182,17 @@ export class TextDetail {
 		}
 		return chapter;
 	}
+
+	private decodeLine(index: number) {
+		if (this.content[index].isDecoded) {
+			return this.content[index];
+		}
+		this.content[index].content = this.binaryToGBK(
+			this.content[index].content
+		).replaceAll('\x00', '');
+		this.content[index].isDecoded = true;
+		return this.content[index];
+	}
 	reParseCatalog(reg: string) {
 		this.metaBook.reg = reg;
 		this.regExp = new RegExp(String.raw`${reg}`, 'g');
@@ -154,9 +200,25 @@ export class TextDetail {
 		for (let i = 0; i < this.content.length; i++) {
 			this.parseCatalog(this.content[i]);
 		}
+		this.cacheCatalog();
 		this.sqlOperator.updateReg(this.metaBook.id, reg);
 	}
+
+	initGBKCatalog() {
+		if (this.encoding === 'utf8' || this.catalogIsCached) {
+			return;
+		}
+		for (let i = 0; i < this.content.length; i++) {
+			this.decodeLine(i);
+			this.parseCatalog(this.content[i]);
+		}
+		this.cacheCatalog();
+	}
 	getCatalog() {
+		catalogCache.setCachedCatalog(
+			this.id,
+			JSON.stringify(this.catalog.map((e) => e.index))
+		);
 		return this.catalog;
 	}
 

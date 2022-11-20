@@ -13,8 +13,10 @@ import { deleteUselessWords, getEpubTitle } from '../functions/functions';
 import { sqliteOperator } from '../request/sqliteOperator';
 import { DataOperator } from './DataOperator';
 import { EpubDetail } from './EpubDetail';
+import { catalogCache } from './indexDB';
 import { TextDetail } from './TextDetail';
-const fs = window.require('fs/promises');
+const fsp = window.require('fs/promises');
+const fs = window.require('fs');
 const iconv = window.require('iconv-lite');
 iconv.skipDecodeWarning = true;
 const splitWords = (str: string, len: number) => {
@@ -60,15 +62,41 @@ export class ReaderOperator extends DataOperator<
 				window.sessionStorage.getItem('currentBook')!
 			);
 		}
-		let text = await fs.readFile(this.currentBook!.path, 'utf-8');
-		if (this.isNotUtf8(text)) {
-			text = this.gbkToUtf8(
-				await fs.readFile(this.currentBook!.path, 'binary')
-			);
-		}
-		const book = this.parseBook(text);
-		const changed = !(await book.verify(text));
-		return { book, changed };
+
+		return new Promise((resolve) => {
+			const readStream = fs.createReadStream(this.currentBook!.path, {
+				encoding: 'utf8',
+				autoClose: true,
+				start: 0,
+				end: 100
+			});
+			readStream.on('data', (data) => {
+				resolve(data);
+			});
+		})
+			.then((res) => {
+				return this.isNotUtf8(res as string);
+			})
+			.then(async (isNotUtf8) => {
+				let text: string;
+				if (isNotUtf8) {
+					text = await fsp.readFile(this.currentBook!.path, 'binary');
+				} else {
+					text = await fsp.readFile(this.currentBook!.path, 'utf8');
+				}
+
+				const res = (await catalogCache.getCachedCatalog(
+					this.currentBook!.id
+				)) as string;
+				const catalog = JSON.parse(res) as any as number[];
+				const book = this.parseBook(
+					text,
+					isNotUtf8 ? 'gbk' : 'utf8',
+					catalog
+				);
+				const changed = false;
+				return { book, changed };
+			});
 	}
 
 	async loadEpub() {
@@ -84,11 +112,19 @@ export class ReaderOperator extends DataOperator<
 		const book = new EpubDetail(epubBook, this.currentBook, this.sql);
 		return book;
 	}
-	private parseBook(text: string) {
-		const book = new TextDetail(this.currentBook!, this.sql);
+	private parseBook(
+		text: string,
+		encoding: 'gbk' | 'utf8',
+		catalog: number[]
+	) {
+		const book = new TextDetail(
+			this.currentBook!,
+			this.sql,
+			encoding,
+			!!catalog.length
+		);
 		const lines = text.split('\n');
 		let lineNum = 0;
-		let paragraphIndex = 0;
 		let continuousBlankLine = 0;
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
@@ -96,18 +132,18 @@ export class ReaderOperator extends DataOperator<
 			if (len && line !== DOUBLE_SPACE) {
 				continuousBlankLine = 0;
 				const words = [] as TextLine[];
-				const arr = splitWords(line, this.lettersOfEachLine);
+				const arr = splitWords(
+					line,
+					this.lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
+				);
 				for (let i = 0; i < arr.length; i++) {
 					const item = arr[i];
 					words.push({
 						index: lineNum++,
 						content: `${item}`,
 						className: ['text-line'],
-						paragraphIndex:
-							item.length < this.lettersOfEachLine
-								? paragraphIndex
-								: paragraphIndex++,
-						parent: book
+						parent: book,
+						isDecoded: encoding === 'utf8'
 					});
 				}
 				book.addContent(words);
@@ -120,9 +156,13 @@ export class ReaderOperator extends DataOperator<
 				index: lineNum++,
 				content: '',
 				className: ['text-br'],
-				paragraphIndex: -1,
-				parent: book
+				parent: book,
+				isDecoded: encoding === 'utf8'
 			});
+		}
+		book.parseCachedCatalog(catalog);
+		if (!catalog.length && encoding === 'utf8') {
+			book.cacheCatalog();
 		}
 		return book;
 	}
@@ -134,9 +174,6 @@ export class ReaderOperator extends DataOperator<
 		return false;
 	}
 
-	private gbkToUtf8(str: string) {
-		return iconv.decode(str, 'gbk');
-	}
 	async addNewPack(
 		data:
 			| { path: string; cover?: string | undefined; title: string }

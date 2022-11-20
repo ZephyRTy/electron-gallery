@@ -12,27 +12,22 @@
 		"@electron/remote": "^2.0.8",
 		"@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
 		"@svgr/webpack": "^5.5.0",
-		"@testing-library/jest-dom": "^5.16.2",
 		"@testing-library/react": "^12.1.4",
 		"@testing-library/user-event": "^13.5.0",
 		"@types/node": "^16.11.26",
 		"@types/react": "^18.0.9",
 		"@types/react-dom": "^18.0.3",
-		"antd": "^4.19.2",
 		"aws-sdk": "^2.1245.0",
 		"babel-jest": "^27.4.2",
 		"babel-plugin-named-asset-import": "^0.3.8",
 		"babel-preset-react-app": "^10.0.1",
-		"better-sqlite3": "^7.6.2",
 		"bfj": "^7.0.2",
 		"browserslist": "^4.18.1",
 		"camelcase": "^6.2.1",
 		"case-sensitive-paths-webpack-plugin": "^2.4.0",
 		"cheerio": "^1.0.0-rc.10",
 		"crypto-browserify": "^3.12.0",
-		"css-loader": "^6.5.1",
 		"css-minimizer-webpack-plugin": "^3.2.0",
-		"dexie": "^3.2.2",
 		"dotenv": "^10.0.0",
 		"dotenv-expand": "^5.1.0",
 		"electron-drag": "^2.0.0",
@@ -44,11 +39,9 @@
 		"file-loader": "^6.2.0",
 		"fs-extra": "^10.1.0",
 		"html-webpack-plugin": "^5.5.0",
-		"https-proxy-agent": "^5.0.1",
 		"iconv-lite": "^0.6.3",
 		"identity-obj-proxy": "^3.0.0",
 		"immutable": "^4.0.0",
-		"iohook": "^0.9.3",
 		"jszip": "^3.10.1",
 		"lodash": "^4.17.21",
 		"mini-css-extract-plugin": "^2.4.5",
@@ -97,7 +90,7 @@
 		"package": "npm run build && npm run pack",
 		"package:esbuild": "npm run esbuild && npm run pack",
 		"package:bishe": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photo.ico --out=app/ --asar --app-version=0.0.1 --overwrite",
-		"package:electron-builder": "npm run esbuild && electron-builder --dir"
+		"package:electron-builder": "npm run build && electron-builder --dir"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -246,7 +239,7 @@
 			}
 		],
 		"files": [
-			"dist/",
+			"build/",
 			"main.js"
 		],
 		"nsis": {

@@ -39,7 +39,7 @@ function createWindow() {
 			`http://localhost:${parseInt(process.env.PORT, 10) || 8097}/`
 		);
 	} else {
-		mainWindow.webContents.openDevTools({ mode: 'detach' });
+		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
 				pathname: path.join(__dirname, 'build', 'index.html'),
@@ -87,7 +87,7 @@ if (!gotTheLock) {
 			mainWindow.show();
 		}
 	});
-	app.disableHardwareAcceleration();
+	//app.disableHardwareAcceleration();
 	app.on('ready', createWindow);
 
 	// 所有窗口关闭时退出应用.

@@ -258,6 +258,7 @@ export const TextContent = () => {
 			setBook(book);
 			setContent(book.getContent(start, start + contentRange));
 			setBottom((book.length - contentRange) * lineHeight);
+			book.initGBKCatalog();
 			if (changed) {
 				setAlert(true);
 			}
