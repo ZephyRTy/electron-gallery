@@ -12,30 +12,26 @@
 		"@electron/remote": "^2.0.8",
 		"@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
 		"@svgr/webpack": "^5.5.0",
-		"@testing-library/jest-dom": "^5.16.2",
 		"@testing-library/react": "^12.1.4",
 		"@testing-library/user-event": "^13.5.0",
 		"@types/node": "^16.11.26",
 		"@types/react": "^18.0.9",
 		"@types/react-dom": "^18.0.3",
-		"antd": "^4.19.2",
 		"aws-sdk": "^2.1245.0",
 		"babel-jest": "^27.4.2",
 		"babel-plugin-named-asset-import": "^0.3.8",
 		"babel-preset-react-app": "^10.0.1",
-		"better-sqlite3": "^7.6.2",
 		"bfj": "^7.0.2",
 		"browserslist": "^4.18.1",
 		"camelcase": "^6.2.1",
 		"case-sensitive-paths-webpack-plugin": "^2.4.0",
 		"cheerio": "^1.0.0-rc.10",
 		"crypto-browserify": "^3.12.0",
-		"css-loader": "^6.5.1",
 		"css-minimizer-webpack-plugin": "^3.2.0",
-		"dexie": "^3.2.2",
 		"dotenv": "^10.0.0",
 		"dotenv-expand": "^5.1.0",
 		"electron-drag": "^2.0.0",
+		"epubjs": "^0.3.93",
 		"esbuild": "^0.15.12",
 		"esbuild-plugin-sass": "^1.0.1",
 		"eslint-config-react-app": "^7.0.0",
@@ -46,6 +42,7 @@
 		"iconv-lite": "^0.6.3",
 		"identity-obj-proxy": "^3.0.0",
 		"immutable": "^4.0.0",
+		"jszip": "^3.10.1",
 		"lodash": "^4.17.21",
 		"mini-css-extract-plugin": "^2.4.5",
 		"mock-aws-s3": "^4.0.2",
@@ -76,7 +73,6 @@
 		"syill": "^0.1.1",
 		"terser-webpack-plugin": "^5.2.5",
 		"text-metrics": "^3.0.0",
-		"typescript": "^4.6.2",
 		"web-vitals": "^2.1.4",
 		"webpack": "^5.64.4",
 		"webpack-dev-server": "^4.6.0",
@@ -94,7 +90,7 @@
 		"package": "npm run build && npm run pack",
 		"package:esbuild": "npm run esbuild && npm run pack",
 		"package:bishe": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photo.ico --out=app/ --asar --app-version=0.0.1 --overwrite",
-		"package:electron-builder": "npm run esbuild && electron-builder --dir"
+		"package:electron-builder": "npm run build && electron-builder --dir"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -140,7 +136,6 @@
 		"electron-devtools-installer": "^3.2.0",
 		"esbuild-plugin-svg": "^0.1.0",
 		"esbuild-plugin-svgr": "^1.0.1",
-		"esbuild-scss-modules-plugin": "^1.1.0",
 		"eslint": "^8.18.0",
 		"eslint-config-airbnb": "^19.0.4",
 		"eslint-plugin-import": "^2.26.0",
@@ -155,12 +150,14 @@
 		"koa-static": "^5.0.0",
 		"lighthouse": "^9.6.3",
 		"livereload": "^0.9.3",
+		"node-abi": "^3.28.0",
 		"node-sass": "^7.0.1",
 		"postcss-modules": "^6.0.0",
 		"rollup": "^2.70.1",
 		"sass": "^1.56.1",
 		"sass-loader": "^12.6.0",
 		"ts-node": "^10.9.1",
+		"typescript": "^4.6.2",
 		"typescript-plugin-css-modules": "^3.4.0"
 	},
 	"jest": {
@@ -214,6 +211,21 @@
 		],
 		"resetMocks": true
 	},
+	"iohook": {
+		"targets": [
+			"node-83",
+			"electron-101"
+		],
+		"platforms": [
+			"win32",
+			"darwin",
+			"linux"
+		],
+		"arches": [
+			"x64",
+			"ia32"
+		]
+	},
 	"build": {
 		"appId": "com.media.reader",
 		"productName": "YReader",
@@ -227,7 +239,7 @@
 			}
 		],
 		"files": [
-			"dist/",
+			"build/",
 			"main.js"
 		],
 		"nsis": {
@@ -275,4 +287,3 @@
 		}
 	}
 }
-

@@ -80,21 +80,24 @@ export abstract class DataOperator<
 	) {
 		this.bookmarkModel = createBookmarkModel<bookmark>(this.sql);
 		this.starModel = createStarModel<normal>(this.sql);
-		this.sql.getCount().then((res) => {
-			this.total = res;
-		});
-		this.sql.select<normal, folder>([], Mode.Stared).then((res) => {
-			this.starModel.data = res as normal[];
-		});
-		this.sql.select<normal, folder>([], Mode.Bookmark).then((res) => {
-			this.bookmarkModel.data = res as unknown as bookmark[];
-		});
-		this.sql.select<normal, folder>([], Mode.ShowDirs).then((res) => {
-			this.directories = res as normal[];
-		});
-		this.sql.mapDir().then((res) => {
-			this.dirMap = Map(res);
-		});
+		(async () => {
+			await this.sql.checkExternalDriver();
+			this.sql.getCount().then((res) => {
+				this.total = res;
+			});
+			this.sql.select<normal, folder>([], Mode.Stared).then((res) => {
+				this.starModel.data = res as normal[];
+			});
+			this.sql.select<normal, folder>([], Mode.Bookmark).then((res) => {
+				this.bookmarkModel.data = res as unknown as bookmark[];
+			});
+			this.sql.select<normal, folder>([], Mode.ShowDirs).then((res) => {
+				this.directories = res as normal[];
+			});
+			this.sql.mapDir().then((res) => {
+				this.dirMap = Map(res);
+			});
+		})();
 	} //获取图包
 	protected async getPacksNormally(page: number) {
 		let res = this.fileCache.data;
@@ -243,7 +246,6 @@ export abstract class DataOperator<
 		];
 	}
 	async getPacks(page: number, url: string): Promise<[normal[], number]> {
-		this.external = !!(await this.sql.checkExternalDriver());
 		let query: {
 			search?: string;
 			directory?: string;
@@ -310,13 +312,13 @@ export abstract class DataOperator<
 	abstract packWillOpen(packId: number, change: boolean);
 
 	async UpdateBookmark(newBookmark: bookmark, marked: boolean = true) {
+		await this.bookmarkModel.update(newBookmark, marked);
 		if (hasCover(newBookmark)) {
 			await compress(
 				newBookmark.path + newBookmark.cover,
 				getBookmarkThumb(newBookmark)
 			);
 		}
-		await this.bookmarkModel.update(newBookmark, marked);
 	}
 
 	//更新选区
@@ -381,7 +383,7 @@ export abstract class DataOperator<
 	modeType(mode: Mode) {
 		switch (mode) {
 			case Mode.Init:
-				return 'Integration';
+				return '首页';
 			case Mode.Detail:
 				return 'Detail';
 			case Mode.Bookmark:
@@ -397,7 +399,7 @@ export abstract class DataOperator<
 					)?.title ?? 'Directories'
 				);
 			default:
-				return 'Integration';
+				return '首页';
 		}
 	}
 
@@ -522,5 +524,19 @@ export abstract class DataOperator<
 		) {
 			await this.load();
 		}
+	}
+
+	removePack(pack: normal, shouldDelete = false) {
+		if (pack.parent) {
+			this.removeFileFromDir(pack.id, pack.parent);
+		}
+		this.deletePack(pack.id);
+		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
+		this.starModel.remove(pack.id);
+		this.bookmarkModel.remove(pack.id);
+		this.searchCache.res = this.searchCache.res.filter(
+			(e) => e.id !== pack.id
+		);
+		this.refresh();
 	}
 }

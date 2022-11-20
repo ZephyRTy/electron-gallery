@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Back } from '../../../icon/back.svg';
@@ -10,7 +10,6 @@ import galleryConfig, {
 	imageCountOfSinglePage
 } from '../../../types/constant';
 import { GalleryOperator } from '../../../utils/data/galleryOperator';
-import { openInExplorer } from '../../../utils/functions/process';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { OpenInExplorerBtn } from '../Buttons';
 import { Loading } from '../Loading';
@@ -23,7 +22,12 @@ import { DetailContainer } from './DetailContainer';
 const fs = window.require('fs');
 const path = window.require('path');
 const parseToInt = (str: string) => {
-	return Number(/[0-9]+/.exec(str)?.[0]) ?? NaN;
+	const arr = str.matchAll(/\d+/g);
+	let result = '';
+	for (let i of arr) {
+		result += i[0];
+	}
+	return parseInt(result, 10);
 };
 //const a = Stream;
 const endsWith = (str: string, ...arg: string[]) => {
@@ -50,10 +54,7 @@ export const PackDetail = () => {
 	const length = useRef({ value: 0 }).current;
 	const [total, setTotal] = useState(0);
 	const bookmarkToast = useRef((arg: boolean) => {});
-	const handleOpenFolder = useCallback(() => {
-		if (!pack) return;
-		openInExplorer(currentPath.current);
-	}, [pack]);
+
 	useEffect(() => {
 		fileOperator.titleUpdate();
 		(document.scrollingElement as any).scrollTop = 0;
@@ -87,8 +88,8 @@ export const PackDetail = () => {
 						a: { index: number; src: string },
 						b: { index: number; src: string }
 					) => {
-						let formatA = a.src.split('.').at(-1),
-							formatB = b.src.split('.').at(-1);
+						let formatA = path.extname(a.src),
+							formatB = path.extname(b.src);
 						if (formatA !== formatB) {
 							return formatA! > formatB! ? 1 : -1;
 						}
@@ -127,7 +128,10 @@ export const PackDetail = () => {
 				return;
 			}
 			let img = new Image();
-			img.src = v.src;
+			img.src = v.src
+				.replaceAll(/%/g, encodeURIComponent('%'))
+				.replaceAll(/\s/g, encodeURIComponent(' '))
+				.replaceAll(/#/g, encodeURIComponent('#'));
 			img.onload = () => {
 				cache.push({ img, index: v.index });
 
@@ -191,7 +195,7 @@ export const PackDetail = () => {
 						fileOperator={fileOperator}
 						pack={pack}
 					/>
-					<OpenInExplorerBtn handleClick={handleOpenFolder} />
+					<OpenInExplorerBtn filePath={currentPath?.current} />
 				</Sidebar>
 			</SidebarContainer>
 			<Toast handler={bookmarkToast} message="添加书签成功！" />

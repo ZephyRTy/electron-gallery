@@ -45,6 +45,12 @@ esbuild
 			'process.env.DEBUG': true,
 			'process.env.PORT': 8097
 		},
+		loader: {
+			'.png': 'file',
+			'.jpg': 'file',
+			'.gif': 'file',
+			'.webp': 'file'
+		},
 		// 启动轮询的监听模式
 		watch: {
 			onRebuild(error) {

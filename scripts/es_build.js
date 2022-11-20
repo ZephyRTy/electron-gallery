@@ -12,6 +12,12 @@ require('esbuild')
 		entryPoints: ['./src/index.tsx'],
 		bundle: true,
 		outdir: './dist',
+		loader: {
+			'.png': 'file',
+			'.jpg': 'file',
+			'.gif': 'file',
+			'.webp': 'file'
+		},
 		define: {
 			'process.env.NODE_ENV': '"production"',
 			'process.env.DEBUG': false
@@ -57,10 +63,6 @@ require('esbuild')
     <div id="root">  </div>
   </body>
   <script type="module" src="./index.js"></script>
-  <script>
-    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
-    ':35729/livereload.js?snipver=1"></' + 'script>')
-  </script>
   </script>
  </html>
  `

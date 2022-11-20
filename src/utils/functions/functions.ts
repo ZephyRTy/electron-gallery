@@ -1,3 +1,4 @@
+import { Book } from 'epubjs';
 import { lineHeight, SPACE_CODE } from '../../types/constant';
 import {
 	LineSelection,
@@ -240,3 +241,22 @@ export const generateTextMd5 = (text: string): string => {
 	const md5 = crypto.createHash('md5');
 	return md5.update(text).digest('hex');
 };
+
+export const getEpubTitle = async (filePath: string): Promise<string> => {
+	const book = new Book();
+	await book.open(filePath);
+	return book.packaging.metadata.title;
+};
+
+export function debounce(fn: Function, delay: number) {
+	let timer: any = null;
+	// eslint-disable-next-line no-unused-vars
+	return function (this: any, ...args: any[]) {
+		if (timer) {
+			clearTimeout(timer);
+		}
+		timer = setTimeout(() => {
+			fn.apply(this, arguments);
+		}, delay);
+	};
+}

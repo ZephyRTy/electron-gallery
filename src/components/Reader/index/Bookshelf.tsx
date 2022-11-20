@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useController } from 'syill';
 import { readerConfig } from '../../../types/constant';
-import { Book } from '../../../types/global';
+import { MetaBook } from '../../../types/global';
 import { readerOperator as readerOp } from '../../../utils/data/galleryOperator';
 import {
 	isBookDir,
@@ -26,12 +26,13 @@ import { ShelfBookFolder } from './BookFolder';
 import { ShelfBookmark } from './BookmarkOfBook';
 import { ShelfItem } from './ShelfRow';
 export const Bookshelf = () => {
-	const [books, setBooks] = useState([] as Book[]);
+	const [books, setBooks] = useState([] as MetaBook[]);
 	const [total, setTotal] = useState(0);
 	const readerOperator = useRef(readerOp).current;
 	const [searchParam] = useSearchParams();
 	const [refresh, setRefresh] = useState(false);
 	const [inSelect, setInSelect] = useState(0);
+
 	const [, setDirMapVis] = useController(dirMapVisibleStore);
 	const page = parseInt(
 		searchParam.get('page') ? (searchParam.get('page') as string) : '1',
@@ -85,17 +86,17 @@ export const Bookshelf = () => {
 			<FileDrop itemType="file" operator={readerOperator} />
 			<main className={styles['bookshelf-container']}>
 				<div className={styles['bookshelf-grid']}>
-					{books.map((e, i) => {
+					{books.map((e) => {
 						if (isBookmarkOfBook(e)) {
-							return <ShelfBookmark bookItem={e} key={i} />;
+							return <ShelfBookmark bookItem={e} key={e.id} />;
 						} else if (isBookDir(e)) {
-							return <ShelfBookFolder bookItem={e} key={i} />;
+							return <ShelfBookFolder bookItem={e} key={e.id} />;
 						}
 						return (
 							<ShelfItem
 								bookItem={e}
 								inSelect={inSelect}
-								key={i}
+								key={e.id}
 								setInSelect={setInSelect}
 							/>
 						);

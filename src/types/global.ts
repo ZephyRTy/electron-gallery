@@ -75,7 +75,7 @@ export interface TextLine {
 	index: number; //行号
 	content: string;
 	className: string[];
-	paragraphIndex: number;
+	isDecoded: boolean;
 	readonly parent: TextDetail;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;
@@ -83,12 +83,19 @@ export interface Chapter {
 	title: string;
 	index: number;
 }
-export interface Book extends BasicData {
+
+export interface EpubChapter {
+	title: string;
+	href: string;
+	id: string;
+}
+export interface MetaBook extends BasicData {
 	reg: string;
+	bookCover?: string;
 }
 
 export interface BookDirectory extends BasicFolder {}
-export interface BookmarkOfBook extends Book, BasicBookmark {}
+export interface BookmarkOfBook extends MetaBook, BasicBookmark {}
 /**
  * 每一行选区的逻辑形式
  */
@@ -124,4 +131,11 @@ export interface MarkAnchor {
 	anchorIndex: number;
 	content: string;
 	timestamp: string;
+}
+
+export interface EpubMark {
+	cfi: string;
+	timestamp: string;
+	comment: string;
+	data: string;
 }

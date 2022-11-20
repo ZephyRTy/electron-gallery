@@ -1,20 +1,23 @@
 /* eslint-disable camelcase */
+import { Book } from 'epubjs';
 import { Map } from 'immutable';
 import { SPACE_CODE } from '../../types/constant';
 import {
-	Book,
 	BookDirectory,
 	BookmarkOfBook,
+	MetaBook,
 	Mode,
 	TextLine
 } from '../../types/global';
-import { deleteUselessWords } from '../functions/functions';
+import { deleteUselessWords, getEpubTitle } from '../functions/functions';
 import { sqliteOperator } from '../request/sqliteOperator';
 import { DataOperator } from './DataOperator';
+import { EpubDetail } from './EpubDetail';
+import { catalogCache } from './indexDB';
 import { TextDetail } from './TextDetail';
-const fs = window.require('fs/promises');
+const fsp = window.require('fs/promises');
+const fs = window.require('fs');
 const iconv = window.require('iconv-lite');
-const path = window.require('path');
 iconv.skipDecodeWarning = true;
 const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
@@ -24,18 +27,20 @@ const splitWords = (str: string, len: number) => {
 	}
 	return result;
 };
-export const isText = (file: string) => file.endsWith('.txt');
+export const isText = (file: string) =>
+	file.toLocaleLowerCase().endsWith('.txt') ||
+	file.toLocaleLowerCase().endsWith('.epub');
 // eslint-disable-next-line no-unused-vars
 const DOUBLE_SPACE = SPACE_CODE + SPACE_CODE;
 
 export class ReaderOperator extends DataOperator<
-	Book,
+	MetaBook,
 	BookmarkOfBook,
 	BookDirectory
 > {
 	private static instance: ReaderOperator;
 	protected override sql = sqliteOperator;
-	private currentBook: Book | null = null;
+	private currentBook: MetaBook | null = null;
 	private constructor() {
 		super({ database: 'book', tableName: 'book_list' }, sqliteOperator);
 	}
@@ -57,21 +62,69 @@ export class ReaderOperator extends DataOperator<
 				window.sessionStorage.getItem('currentBook')!
 			);
 		}
-		let text = await fs.readFile(this.currentBook!.path, 'utf-8');
-		if (this.isNotUtf8(text)) {
-			text = this.gbkToUtf8(
-				await fs.readFile(this.currentBook!.path, 'binary')
+
+		return new Promise((resolve) => {
+			const readStream = fs.createReadStream(this.currentBook!.path, {
+				encoding: 'utf8',
+				autoClose: true,
+				start: 0,
+				end: 100
+			});
+			readStream.on('data', (data) => {
+				resolve(data);
+			});
+		})
+			.then((res) => {
+				return this.isNotUtf8(res as string);
+			})
+			.then(async (isNotUtf8) => {
+				let text: string;
+				if (isNotUtf8) {
+					text = await fsp.readFile(this.currentBook!.path, 'binary');
+				} else {
+					text = await fsp.readFile(this.currentBook!.path, 'utf8');
+				}
+
+				const res = (await catalogCache.getCachedCatalog(
+					this.currentBook!.id
+				)) as string;
+				const catalog = JSON.parse(res) as any as number[];
+				const book = this.parseBook(
+					text,
+					isNotUtf8 ? 'gbk' : 'utf8',
+					catalog
+				);
+				const changed = false;
+				return { book, changed };
+			});
+	}
+
+	async loadEpub() {
+		if (!this.currentBook) {
+			this.currentBook = JSON.parse(
+				window.sessionStorage.getItem('currentBook')!
 			);
 		}
-		const book = this.parseBook(text);
-		const changed = !(await book.verify(text));
-		return { book, changed };
+		if (!this.currentBook?.path.toLocaleLowerCase().endsWith('.epub')) {
+			throw new Error('not epub');
+		}
+		const epubBook = new Book(this.currentBook.path);
+		const book = new EpubDetail(epubBook, this.currentBook, this.sql);
+		return book;
 	}
-	private parseBook(text: string) {
-		const book = new TextDetail(this.currentBook!, this.sql);
+	private parseBook(
+		text: string,
+		encoding: 'gbk' | 'utf8',
+		catalog: number[]
+	) {
+		const book = new TextDetail(
+			this.currentBook!,
+			this.sql,
+			encoding,
+			!!catalog.length
+		);
 		const lines = text.split('\n');
 		let lineNum = 0;
-		let paragraphIndex = 0;
 		let continuousBlankLine = 0;
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
@@ -79,18 +132,18 @@ export class ReaderOperator extends DataOperator<
 			if (len && line !== DOUBLE_SPACE) {
 				continuousBlankLine = 0;
 				const words = [] as TextLine[];
-				const arr = splitWords(line, this.lettersOfEachLine);
+				const arr = splitWords(
+					line,
+					this.lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
+				);
 				for (let i = 0; i < arr.length; i++) {
 					const item = arr[i];
 					words.push({
 						index: lineNum++,
 						content: `${item}`,
 						className: ['text-line'],
-						paragraphIndex:
-							item.length < this.lettersOfEachLine
-								? paragraphIndex
-								: paragraphIndex++,
-						parent: book
+						parent: book,
+						isDecoded: encoding === 'utf8'
 					});
 				}
 				book.addContent(words);
@@ -103,9 +156,13 @@ export class ReaderOperator extends DataOperator<
 				index: lineNum++,
 				content: '',
 				className: ['text-br'],
-				paragraphIndex: -1,
-				parent: book
+				parent: book,
+				isDecoded: encoding === 'utf8'
 			});
+		}
+		book.parseCachedCatalog(catalog);
+		if (!catalog.length && encoding === 'utf8') {
+			book.cacheCatalog();
 		}
 		return book;
 	}
@@ -117,9 +174,6 @@ export class ReaderOperator extends DataOperator<
 		return false;
 	}
 
-	private gbkToUtf8(str: string) {
-		return iconv.decode(str, 'gbk');
-	}
 	async addNewPack(
 		data:
 			| { path: string; cover?: string | undefined; title: string }
@@ -143,25 +197,30 @@ export class ReaderOperator extends DataOperator<
 		let result = [] as string[];
 		let successCount = 0;
 		let success = [] as Promise<any>[];
-		data.forEach((e, i) => {
+		for (const [i, e] of data.entries()) {
 			if (!e.path || !e.title || !isText(e.path)) {
 				return;
 			}
 			//NOTE 正式发布时删除
-			const novelPath = path.resolve('D:/小说', path.basename(e.path));
-			if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
-				fs.renameSync(e.path, novelPath);
-				e.path = novelPath;
+			// const novelPath = path.resolve('D:/小说', path.basename(e.path));
+			// if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
+			// 	await fs.rename(e.path, novelPath, () => {});
+			// 	e.path = novelPath;
+			// }
+			let title = e.title;
+			if (e.path.endsWith('.epub')) {
+				title = await getEpubTitle(e.path);
 			}
 			let newPack = {
 				path: e.path,
 				title: deleteUselessWords(
-					e.title,
+					title,
 					'soushu2022.com@',
 					'[搜书吧]',
 					'-soushu2022.com-[搜书吧网址]',
 					'-soushu555.org-[搜书吧网址]',
-					'.txt'
+					'.txt',
+					'.epub'
 				),
 				stared: 0 as 0
 			};
@@ -178,7 +237,7 @@ export class ReaderOperator extends DataOperator<
 					}
 				})
 			);
-		});
+		}
 		return Promise.all(success).then(() => {
 			if (successCount) {
 				result.unshift(`${successCount}个文件:::成功`);
@@ -203,10 +262,20 @@ export class ReaderOperator extends DataOperator<
 		return -1;
 	}
 
+	override removeFileFromDir(packId: number, dirId: number) {
+		this.sql.updateDir(dirId, packId, 0).then(() => {
+			this.dirMap.get(dirId.toString())!.count--;
+			this.currentPacks = this.currentPacks.filter(
+				(v) => v.id !== packId
+			);
+			this.refresh();
+		});
+		this.switchMode(Mode.Init);
+	}
 	packWillOpen() {
 		return this.currentBook;
 	}
-	mountBook(book: Book) {
+	mountBook(book: MetaBook) {
 		window.sessionStorage.setItem('currentBook', JSON.stringify(book));
 		this.titleWillUpdate(book.title);
 		this.currentBook = book;

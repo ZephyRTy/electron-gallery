@@ -34,7 +34,8 @@ const {
 	r18: galleryR18,
 	proxyEnabled,
 	proxy,
-	domainOf24fa
+	domainOf24fa,
+	maxRetryCount
 } = galleryConfig;
 export const defaultCover = 'D:\\webDemo\\desktop-reader\\public\\blank.jpg';
 export const getBookmarkThumb = (bookmark: ImageBookmark) => {

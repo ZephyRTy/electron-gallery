@@ -5,6 +5,7 @@ import {
 	BasicData,
 	BookmarkOfBook,
 	DirectoryInfo,
+	EpubMark,
 	ImageBookmark,
 	ImageDirectory,
 	Mode,
@@ -93,6 +94,14 @@ export class SqliteOperatorForBook implements RequestOperator {
 			PRIMARY KEY (m_id, anchor_index, anchor_offset),
 			CONSTRAINT fk_mark_id FOREIGN KEY (m_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
 		  )`;
+		const stmt5 = `CREATE TABLE if not exists epub_mark (
+			m_id int NOT NULL,
+			m_timeStamp timestamp NULL DEFAULT NULL,
+			cfi varchar(100) NOT NULL,
+			comment varchar(600) default NULL,
+			PRIMARY KEY (m_id, cfi),
+			CONSTRAINT fk_epub_mark_id FOREIGN KEY (m_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
+		  )`;
 		this.db.run(stmt1, (arg: any) => {
 			if (arg) console.log(arg);
 		});
@@ -103,6 +112,9 @@ export class SqliteOperatorForBook implements RequestOperator {
 			if (arg) console.log(arg);
 		});
 		this.db.run(stmt4, (arg: any) => {
+			if (arg) console.log(arg);
+		});
+		this.db.run(stmt5, (arg: any) => {
 			if (arg) console.log(arg);
 		});
 	}
@@ -131,6 +143,30 @@ export class SqliteOperatorForBook implements RequestOperator {
 									comment: e.comment,
 									timestamp: e.m_timeStamp
 								} as SelectionInfo;
+							})
+						);
+					}
+				}
+			);
+		});
+	}
+
+	async getEpubMarks(bookId: number): Promise<EpubMark[]> {
+		return new Promise((resolve, reject) => {
+			this.db.all(
+				`select * from epub_mark where m_id = ${bookId}`,
+				(err: any, res: any) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(
+							res.map((e) => {
+								return {
+									cfi: e.cfi,
+									comment: e.comment,
+									timestamp: e.m_timeStamp,
+									data: ''
+								} as EpubMark;
 							})
 						);
 					}
@@ -428,45 +464,26 @@ export class SqliteOperatorForBook implements RequestOperator {
 	async updateDir(
 		dirId: number,
 		packId: number,
-		status: 0 | 1,
-		cover?: string
+		status: 0 | 1 //0: remove, 1: add
 	) {
-		let sql = `update ${this.mainTableName} set  parent = ? where id = ?`;
-		let sqlParam = [status ? dirId : null, packId] as [
-			number | null,
-			number
-		];
-		if (cover) {
-			if (status) {
-				this.db.run(
-					'update directory set cover_id = ? where  dir_id = ?',
-					[packId, dirId],
-					(err: any) => {
-						if (err) {
-							console.error(err);
-						}
-					}
-				);
-			} else {
-				this.db.run(
-					`update directory, (select id, title, parent from pack_list where id in 
-						(select max(id) from pack_list where parent > 0 group by parent having id != ?)) as t
-						set cover_id = t.id where  dir_id = ? and t.parent = dir_id`,
-					[packId, dirId],
-					(err: any) => {
-						if (err) {
-							console.error(err);
-						}
-					}
-				);
-			}
+		let stmt;
+		if (status) {
+			stmt = this.db.prepare(
+				`update ${this.mainTableName} set  parent = ? where id = ?`,
+				[dirId, packId]
+			);
+		} else {
+			stmt = this.db.prepare(
+				'update book_list  set parent = null where id = ?',
+				[packId]
+			);
 		}
 		return new Promise((resolve, reject) => {
-			this.db.run(sql, sqlParam, (err: any, res: any) => {
+			stmt.run((err: any) => {
 				if (err) {
 					reject(err);
 				}
-				resolve(res);
+				resolve('ok');
 			});
 		});
 	}
@@ -492,19 +509,18 @@ export class SqliteOperatorForBook implements RequestOperator {
 	}
 
 	insertDir(newDir: { dir_title: string }): Promise<number | null> {
-		let sql = 'insert into directory (dir_title, update_time) values (?,?)';
+		let stmt = this.db.prepare(
+			'insert into directory (dir_title, update_time) values (?,?)',
+			[newDir.dir_title, formatDate(new Date())]
+		);
 		return new Promise((resolve, reject) => {
-			this.db.get(
-				sql,
-				[newDir.dir_title, formatDate(new Date())],
-				(err: any, res: any) => {
-					if (err) {
-						console.error(err);
-						reject(null);
-					}
-					resolve(res.lastID as number);
+			stmt.run((err: any) => {
+				if (err) {
+					console.error(err);
+					reject(null);
 				}
-			);
+				resolve(stmt.lastID);
+			});
 		});
 	}
 
@@ -658,7 +674,23 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
+	insertEpubMark(id: number, cfi: string, timestamp: string) {
+		let sql = transformToSQL('epub_mark', {
+			m_id: id,
+			m_timeStamp: timestamp,
+			cfi
+		});
 
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, (err: any, res: any) => {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
 	async removeMark(id: number, selection: SelectionInfo | null) {
 		if (!selection) {
 			throw new Error('selection is null');
@@ -674,6 +706,23 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
+
+	async removeEpubMark(id: number, cfi: string) {
+		if (!cfi) {
+			throw new Error('epubMark is null');
+		}
+		let sql = `delete from epub_mark where m_id = ? and cfi = ?`;
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, [id, cfi], (err: any, res: any) => {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
+
 	renamePack(packID: number, title: string) {
 		let sql = `update ${this.mainTableName} set title = ? where id = ?`;
 		return new Promise((resolve, reject) => {

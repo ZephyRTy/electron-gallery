@@ -13,5 +13,6 @@
 	"overflowNum": "溢出数量",
 	"distanceToUpdate": "更新距离",
 	"fontSize": "字体大小",
-	"3d-animation": "3D效果"
+	"3d-animation": "3D效果",
+	"maxRetryCount": "最大重试次数"
 }

@@ -2,12 +2,19 @@ import galleryConfig, {
 	downloadPath,
 	proxyEnabled
 } from '../../types/constant';
-
+const { promisify } = window.require('util');
+const stream = window.require('stream');
+const pipeline = promisify(stream.pipeline);
 const fs = window.require('fs');
 const request = window.require('request');
-export function getImg(
-	img: { src: string; id: number; title: string; path?: string },
-	deep = 0
+export async function getImg(
+	img: {
+		src: string;
+		id: number;
+		title: string;
+		path?: string;
+	},
+	depth = 0
 ) {
 	let filePath = '';
 	if (img.path) {
@@ -20,43 +27,34 @@ export function getImg(
 	}
 	const proxy = proxyEnabled ? galleryConfig.proxy : undefined;
 	try {
-		request({
-			url: img.src,
-			proxy: proxy,
-			headers: {
-				'User-Agent':
-					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/100.0.1185.36'
-			},
-			timeout: 10 * 1000
-		})
-			.on('error', (err: any) => {
-				if (deep >= 2) {
-					console.error(err);
-					console.log(img.title);
-				} else {
-					getImg(img, deep + 1);
+		await pipeline(
+			request(img.src, {
+				proxy,
+				timeout: {
+					request: 10000
 				}
-			})
-			.pipe(
-				fs
-					.createWriteStream(
-						filePath + `\\${img.title}\\${img.id}.jpg`,
-						{
-							autoClose: true
-						}
-					)
-					.on('error', (err: any) => {
-						console.error(err);
-						console.log(img.src);
-					})
-					.on('close', (err: any) => {
-						if (err) {
-							console.log('写入失败', err);
-						}
-					})
-			);
-	} catch (error) {
-		console.error(error);
-		console.log(img + ' download Error');
+			}),
+			fs
+				.createWriteStream(filePath + `\\${img.title}\\${img.id}.jpg`, {
+					autoClose: true
+				})
+				.on('error', (err: any) => {
+					console.error(err);
+					console.log(img.src);
+				})
+				.on('close', (err: any) => {
+					if (err) {
+						console.log('写入失败', err);
+					}
+				})
+		);
+		return true;
+	} catch (e) {
+		if (depth < galleryConfig.maxRetryCount) {
+			return getImg(img, depth + 1);
+		} else {
+			console.log('下载失败', img.src);
+			return false;
+		}
 	}
 }

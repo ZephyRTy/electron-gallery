@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useController, useData } from 'syill';
 import { ReactComponent as AddBookmarkIcon } from '../../icon/addBookmark.svg';
@@ -7,9 +7,6 @@ import { ReactComponent as CatalogIcon } from '../../icon/catalog.svg';
 import { ReactComponent as FindIcon } from '../../icon/find.svg';
 import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
 import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
-import { readerOperator } from '../../utils/data/galleryOperator';
-import { TextDetail } from '../../utils/data/TextDetail';
-import { formatDate, parseUrlQuery } from '../../utils/functions/functions';
 import {
 	catalogShowStore,
 	cursorStore,
@@ -43,37 +40,26 @@ export const GotoGalleryBtn = () => {
 		</button>
 	);
 };
-export const Back = () => {
+export const Back = (props: { quitBehavior?: () => Promise<any> }) => {
 	const navigate = useNavigate();
-	const addBookmark = useCallback(async () => {
-		const ele = document.querySelector('#reader-scroll-ele');
-		let urlObj = parseUrlQuery(window.location.href);
-		delete urlObj['undefined'];
-		urlObj['scroll'] = ele!.scrollTop;
-		const id = readerOperator.packWillOpen()!.id;
-		let url =
-			`#/reader/book/${id}?` + new URLSearchParams(urlObj).toString();
-		await readerOperator.UpdateBookmark({
-			...readerOperator.packWillOpen()!,
-			url,
-			timeStamp: formatDate(new Date())
-		});
-	}, []);
 	useEffect(() => {
+		if (!props.quitBehavior) return;
 		TaskQueueBeforeQuit.add(() => {
-			return addBookmark();
+			return props.quitBehavior!();
 		}, 'addBookmark');
 		return () => {
+			if (!props.quitBehavior) return;
 			TaskQueueBeforeQuit.remove('addBookmark');
 		};
-	}, []);
+	}, [props.quitBehavior]);
 	return (
 		<button
 			className="btn-back icon"
-			onClick={() => {
-				addBookmark().then(() => {
-					navigate(-1);
-				});
+			onClick={async () => {
+				if (props.quitBehavior) {
+					await props.quitBehavior();
+				}
+				navigate(-1);
 			}}
 		>
 			<BackBtn />
@@ -81,7 +67,7 @@ export const Back = () => {
 	);
 };
 // eslint-disable-next-line no-unused-vars
-export const ShowMarksBtn = (props: { book: TextDetail }) => {
+export const ShowMarksBtn = () => {
 	const [marksShow, setMarksShow] = useData(marksShowStore);
 	const [, setCatalogShow] = useController(catalogShowStore);
 	return (
@@ -137,6 +123,33 @@ export const Find = () => {
 			onClick={() => {
 				setVis((v) => !v);
 				setCursorStore([]);
+			}}
+		>
+			<FindIcon />
+		</button>
+	);
+};
+
+export const FindInEpub = () => {
+	const [, setVis] = useController(findStore);
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.ctrlKey) {
+				if (e.key === 'f') {
+					setVis((v) => !v);
+				}
+			}
+		};
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, []);
+	return (
+		<button
+			className={'btn-find icon'}
+			onClick={() => {
+				setVis((v) => !v);
 			}}
 		>
 			<FindIcon />

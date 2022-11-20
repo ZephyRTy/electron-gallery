@@ -1,11 +1,31 @@
-import { useState } from 'react';
+import { Book } from 'epubjs';
+import { useEffect, useState } from 'react';
+import bookmarkCover from '../../../assets/bookmark-cover.jpg';
+import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
 import { BookmarkOfBook } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
-import { gotoHash } from '../../../utils/functions/functions';
+import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
+import { epubCoverCache } from '../../../utils/models';
 import styles from '../style/bookshelf.module.scss';
-import { ShelfBookTitle } from './ShelfRow';
+import { BookTitle } from './BookTitle';
 export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 	const [marked, setMarked] = useState(true);
+	const [src, setSrc] = useState(bookmarkCover);
+	useEffect(() => {
+		if (props.bookItem.path.endsWith('.epub')) {
+			if (!epubCoverCache.has(props.bookItem.id)) {
+				const e = new Book();
+				e.open(props.bookItem.path).then(() => {
+					e.coverUrl().then((url) => {
+						setSrc(url || src);
+						epubCoverCache.set(props.bookItem.id, url || src);
+					});
+				});
+			} else {
+				setSrc(epubCoverCache.get(props.bookItem.id)!);
+			}
+		}
+	}, [props.bookItem]);
 	return (
 		<div
 			className={styles['bookshelf-row-item']}
@@ -22,27 +42,22 @@ export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 					return;
 				}}
 			>
-				<ShelfBookTitle
-					index={1}
-					title={props.bookItem?.title.slice(0, 8)}
-				/>
-				<ShelfBookTitle
-					index={2}
-					title={props.bookItem?.title.slice(8, 16)}
-				/>
-				<ShelfBookTitle
-					index={3}
-					title={props.bookItem?.title.slice(16)}
-				/>
+				<img className={styles['book-cover']} src={src}></img>
 			</div>
-			<div className={styles['bookshelf-row-bar']}></div>
-			<button
-				className={styles['bookshelf-bookmark-button']}
-				onClick={() => {
-					setMarked(!marked);
-					readerOperator.UpdateBookmark(props.bookItem, !marked);
-				}}
-			></button>
+			<BookTitle title={props.bookItem.title} />
+			<span className={styles['icon-span']}>
+				<BookmarkIcon
+					className={stylesJoin(
+						styles['icon'],
+						styles['icon--bookmark'],
+						marked ? styles['icon--bookmark__marked'] : ''
+					)}
+					onClick={() => {
+						setMarked(!marked);
+						readerOperator.UpdateBookmark(props.bookItem, !marked);
+					}}
+				/>
+			</span>
 		</div>
 	);
 };
