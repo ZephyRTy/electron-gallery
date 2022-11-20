@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Book } from 'epubjs';
 import { Map } from 'immutable';
-import { SPACE_CODE } from '../../types/constant';
+import { LinesOfEachEpisode, SPACE_CODE } from '../../types/constant';
 import {
 	BookDirectory,
 	BookmarkOfBook,
@@ -14,7 +14,8 @@ import { sqliteOperator } from '../request/sqliteOperator';
 import { DataOperator } from './DataOperator';
 import { EpubDetail } from './EpubDetail';
 import { TextDetail } from './TextDetail';
-const fs = window.require('fs/promises');
+const fsp = window.require('fs/promises');
+const fs = window.require('fs');
 const iconv = window.require('iconv-lite');
 iconv.skipDecodeWarning = true;
 const splitWords = (str: string, len: number) => {
@@ -60,15 +61,44 @@ export class ReaderOperator extends DataOperator<
 				window.sessionStorage.getItem('currentBook')!
 			);
 		}
-		let text = await fs.readFile(this.currentBook!.path, 'utf-8');
-		if (this.isNotUtf8(text)) {
-			text = this.gbkToUtf8(
-				await fs.readFile(this.currentBook!.path, 'binary')
-			);
-		}
-		const book = this.parseBook(text);
-		const changed = !(await book.verify(text));
-		return { book, changed };
+		const readStream = fs.createReadStream(this.currentBook!.path, {
+			encoding: 'utf8',
+			autoClose: true,
+			start: 0,
+			end: 100
+		});
+		return new Promise((resolve) => {
+			readStream.on('data', (data) => {
+				resolve(data);
+			});
+		})
+			.then((res) => {
+				return this.isNotUtf8(res as string);
+			})
+			.then(async (isNotUtf8) => {
+				let text: string;
+				if (isNotUtf8) {
+					text = this.gbkToUtf8(
+						await fsp.readFile(this.currentBook!.path, 'binary')
+					);
+				} else {
+					text = await fsp.readFile(this.currentBook!.path, 'utf8');
+				}
+				const book = this.parseBook(text);
+				const changed = !(await book.verify(text));
+				return { book, changed };
+			});
+		// let text = await fsp.readFile(this.currentBook!.path, 'utf-8');
+		// const code = jschardet.detect(text);
+		// if (code.encoding !== 'utf-8') {
+		// 	text = this.gbkToUtf8(
+		// 		await fsp.readFile(this.currentBook!.path, 'binary')
+		// 	);
+		// }
+		// const book = this.parseBook(text);
+		// console.log('finish parse', Date.now());
+		// const changed = !(await book.verify(text));
+		// return { book, changed };
 	}
 
 	async loadEpub() {
@@ -88,7 +118,6 @@ export class ReaderOperator extends DataOperator<
 		const book = new TextDetail(this.currentBook!, this.sql);
 		const lines = text.split('\n');
 		let lineNum = 0;
-		let paragraphIndex = 0;
 		let continuousBlankLine = 0;
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
@@ -103,10 +132,7 @@ export class ReaderOperator extends DataOperator<
 						index: lineNum++,
 						content: `${item}`,
 						className: ['text-line'],
-						paragraphIndex:
-							item.length < this.lettersOfEachLine
-								? paragraphIndex
-								: paragraphIndex++,
+						episode: Math.ceil(lineNum / LinesOfEachEpisode),
 						parent: book
 					});
 				}
@@ -120,10 +146,11 @@ export class ReaderOperator extends DataOperator<
 				index: lineNum++,
 				content: '',
 				className: ['text-br'],
-				paragraphIndex: -1,
+				episode: Math.ceil(lineNum / LinesOfEachEpisode),
 				parent: book
 			});
 		}
+		book.calcEpisodes();
 		return book;
 	}
 

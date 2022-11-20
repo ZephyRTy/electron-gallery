@@ -59,3 +59,4 @@ export const DELTA_HEIGHT = lineHeight * deltaLine;
 export const CATALOG_REG =
 	/[第卷][0123456789一二三四五六七八九十百千万亿零壹贰叁肆伍陆柒捌玖拾佰仟]+[章节回卷集部篇幕][^<]*/g;
 export const SPACE_CODE = decodeURIComponent('%E3%80%80');
+export const LinesOfEachEpisode = 1e4;

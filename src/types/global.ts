@@ -75,7 +75,7 @@ export interface TextLine {
 	index: number; //行号
 	content: string;
 	className: string[];
-	paragraphIndex: number;
+	episode: number;
 	readonly parent: TextDetail;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;

@@ -204,6 +204,12 @@ button.activeMode {
 		}
 	}
 }
+
+.top-menu {
+	li {
+		margin-top: 10px;
+	}
+}
 .crawler--active {
 	fill: #3cfc52 !important;
 }
@@ -282,5 +288,10 @@ button.goto-btn {
 	}
 	100% {
 		--rotate: 360deg;
+	}
+}
+.episode-btn {
+	&:disabled {
+		opacity: 0.5;
 	}
 }

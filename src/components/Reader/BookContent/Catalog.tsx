@@ -1,13 +1,17 @@
 /* eslint-disable no-unused-vars */
 import { useContext, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useData } from 'syill';
-import { lineHeight } from '../../../types/constant';
+import { lineHeight, LinesOfEachEpisode } from '../../../types/constant';
 import { Chapter } from '../../../types/global';
-import { stylesJoin } from '../../../utils/functions/functions';
+import { readerOperator } from '../../../utils/data/galleryOperator';
+import { parseUrlQuery, stylesJoin } from '../../../utils/functions/functions';
 import { catalogShowStore, marksShowStore } from '../../../utils/store';
 import styles from '../style/catalog.module.scss';
 import { TextContext } from './TextContent';
 export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
+	let [searchParams] = useSearchParams();
+	let currentEpisode = Number(searchParams.get('episode') || '1');
 	const item = useMemo(() => {
 		return (
 			<li
@@ -18,8 +22,27 @@ export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 					styles['text-center']
 				)}
 				onClick={() => {
-					document.querySelector('#reader-scroll-ele')!.scrollTop =
-						props.chapter.index * lineHeight;
+					const episode = Math.ceil(
+						props.chapter.index / LinesOfEachEpisode
+					);
+					const scroll =
+						(props.chapter.index % LinesOfEachEpisode) * lineHeight;
+
+					if (currentEpisode !== episode) {
+						let urlObj = parseUrlQuery(window.location.href);
+						delete urlObj['undefined'];
+						urlObj['scroll'] = scroll;
+						urlObj['episode'] = episode;
+						const id = readerOperator.packWillOpen()!.id;
+						let url =
+							`#/reader/book/${id}?` +
+							new URLSearchParams(urlObj).toString();
+						window.location.href = url;
+					} else {
+						document.querySelector(
+							'#reader-scroll-ele'
+						)!.scrollTop = scroll;
+					}
 				}}
 				title={props.chapter.title}
 			>
