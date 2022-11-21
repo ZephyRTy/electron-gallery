@@ -123,13 +123,17 @@ export class ReaderOperator extends DataOperator<
 			encoding,
 			!!catalog.length
 		);
+		const crlf = encoding === 'gbk' ? iconv.decode('\r\n', 'gbk') : '\n';
 		const lines = text.split('\n');
 		let lineNum = 0;
 		let continuousBlankLine = 0;
+		const paraDict: number[] = [];
 		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
+			const line = lines[i];
 			let len = line.length;
 			if (len && line !== DOUBLE_SPACE) {
+				paraDict.push(lineNum);
+				const para = { start: lineNum, end: lineNum };
 				continuousBlankLine = 0;
 				const words = [] as TextLine[];
 				const arr = splitWords(
@@ -146,6 +150,7 @@ export class ReaderOperator extends DataOperator<
 						isDecoded: encoding === 'utf8'
 					});
 				}
+				para.end = lineNum - 1;
 				book.addContent(words);
 			}
 			++continuousBlankLine;
@@ -160,6 +165,8 @@ export class ReaderOperator extends DataOperator<
 				isDecoded: encoding === 'utf8'
 			});
 		}
+		paraDict.push(lineNum);
+		book.setParaDict(paraDict);
 		book.parseCachedCatalog(catalog);
 		if (!catalog.length && encoding === 'utf8') {
 			book.cacheCatalog();

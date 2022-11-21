@@ -22,6 +22,7 @@ const ensurePositive = (num: number | string) => {
 
 export class TextDetail {
 	private metaBook: MetaBook;
+	private lettersOfEachLine = 55;
 	private contentSize = { start: 0, end: 0 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
@@ -44,6 +45,7 @@ export class TextDetail {
 		x: -1,
 		y: -1
 	};
+	private paraDict: number[] = [];
 	regExp: RegExp;
 
 	constructor(
@@ -71,15 +73,23 @@ export class TextDetail {
 	public getContent(start: number, end: number): TextLine[] {
 		this.contentSize = { start, end };
 		const res = this.content.slice(start, end);
-		res.forEach((line) => {
-			if (!line.isDecoded) {
-				line.content = this.binaryToGBK(line.content).replaceAll(
-					'\x00',
-					''
-				);
-				line.isDecoded = true;
+		for (let i = 0; i < res.length; i++) {
+			const line = res[i];
+			if (
+				line.className.includes('chapter-title') ||
+				line.className.includes('text-br')
+			) {
+				continue;
 			}
-		});
+			if (!line.isDecoded) {
+				// line.content = this.binaryToGBK(line.content).replaceAll(
+				// 	'\x00',
+				// 	''
+				// );
+				// line.isDecoded = true;
+				this.decodeParagraph(line.index);
+			}
+		}
 		return res;
 	}
 
@@ -106,7 +116,7 @@ export class TextDetail {
 		}
 	}
 	private parseCatalog(line: TextLine) {
-		let title = line.content.match(this.regExp)?.[0];
+		let title = this.decodeLine(line).content.match(this.regExp)?.[0];
 		if (title) {
 			if (!line.className.includes('chapter-title')) {
 				line.className.push('chapter-title');
@@ -183,15 +193,64 @@ export class TextDetail {
 		return chapter;
 	}
 
-	private decodeLine(index: number) {
-		if (this.content[index].isDecoded) {
-			return this.content[index];
+	private decodeLine(index: number);
+	private decodeLine(index: TextLine);
+	private decodeLine(index: TextLine | number): TextLine {
+		let line: TextLine;
+		if (typeof index === 'number') {
+			{
+				line = this.content[index];
+			}
+		} else {
+			line = index;
 		}
-		this.content[index].content = this.binaryToGBK(
-			this.content[index].content
-		).replaceAll('\x00', '');
-		this.content[index].isDecoded = true;
-		return this.content[index];
+		if (line.isDecoded) {
+			return line;
+		}
+		if (line.className.includes('text-br')) {
+			return line;
+		}
+		line.content = this.binaryToGBK(line.content).replaceAll('\x00', '');
+		line.isDecoded = true;
+		return line;
+	}
+
+	private decodeParagraph(lineIndex: number) {
+		let paraLineIndex = 0;
+		let nextParaIndex = 0;
+		for (let i = 0; i < this.paraDict.length - 1; i++) {
+			if (
+				this.paraDict[i + 1] > lineIndex &&
+				this.paraDict[i] <= lineIndex
+			) {
+				paraLineIndex = this.paraDict[i];
+				nextParaIndex = this.paraDict[i + 1];
+				break;
+			}
+		}
+		let text = '';
+
+		for (let i = paraLineIndex; i < nextParaIndex; i++) {
+			if (this.content[i].className.includes('chapter-title')) {
+				console.log(this.content[i]);
+			}
+			text += this.content[i].content;
+		}
+		const decodedContent = this.binaryToGBK(text);
+		let len = 0;
+		for (let i = paraLineIndex; i < nextParaIndex; i++) {
+			this.content[i].isDecoded = true;
+			if (len >= decodedContent.length) {
+				this.content[i].content = '';
+				this.content[i].className.push('text-br');
+			} else {
+				this.content[i].content = decodedContent.slice(
+					len,
+					len + this.lettersOfEachLine
+				);
+				len += this.lettersOfEachLine;
+			}
+		}
 	}
 	reParseCatalog(reg: string) {
 		this.metaBook.reg = reg;
@@ -299,7 +358,12 @@ export class TextDetail {
 	get meta() {
 		return this.metaBook;
 	}
-
+	getParaDict() {
+		return this.paraDict;
+	}
+	setParaDict(paraDict: number[]) {
+		this.paraDict = paraDict;
+	}
 	getLine(lineNum: number) {
 		return this.content[lineNum];
 	}

@@ -139,3 +139,8 @@ export interface EpubMark {
 	comment: string;
 	data: string;
 }
+
+export interface paragraph {
+	start: number;
+	end: number;
+}
