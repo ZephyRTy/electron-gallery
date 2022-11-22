@@ -21,8 +21,9 @@ export const FloatMenu = (props: {
 		y: number | string;
 	});
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	useEffect(() => {
-		book?.registerFloatMenu(setPosition);
+		selectionManager?.registerFloatMenu(setPosition);
 	}, [book]);
 	useEffect(() => {
 		if (position.x === position.y && position.x === -1) {

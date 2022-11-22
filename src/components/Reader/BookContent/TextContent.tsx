@@ -39,38 +39,48 @@ export const TextContext = React.createContext(null as any as TextDetail);
 const ContentLine = (props: { line: TextLine }) => {
 	const para = useRef<HTMLParagraphElement>(null);
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	return (
 		<p
 			className={props.line.className.join(' ')}
 			onMouseDown={(e) => {
 				e.stopPropagation();
-				book.removeAllRange();
-				book.clearSelection();
-				book.setSelection('anchorIndex', props.line.index);
-				book.setMousePosition(
+				selectionManager.removeAllRange();
+				selectionManager.clearSelection();
+				selectionManager.setSelection('anchorIndex', props.line.index);
+				selectionManager.setMousePosition(
 					e.clientX,
 					props.line.index * lineHeight ?? e.clientY
 				);
-				book.showFloatMenu(false);
+				selectionManager.showFloatMenu(false);
 			}}
 			onMouseUp={(e) => {
 				e.stopPropagation();
 				const selection = window.getSelection();
 				if (selection) {
 					if (selection.isCollapsed) {
-						book.clearSelection();
-						book.clearMousePosition();
+						selectionManager.clearSelection();
+						selectionManager.clearMousePosition();
 						return;
 					}
-					book.setSelection('focusIndex', props.line.index);
-					book.setSelection('focusOffset', selection.focusOffset);
-					book.setSelection('anchorOffset', selection.anchorOffset);
-					if (book.confirmAndFixSelection()) {
-						book.showFloatMenu(true);
+					selectionManager.setSelection(
+						'focusIndex',
+						props.line.index
+					);
+					selectionManager.setSelection(
+						'focusOffset',
+						selection.focusOffset
+					);
+					selectionManager.setSelection(
+						'anchorOffset',
+						selection.anchorOffset
+					);
+					if (selectionManager.confirmAndFixSelection()) {
+						selectionManager.showFloatMenu(true);
 					}
 				} else {
-					book.clearSelection();
-					book.clearMousePosition();
+					selectionManager.clearSelection();
+					selectionManager.clearMousePosition();
 					return;
 				}
 			}}

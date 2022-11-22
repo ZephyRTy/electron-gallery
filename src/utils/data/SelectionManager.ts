@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { SetStateAction } from 'react';
 import { lineHeight } from '../../types/constant';
-import { GroupSelection, LineSelection } from '../../types/global';
-import { selectionContains } from '../functions/functions';
+import { GroupSelection, LineSelection, MarkAnchor } from '../../types/global';
+import { formatDate, selectionContains } from '../functions/functions';
 import { TextDetail } from './TextDetail';
 const ensurePositive = (num: number | string) => {
 	if (typeof num === 'string') {
@@ -25,6 +25,10 @@ export class SelectionManager {
 		x: -1,
 		y: -1
 	};
+	private book: TextDetail;
+	constructor(book: TextDetail) {
+		this.book = book;
+	}
 	registerFloatMenu(setState: {
 		(
 			value: SetStateAction<{ x: number | string; y: number | string }>
@@ -67,7 +71,7 @@ export class SelectionManager {
 	 * 确认选区结果
 	 * 修正选中内容的起始行号、偏移和结束行号、偏移，以及鼠标位置
 	 */
-	confirmAndFixSelection(book: TextDetail) {
+	confirmAndFixSelection() {
 		const { anchorIndex, anchorOffset, focusIndex, focusOffset } =
 			this.currentSelection;
 		// 确保起始行号小于结束行号
@@ -99,7 +103,7 @@ export class SelectionManager {
 			lineHeight * this.currentSelection.anchorIndex - 10;
 
 		for (let i = anchorIndex; i <= focusIndex; i++) {
-			if (!book.getLine(i).className.includes('text-br')) {
+			if (!this.book.getLine(i).className.includes('text-br')) {
 				if (i !== anchorIndex) {
 					this.currentSelection.anchorIndex = i;
 					this.currentSelection.anchorOffset = 0;
@@ -123,7 +127,7 @@ export class SelectionManager {
 			}em)`;
 		} else {
 			this.mousePosition.x = `calc(${this.mousePosition.x}px + ${
-				(book.getLine(this.currentSelection.anchorIndex).content
+				(this.book.getLine(this.currentSelection.anchorIndex).content
 					.length -
 					this.currentSelection.anchorOffset) *
 				0.1
@@ -165,5 +169,158 @@ export class SelectionManager {
 	}
 	clearMousePosition() {
 		this.mousePosition = { x: -1, y: -1 };
+	}
+
+	// 将选区按行分割
+	private dividedSelection(index: number): LineSelection[] {
+		const arr = [] as LineSelection[];
+		const { anchorIndex, anchorOffset, focusIndex, focusOffset } =
+			index > 0 ? this.selections[index] : this.selections.at(index)!;
+		if (anchorIndex === focusIndex) {
+			return [
+				{
+					index: anchorIndex,
+					offset: anchorOffset,
+					length: focusOffset - anchorOffset,
+					isBlank: false
+				}
+			];
+		}
+		for (let i = anchorIndex; i <= focusIndex; ++i) {
+			const isBlank = this.book.getLine(i).className.includes('text-br');
+			if (i === anchorIndex) {
+				arr.push({
+					index: i,
+					offset: anchorOffset,
+					length: this.book.getLine(i).content.length - anchorOffset,
+					isBlank
+				});
+			} else if (i === focusIndex) {
+				arr.push({
+					index: i,
+					offset: 0,
+					length: focusOffset,
+					isBlank
+				});
+			} else {
+				arr.push({
+					index: i,
+					offset: 0,
+					length: this.book.getLine(i).content.length,
+					isBlank
+				});
+			}
+		}
+		return arr;
+	}
+
+	divideAllSelections(): LineSelection[][] {
+		return this.selections.map((selection, index) =>
+			this.dividedSelection(index)
+		);
+	}
+
+	async addMark() {
+		const { anchorIndex, focusIndex, anchorOffset, focusOffset } =
+			this.currentSelection;
+		if (
+			this.currentSelection.anchorIndex === -1 ||
+			(anchorIndex === focusIndex && anchorOffset === focusOffset)
+		) {
+			throw new Error('未选中任何内容');
+		}
+		this.currentSelection = { ...this.currentSelection };
+		this.currentSelection.timestamp = formatDate(new Date());
+		this.selections.push({ ...this.currentSelection });
+		await this.book.sql.insertMark(this.book.id, this.currentSelection);
+		this.clearSelection();
+		return this.dividedSelection(this.selections.length - 1);
+	}
+	async addComment(
+		id: number,
+		comment: string,
+		selection: { anchorIndex: number; anchorOffset: number }
+	) {
+		const e = this.selections.find((ele) => {
+			return (
+				ele.anchorIndex === selection.anchorIndex &&
+				ele.anchorOffset === selection.anchorOffset
+			);
+		}) as GroupSelection;
+		e.comment = comment;
+		return this.book.sql.updateComment(id, comment, selection);
+	}
+	async removeMark(logicLine: LineSelection) {
+		const arr = [] as GroupSelection[];
+		for (const selection of this.selections) {
+			if (
+				selection.anchorIndex === logicLine.index &&
+				selection.anchorOffset === logicLine.offset
+			) {
+				await this.book.sql
+					.removeMark(this.book.id, selection)
+					.catch((e) => {
+						console.log(this.selections);
+						console.log(logicLine);
+					})
+					.then(() => {
+						console.log('删除成功');
+					});
+			} else {
+				arr.push(selection);
+			}
+		}
+		this.selections = arr;
+	}
+
+	async initMarks() {
+		this.selections = await this.book.sql.getMarks(this.book.id);
+		return this.selections;
+	}
+
+	getMarks() {
+		return this.selections;
+	}
+
+	generateMarkAnchor() {
+		const maxLength = 19;
+		const arr = [] as MarkAnchor[];
+		for (let i = 0; i < this.selections.length; ++i) {
+			const selection = this.selections[i];
+			let content = '';
+			if (selection.anchorIndex === selection.focusIndex) {
+				content =
+					this.book
+						.getLine(selection.anchorIndex)
+						.content.slice(
+							selection.anchorOffset,
+							Math.min(
+								selection.focusOffset,
+								selection.anchorOffset + maxLength
+							)
+						) +
+					(selection.focusOffset - selection.anchorOffset > maxLength
+						? '...'
+						: '');
+			} else {
+				content =
+					this.book
+						.getLine(selection.anchorIndex)
+						.content.slice(
+							selection.anchorOffset,
+							selection.anchorOffset + maxLength
+						) + '...';
+			}
+			const anchor = {
+				anchorIndex: selection.anchorIndex,
+				content,
+				timestamp: selection.timestamp
+			};
+			if (content === '...') {
+				console.log(selection);
+			}
+			arr.push(anchor);
+		}
+		return arr;
 	}
 }

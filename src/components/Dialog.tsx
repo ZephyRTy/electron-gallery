@@ -540,13 +540,14 @@ const CommentContent = (props: {
 	visible: boolean;
 }) => {
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager || null;
 	const [len, setLen] = useState(0);
 	const [comment, setComment] = useState('');
 	const textarea = useRef<HTMLTextAreaElement>(null);
 	useEffect(() => {
 		if (book) {
-			setComment(book.getComment() || '');
-			setLen(book.getComment()?.length || 0);
+			setComment(selectionManager.getComment() || '');
+			setLen(selectionManager.getComment()?.length || 0);
 		}
 	}, [book, props.visible]);
 	return (
@@ -571,9 +572,13 @@ const CommentContent = (props: {
 					props.setVisible(false);
 				}}
 				handleConfirm={() => {
-					const selection = book.getCurrentSelection();
+					const selection = selectionManager.getCurrentSelection();
 					if (selection) {
-						book.addComment(book.id, comment, selection);
+						selectionManager.addComment(
+							book.id,
+							comment,
+							selection
+						);
 					}
 					props.setVisible(false);
 				}}

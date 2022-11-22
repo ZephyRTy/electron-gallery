@@ -22,6 +22,7 @@ export const MarkLineBtn = (props: {
 	>;
 }) => {
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	const [marked, setMarked] = useState(!!props.marked);
 	return (
 		<button
@@ -32,7 +33,8 @@ export const MarkLineBtn = (props: {
 			)}
 			onClick={() => {
 				if (!marked) {
-					book.addMark()
+					selectionManager
+						.addMark()
 						.then((res) => {
 							setMarked(true);
 							const arr = measureTextPosition(
@@ -57,13 +59,15 @@ export const MarkLineBtn = (props: {
 								)
 						);
 					});
-					book.removeMark(props.marked![0].logic).then(() => {
-						book.showFloatMenu(false);
-						props.setActive(null);
-						setMarked(false);
-					});
+					selectionManager
+						.removeMark(props.marked![0].logic)
+						.then(() => {
+							selectionManager.showFloatMenu(false);
+							props.setActive(null);
+							setMarked(false);
+						});
 				}
-				book.removeAllRange();
+				selectionManager.removeAllRange();
 			}}
 		>
 			<MarkIcon />
