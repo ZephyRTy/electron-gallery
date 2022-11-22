@@ -45,3 +45,4 @@ export const changedAlertStore = new Store(false);
 export const selectionStore = new Store([] as LineSelectionPosition[][]);
 export const tocStore = new Store([] as EpubMark[]);
 export const percentageStore = new Store(0);
+export const commentVisStore = new Store(false);

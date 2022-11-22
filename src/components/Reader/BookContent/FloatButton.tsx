@@ -1,4 +1,6 @@
 import React, { useContext, useState } from 'react';
+import { useController } from 'syill';
+import { ReactComponent as CommentIcon } from '../../../icon/comment.svg';
 import { ReactComponent as MarkIcon } from '../../../icon/markLine.svg';
 import { LineSelectionPosition } from '../../../types/global';
 import {
@@ -6,6 +8,7 @@ import {
 	measureTextPosition,
 	stylesJoin
 } from '../../../utils/functions/functions';
+import { commentVisStore } from '../../../utils/store';
 import styles from '../style/reader.module.scss';
 import { TextContext } from './TextContent';
 
@@ -24,7 +27,8 @@ export const MarkLineBtn = (props: {
 		<button
 			className={stylesJoin(
 				styles['float-btn'],
-				marked ? styles['float-btn--marked'] : ''
+				marked ? styles['float-btn--marked'] : '',
+				styles['float-btn-mark']
 			)}
 			onClick={() => {
 				if (!marked) {
@@ -63,6 +67,26 @@ export const MarkLineBtn = (props: {
 			}}
 		>
 			<MarkIcon />
+		</button>
+	);
+};
+
+export const CommentBtn = (props: {
+	marked: LineSelectionPosition[] | null;
+}) => {
+	const [, setVis] = useController(commentVisStore);
+	return (
+		<button
+			className={stylesJoin(
+				styles['float-btn'],
+				styles['float-btn-comment']
+			)}
+			disabled={!props.marked}
+			onClick={() => {
+				setVis(true);
+			}}
+		>
+			<CommentIcon />
 		</button>
 	);
 };

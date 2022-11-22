@@ -23,7 +23,7 @@ import { readerOperator } from '../../../utils/data/galleryOperator';
 import { TextDetail } from '../../../utils/data/TextDetail';
 import { formatDate, parseUrlQuery } from '../../../utils/functions/functions';
 import { changedAlertStore } from '../../../utils/store';
-import { ChangedAlert, RegExpSet } from '../../Dialog';
+import { ChangedAlert, CommentDialog, RegExpSet } from '../../Dialog';
 import { OpenInExplorerBtn } from '../../Gallery/Buttons';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { Back, CatalogBtn, Find, RegExpBtn, ShowMarksBtn } from '../Buttons';
@@ -45,43 +45,32 @@ const ContentLine = (props: { line: TextLine }) => {
 			onMouseDown={(e) => {
 				e.stopPropagation();
 				book.removeAllRange();
-				props.line.parent.setSelection('anchorIndex', props.line.index);
-				props.line.parent.setMousePosition(
+				book.clearSelection();
+				book.setSelection('anchorIndex', props.line.index);
+				book.setMousePosition(
 					e.clientX,
 					props.line.index * lineHeight ?? e.clientY
 				);
-				props.line.parent.showFloatMenu(false);
+				book.showFloatMenu(false);
 			}}
 			onMouseUp={(e) => {
 				e.stopPropagation();
 				const selection = window.getSelection();
 				if (selection) {
-					if (
-						(selection.anchorNode === selection.focusNode &&
-							selection.anchorOffset === selection.focusOffset) ||
-						!selection.anchorNode
-					) {
-						props.line.parent.clearSelection();
-						props.line.parent.clearMousePosition();
+					if (selection.isCollapsed) {
+						book.clearSelection();
+						book.clearMousePosition();
 						return;
 					}
-					props.line.parent.setSelection(
-						'focusIndex',
-						props.line.index
-					);
-					props.line.parent.setSelection(
-						'focusOffset',
-						selection.focusOffset
-					);
-					props.line.parent.setSelection(
-						'anchorOffset',
-						selection.anchorOffset
-					);
-					props.line.parent.confirmAndFixSelection();
-					props.line.parent.showFloatMenu(true);
+					book.setSelection('focusIndex', props.line.index);
+					book.setSelection('focusOffset', selection.focusOffset);
+					book.setSelection('anchorOffset', selection.anchorOffset);
+					if (book.confirmAndFixSelection()) {
+						book.showFloatMenu(true);
+					}
 				} else {
-					props.line.parent.clearSelection();
-					props.line.parent.clearMousePosition();
+					book.clearSelection();
+					book.clearMousePosition();
 					return;
 				}
 			}}
@@ -287,6 +276,7 @@ export const TextContent = () => {
 	return (
 		<TextContext.Provider value={book}>
 			<RegExpSet currentChapter={chapter} />
+			<CommentDialog />
 			<ChangedAlert />
 			<SideEnter3D
 				renderCatalog={() => {

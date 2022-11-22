@@ -16,6 +16,7 @@ import { DataOperator } from '../utils/data/DataOperator';
 import { GalleryOperator } from '../utils/data/galleryOperator';
 import {
 	changedAlertStore,
+	commentVisStore,
 	configVisibleStore,
 	dialogActive,
 	dirMapVisibleStore,
@@ -534,6 +535,52 @@ const ChangedAlertContent = (props: { setVisible: (v: boolean) => void }) => {
 		</div>
 	);
 };
+const CommentContent = (props: {
+	setVisible: (v: boolean) => void;
+	visible: boolean;
+}) => {
+	const book = useContext(TextContext);
+	const [len, setLen] = useState(0);
+	const [comment, setComment] = useState('');
+	const textarea = useRef<HTMLTextAreaElement>(null);
+	useEffect(() => {
+		if (book) {
+			setComment(book.getComment() || '');
+			setLen(book.getComment()?.length || 0);
+		}
+	}, [book, props.visible]);
+	return (
+		<div className={styles['regexp-container']}>
+			<textarea
+				className={styles['comment-input']}
+				onChange={(e) => {
+					if (e.target.value.length > 120) {
+						e.preventDefault();
+						return;
+					}
+					setLen(e.target.value.length);
+					setComment(e.target.value);
+				}}
+				ref={textarea}
+				value={comment}
+			/>
+			<span className={styles['comment-word']}>{len}/120</span>
+			<ButtonContainer
+				handleCancel={() => {
+					dialogActive.setActive(false);
+					props.setVisible(false);
+				}}
+				handleConfirm={() => {
+					const selection = book.getCurrentSelection();
+					if (selection) {
+						book.addComment(book.id, comment, selection);
+					}
+					props.setVisible(false);
+				}}
+			/>
+		</div>
+	);
+};
 export const DirMap = createDialog(DirMapContent, dirMapVisibleStore, 'dirMap');
 export const Rename = createDialog(RenameContent, renameVisibleStore, 'rename');
 export const Config = createDialog(configContent, configVisibleStore, 'config');
@@ -546,4 +593,10 @@ export const ChangedAlert = createDialog(
 	ChangedAlertContent,
 	changedAlertStore,
 	'changedAlert'
+);
+
+export const CommentDialog = createDialog(
+	CommentContent,
+	commentVisStore,
+	'comment'
 );

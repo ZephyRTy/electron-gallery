@@ -123,7 +123,6 @@ export class ReaderOperator extends DataOperator<
 			encoding,
 			!!catalog.length
 		);
-		const crlf = encoding === 'gbk' ? iconv.decode('\r\n', 'gbk') : '\n';
 		const lines = text.split('\n');
 		let lineNum = 0;
 		let continuousBlankLine = 0;
@@ -146,7 +145,6 @@ export class ReaderOperator extends DataOperator<
 						index: lineNum++,
 						content: `${item}`,
 						className: ['text-line'],
-						parent: book,
 						isDecoded: encoding === 'utf8'
 					});
 				}
@@ -161,7 +159,6 @@ export class ReaderOperator extends DataOperator<
 				index: lineNum++,
 				content: '',
 				className: ['text-br'],
-				parent: book,
 				isDecoded: encoding === 'utf8'
 			});
 		}

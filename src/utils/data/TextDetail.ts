@@ -3,15 +3,16 @@ import { SetStateAction } from 'react';
 import { lineHeight } from '../../types/constant';
 import {
 	Chapter,
+	GroupSelection,
 	LineSelection,
 	MarkAnchor,
 	MetaBook,
-	SelectionInfo,
 	TextLine
 } from '../../types/global';
 import { formatDate, selectionContains } from '../functions/functions';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
 import { catalogCache } from './indexDB';
+import { SelectionManager } from './SelectionManager';
 const iconv = window.require('iconv-lite');
 const ensurePositive = (num: number | string) => {
 	if (typeof num === 'string') {
@@ -32,7 +33,8 @@ export class TextDetail {
 	// eslint-disable-next-line no-unused-vars
 	private floatMenuControl = (...args: any[]) => {};
 	private catalogIsCached = false;
-	private currentSelection: SelectionInfo = {
+	readonly selectionManager = new SelectionManager();
+	private currentSelection: GroupSelection = {
 		anchorIndex: -1,
 		focusIndex: -1,
 		anchorOffset: -1,
@@ -40,7 +42,7 @@ export class TextDetail {
 		timestamp: '',
 		comment: ''
 	};
-	private selections: SelectionInfo[] = [];
+	private selections: Readonly<GroupSelection>[] = [];
 	private mousePosition: { x: number | string; y: number | string } = {
 		x: -1,
 		y: -1
@@ -358,6 +360,7 @@ export class TextDetail {
 	get meta() {
 		return this.metaBook;
 	}
+
 	getParaDict() {
 		return this.paraDict;
 	}
@@ -408,7 +411,7 @@ export class TextDetail {
 
 		if (res) {
 			this.removeAllRange();
-			return;
+			return !res;
 		}
 		this.mousePosition.y =
 			lineHeight * this.currentSelection.anchorIndex - 10;
@@ -444,6 +447,7 @@ export class TextDetail {
 				0.1
 			}em)`;
 		}
+		return !res;
 	}
 	// 保存鼠标位置
 	setMousePosition(x: number | string, y: number | string) {
@@ -451,6 +455,21 @@ export class TextDetail {
 			x: ensurePositive(x),
 			y: ensurePositive(y)
 		};
+	}
+	convertToGroupedSelections(lineSelection: LineSelection) {
+		this.currentSelection = {
+			...this.selections.find((selection) => {
+				return selection.anchorIndex === lineSelection.index;
+			})!
+		};
+		console.log(this.currentSelection);
+	}
+
+	getCurrentSelection() {
+		return this.currentSelection;
+	}
+	getComment() {
+		return this.currentSelection.comment;
 	}
 	clearSelection() {
 		this.currentSelection = {
@@ -554,15 +573,29 @@ export class TextDetail {
 		) {
 			throw new Error('未选中任何内容');
 		}
+		this.currentSelection = { ...this.currentSelection };
 		this.currentSelection.timestamp = formatDate(new Date());
-		this.selections.push(this.currentSelection);
+		this.selections.push({ ...this.currentSelection });
 		await this.sqlOperator.insertMark(this.id, this.currentSelection);
 		this.clearSelection();
 		return this.dividedSelection(this.selections.length - 1);
 	}
-
+	async addComment(
+		id: number,
+		comment: string,
+		selection: { anchorIndex: number; anchorOffset: number }
+	) {
+		const e = this.selections.find((ele) => {
+			return (
+				ele.anchorIndex === selection.anchorIndex &&
+				ele.anchorOffset === selection.anchorOffset
+			);
+		}) as GroupSelection;
+		e.comment = comment;
+		return this.sqlOperator.updateComment(id, comment, selection);
+	}
 	async removeMark(logicLine: LineSelection) {
-		const arr = [] as SelectionInfo[];
+		const arr = [] as GroupSelection[];
 		for (const selection of this.selections) {
 			if (
 				selection.anchorIndex === logicLine.index &&

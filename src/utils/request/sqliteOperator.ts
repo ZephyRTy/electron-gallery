@@ -6,11 +6,11 @@ import {
 	BookmarkOfBook,
 	DirectoryInfo,
 	EpubMark,
+	GroupSelection,
 	ImageBookmark,
 	ImageDirectory,
 	Mode,
-	NormalImage,
-	SelectionInfo
+	NormalImage
 } from '../../types/global';
 import { formatDate, generateFileMd5 } from '../functions/functions';
 import { getAllDrive } from '../functions/process';
@@ -125,7 +125,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 		return SqliteOperatorForBook._instance;
 	}
 
-	async getMarks(bookId: number): Promise<SelectionInfo[]> {
+	async getMarks(bookId: number): Promise<GroupSelection[]> {
 		return new Promise((resolve, reject) => {
 			this.db.all(
 				`select * from mark where m_id = ${bookId} order by anchor_index, anchor_offset`,
@@ -142,7 +142,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 									focusOffset: e.focus_offset,
 									comment: e.comment,
 									timestamp: e.m_timeStamp
-								} as SelectionInfo;
+								} as GroupSelection;
 							})
 						);
 					}
@@ -488,6 +488,24 @@ export class SqliteOperatorForBook implements RequestOperator {
 		});
 	}
 
+	async updateComment(
+		id: number,
+		comment: string,
+		selection: { anchorIndex: number; anchorOffset: number }
+	) {
+		let stmt = this.db.prepare(
+			`update mark set comment = ? where m_id = ? and anchor_index = ? and anchor_offset = ?`,
+			[comment, id, selection.anchorIndex, selection.anchorOffset]
+		);
+		return new Promise((resolve, reject) => {
+			stmt.run((err: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve('ok');
+			});
+		});
+	}
 	mapDir(): Promise<Map<string, DirectoryInfo>> {
 		let sql = `select dir_id as id, dir_title as title , count(parent) as count from directory left outer join ${this.mainTableName} on(dir_id = parent )
 			  group by dir_id ;`;
@@ -653,7 +671,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 
 	//TODO 插入注释
 
-	insertMark(id: number, selection: SelectionInfo) {
+	insertMark(id: number, selection: GroupSelection) {
 		let sql = transformToSQL('mark', {
 			m_id: id,
 			m_timeStamp: formatDate(new Date()),
@@ -691,7 +709,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
-	async removeMark(id: number, selection: SelectionInfo | null) {
+	async removeMark(id: number, selection: GroupSelection | null) {
 		if (!selection) {
 			throw new Error('selection is null');
 		}

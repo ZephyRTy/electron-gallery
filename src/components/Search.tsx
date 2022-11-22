@@ -21,9 +21,9 @@ export const GallerySearch = () => {
 						}
 						currentOperator.op.reg = reg;
 						window.location.href = setSearchParams(
-							window.location.href.includes('#/reader')
-								? '#/reader'
-								: '#/gallery',
+							window.location.href.includes('#/gallery')
+								? '#/gallery'
+								: '#/reader',
 							{
 								search: (e.target as HTMLInputElement).value,
 								regexp: reg ? 'true' : '',

@@ -31,12 +31,18 @@ const MarkedLine = (props: {
 								event.clientX - 50,
 								e.top - lineHeight
 							);
+							book.convertToGroupedSelections(
+								props.selection[0].logic
+							);
 							book.showFloatMenu(true);
 							props.setActive([...props.selection]);
 						}}
 						onMouseEnter={() => {
 							setHover(true);
-							book.removeAllRange();
+							if (!window.getSelection()!.isCollapsed) {
+								book.removeAllRange();
+							}
+							//
 						}}
 						onMouseLeave={() => {
 							setHover(false);

@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import { GalleryOperator } from '../utils/data/galleryOperator';
-import { TextDetail } from '../utils/data/TextDetail';
 import { RequestOperator } from '../utils/request/requestOperator';
 
 export type fileStatus = 0 | 1 | 2 | 3;
@@ -76,7 +75,6 @@ export interface TextLine {
 	content: string;
 	className: string[];
 	isDecoded: boolean;
-	readonly parent: TextDetail;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;
 export interface Chapter {
@@ -116,9 +114,9 @@ export interface LineSelectionPosition {
 }
 
 /**
- * 每一组选区的逻辑形式，包含多个行选区，可被分割为行选区
+ * 每一组选区的逻辑形式，包含多个行选区，可被分割为逻辑行选区
  */
-export interface SelectionInfo {
+export interface GroupSelection {
 	anchorIndex: number;
 	anchorOffset: number;
 	focusIndex: number;
