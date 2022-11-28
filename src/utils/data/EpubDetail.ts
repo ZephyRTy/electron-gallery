@@ -2,7 +2,7 @@ import { Book, Rendition } from 'epubjs';
 import { EpubMark, MetaBook } from '../../types/global';
 import { formatDate } from '../functions/functions';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
-import { percentageStore, tocStore } from '../store';
+import { commentVisStore, percentageStore, tocStore } from '../store';
 function viewportToPixels(value) {
 	let parts = value.match(/([0-9\.]+)(vh|vw)/);
 	let q = Number(parts[1]);
@@ -17,6 +17,7 @@ export class EpubDetail {
 	private sqlOperator: SqliteOperatorForBook;
 	private marks: EpubMark[] = [];
 	private setItems = tocStore.createController();
+	private showComment = commentVisStore.createController();
 	private setPercentage = percentageStore.createController();
 	constructor(
 		book: Book,
@@ -58,8 +59,6 @@ export class EpubDetail {
 			});
 		});
 		this.rendition.on('selected', (cfiRange, contents) => {
-			console.log(cfiRange);
-
 			this.highlightMark(cfiRange, 'yellow');
 			this.addMark(cfiRange);
 			contents.window.getSelection().removeAllRanges();
@@ -127,6 +126,7 @@ export class EpubDetail {
 			},
 			() => {
 				this.removeMark(cfi);
+				//this.showComment!(true);
 			},
 			'epubjs-hl',
 			{

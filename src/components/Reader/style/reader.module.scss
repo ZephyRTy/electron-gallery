@@ -188,15 +188,16 @@
 			background-color: #7e7e7e;
 		}
 		&::-webkit-slider-thumb {
+			$thumb-color: #00b2b3;
 			appearance: none;
 			width: 15px;
 			height: 15px;
 			border-radius: 50%;
-			background-color: #36f4d8;
+			background-color: $thumb-color;
 			border: 1px solid transparent;
 			margin-top: -5px;
-			border-image: linear-gradient(#36f4d8, #36f4d8) 0 fill/5 13 5 0/0 0
-				0 99vw;
+			border-image: linear-gradient($thumb-color, $thumb-color) 0 fill/5
+				13 5 0/0 0 0 99vw;
 		}
 
 		&::-ms-fill-lower {
