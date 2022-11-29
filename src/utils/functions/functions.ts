@@ -1,9 +1,9 @@
 import { Book } from 'epubjs';
 import { lineHeight, SPACE_CODE } from '../../types/constant';
 import {
+	GroupSelection,
 	LineSelection,
-	LineSelectionPosition,
-	SelectionInfo
+	LineSelectionPosition
 } from '../../types/global';
 import { TextDetail } from '../data/TextDetail';
 
@@ -168,10 +168,12 @@ export const measureTextPosition = (
 export const stylesJoin = (...args: string[]) => {
 	return args.join(' ');
 };
-
+const between = (value: number, num1: number, num2: number) => {
+	return value >= Math.min(num1, num2) && value <= Math.max(num1, num2);
+};
 export const selectionContains = (
-	selection: SelectionInfo[],
-	line: SelectionInfo
+	selection: GroupSelection[],
+	line: GroupSelection
 ) => {
 	if (selection.length === 0) return false;
 	let i = 0;
@@ -199,14 +201,13 @@ export const selectionContains = (
 		} else if (line.anchorIndex === anchorIndex) {
 			if (line.focusIndex !== focusIndex) {
 				return true;
-			} else if (
-				line.focusIndex === focusIndex &&
-				!(
-					line.anchorOffset >= focusOffset &&
-					line.focusOffset <= anchorOffset
-				)
-			) {
-				return true;
+			} else if (line.focusIndex === focusIndex) {
+				if (
+					between(focusOffset, line.anchorOffset, line.focusOffset) ||
+					between(anchorOffset, line.anchorOffset, line.focusOffset)
+				) {
+					return true;
+				}
 			}
 		} else if (
 			line.anchorIndex > anchorIndex &&

@@ -75,6 +75,7 @@ $confirm-btn-color: rgb(64, 202, 244);
 	&-cover {
 		z-index: 3000;
 		position: absolute;
+		top: 0;
 		background-color: rgba(99, 99, 99, 0.44);
 		height: 100%;
 		width: 100%;
@@ -358,4 +359,22 @@ $confirm-btn-color: rgb(64, 202, 244);
 	&-container {
 		width: 100%;
 	}
+}
+
+textarea.comment-input {
+	min-height: 50px;
+	width: 350px;
+	height: 80px;
+	resize: none;
+	display: block;
+	margin: 20px auto;
+	margin-bottom: 4px;
+}
+
+span.comment-word {
+	display: block;
+	width: 50px;
+	margin: 10px auto;
+	text-align: center;
+	font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }

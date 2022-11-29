@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Book } from 'epubjs';
 import { Map } from 'immutable';
-import { SPACE_CODE } from '../../types/constant';
+import { lettersOfEachLine, SPACE_CODE } from '../../types/constant';
 import {
 	BookDirectory,
 	BookmarkOfBook,
@@ -50,7 +50,6 @@ export class ReaderOperator extends DataOperator<
 		}
 		return ReaderOperator.instance;
 	}
-	private lettersOfEachLine = 55;
 	formatContent(content: string): string {
 		let result = content.replace(/\n/g, '<br/>');
 		return result;
@@ -126,15 +125,18 @@ export class ReaderOperator extends DataOperator<
 		const lines = text.split('\n');
 		let lineNum = 0;
 		let continuousBlankLine = 0;
+		const paraDict: number[] = [];
 		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i].replace(/^\s+/g, DOUBLE_SPACE);
+			const line = lines[i];
 			let len = line.length;
 			if (len && line !== DOUBLE_SPACE) {
+				paraDict.push(lineNum);
+				const para = { start: lineNum, end: lineNum };
 				continuousBlankLine = 0;
 				const words = [] as TextLine[];
 				const arr = splitWords(
 					line,
-					this.lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
+					lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
 				);
 				for (let i = 0; i < arr.length; i++) {
 					const item = arr[i];
@@ -142,10 +144,11 @@ export class ReaderOperator extends DataOperator<
 						index: lineNum++,
 						content: `${item}`,
 						className: ['text-line'],
-						parent: book,
-						isDecoded: encoding === 'utf8'
+						isDecoded: encoding === 'utf8',
+						paraIndex: paraDict.length - 1
 					});
 				}
+				para.end = lineNum - 1;
 				book.addContent(words);
 			}
 			++continuousBlankLine;
@@ -156,10 +159,12 @@ export class ReaderOperator extends DataOperator<
 				index: lineNum++,
 				content: '',
 				className: ['text-br'],
-				parent: book,
-				isDecoded: encoding === 'utf8'
+				isDecoded: encoding === 'utf8',
+				paraIndex: -1
 			});
 		}
+		paraDict.push(lineNum);
+		book.setParaDict(paraDict);
 		book.parseCachedCatalog(catalog);
 		if (!catalog.length && encoding === 'utf8') {
 			book.cacheCatalog();

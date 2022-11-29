@@ -1,12 +1,14 @@
 $cover-width: 130px;
 $bg-color: #3c5b7a;
 $bar-color: #80ffad;
+@import '../../style/variable';
 .bookshelf {
 	display: flex;
 	&-container {
 		overflow-y: auto;
 		overflow-x: hidden;
 		width: 100%;
+		@include scroll();
 	}
 	&-grid {
 		display: grid;

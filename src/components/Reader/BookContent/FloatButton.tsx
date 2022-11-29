@@ -1,4 +1,6 @@
 import React, { useContext, useState } from 'react';
+import { useController } from 'syill';
+import { ReactComponent as CommentIcon } from '../../../icon/comment.svg';
 import { ReactComponent as MarkIcon } from '../../../icon/markLine.svg';
 import { LineSelectionPosition } from '../../../types/global';
 import {
@@ -6,6 +8,7 @@ import {
 	measureTextPosition,
 	stylesJoin
 } from '../../../utils/functions/functions';
+import { commentVisStore } from '../../../utils/store';
 import styles from '../style/reader.module.scss';
 import { TextContext } from './TextContent';
 
@@ -19,16 +22,19 @@ export const MarkLineBtn = (props: {
 	>;
 }) => {
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	const [marked, setMarked] = useState(!!props.marked);
 	return (
 		<button
 			className={stylesJoin(
 				styles['float-btn'],
-				marked ? styles['float-btn--marked'] : ''
+				marked ? styles['float-btn--marked'] : '',
+				styles['float-btn-mark']
 			)}
 			onClick={() => {
 				if (!marked) {
-					book.addMark()
+					selectionManager
+						.addMark()
 						.then((res) => {
 							setMarked(true);
 							const arr = measureTextPosition(
@@ -53,16 +59,38 @@ export const MarkLineBtn = (props: {
 								)
 						);
 					});
-					book.removeMark(props.marked![0].logic).then(() => {
-						book.showFloatMenu(false);
-						props.setActive(null);
-						setMarked(false);
-					});
+					selectionManager
+						.removeMark(props.marked![0].logic)
+						.then(() => {
+							selectionManager.showFloatMenu(false);
+							props.setActive(null);
+							setMarked(false);
+						});
 				}
-				book.removeAllRange();
+				selectionManager.removeAllRange();
 			}}
 		>
 			<MarkIcon />
+		</button>
+	);
+};
+
+export const CommentBtn = (props: {
+	marked: LineSelectionPosition[] | null;
+}) => {
+	const [, setVis] = useController(commentVisStore);
+	return (
+		<button
+			className={stylesJoin(
+				styles['float-btn'],
+				styles['float-btn-comment']
+			)}
+			disabled={!props.marked}
+			onClick={() => {
+				setVis(true);
+			}}
+		>
+			<CommentIcon />
 		</button>
 	);
 };

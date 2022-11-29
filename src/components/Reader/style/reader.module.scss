@@ -1,7 +1,7 @@
 @mixin marked-hover {
 	background-color: rgba(188, 188, 188, 0.428);
 }
-
+@import '../../style/variable';
 .reader {
 	display: flex;
 	flex-direction: column;
@@ -38,6 +38,7 @@
 }
 
 .scroll-content {
+	@include scroll();
 	overflow-y: auto;
 	height: 96vh;
 	position: relative;
@@ -107,8 +108,8 @@
 		top: 0;
 		right: 0;
 		z-index: 40;
-		width: 100px;
-		height: 23px;
+		width: fit-content;
+		height: 27px;
 		background-color: #eff0f2;
 		transform: translateY(-20%);
 		border: 1px solid #b4b4b4 {
@@ -117,16 +118,35 @@
 	}
 
 	&-btn {
-		height: 100%;
+		height: 95%;
 		outline: none;
 		background-color: transparent;
 		border: none;
+		margin: 2px;
 		svg {
-			fill: #b2b2b2;
+			fill: #848484;
 		}
-		&--marked {
+
+		&:disabled {
+			svg {
+				fill: #c3c3c3 !important;
+			}
+		}
+		&--marked,
+		&-mark:hover {
 			svg {
 				fill: #00b2b3;
+			}
+		}
+		&-comment {
+			margin-top: 2px;
+			svg {
+				width: 19px;
+			}
+			&:hover {
+				svg {
+					fill: #00b2b3;
+				}
 			}
 		}
 	}
@@ -169,15 +189,16 @@
 			background-color: #7e7e7e;
 		}
 		&::-webkit-slider-thumb {
+			$thumb-color: #00b2b3;
 			appearance: none;
 			width: 15px;
 			height: 15px;
 			border-radius: 50%;
-			background-color: #36f4d8;
+			background-color: $thumb-color;
 			border: 1px solid transparent;
 			margin-top: -5px;
-			border-image: linear-gradient(#36f4d8, #36f4d8) 0 fill/5 13 5 0/0 0
-				0 99vw;
+			border-image: linear-gradient($thumb-color, $thumb-color) 0 fill/5
+				13 5 0/0 0 0 99vw;
 		}
 
 		&::-ms-fill-lower {

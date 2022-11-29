@@ -28,7 +28,11 @@ export const Sidebar = (props: {
 		<ul className={pos[props.menuPosition] + '-menu'}>
 			{Array.isArray(props.children) ? (
 				props.children.map((child, index) => {
-					return <li key={index}>{child}</li>;
+					return (
+						<li className="sidebar-li" key={index}>
+							{child}
+						</li>
+					);
 				})
 			) : (
 				<li>{props.children}</li>
@@ -45,7 +49,11 @@ export const TopMenu = (props: { children: ReactChild[] }) => {
 	return (
 		<ul className="top-menu">
 			{props.children.map((child, index) => {
-				return <li key={index}>{child}</li>;
+				return (
+					<li className="sidebar-li" key={index}>
+						{child}
+					</li>
+				);
 			})}
 		</ul>
 	);

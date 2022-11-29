@@ -23,7 +23,7 @@ import { readerOperator } from '../../../utils/data/galleryOperator';
 import { TextDetail } from '../../../utils/data/TextDetail';
 import { formatDate, parseUrlQuery } from '../../../utils/functions/functions';
 import { changedAlertStore } from '../../../utils/store';
-import { ChangedAlert, RegExpSet } from '../../Dialog';
+import { ChangedAlert, CommentDialog, RegExpSet } from '../../Dialog';
 import { OpenInExplorerBtn } from '../../Gallery/Buttons';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { Back, CatalogBtn, Find, RegExpBtn, ShowMarksBtn } from '../Buttons';
@@ -39,49 +39,48 @@ export const TextContext = React.createContext(null as any as TextDetail);
 const ContentLine = (props: { line: TextLine }) => {
 	const para = useRef<HTMLParagraphElement>(null);
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	return (
 		<p
 			className={props.line.className.join(' ')}
 			onMouseDown={(e) => {
 				e.stopPropagation();
-				book.removeAllRange();
-				props.line.parent.setSelection('anchorIndex', props.line.index);
-				props.line.parent.setMousePosition(
+				selectionManager.removeAllRange();
+				selectionManager.clearSelection();
+				selectionManager.setSelection('anchorIndex', props.line.index);
+				selectionManager.setMousePosition(
 					e.clientX,
 					props.line.index * lineHeight ?? e.clientY
 				);
-				props.line.parent.showFloatMenu(false);
+				selectionManager.showFloatMenu(false);
 			}}
 			onMouseUp={(e) => {
 				e.stopPropagation();
 				const selection = window.getSelection();
 				if (selection) {
-					if (
-						(selection.anchorNode === selection.focusNode &&
-							selection.anchorOffset === selection.focusOffset) ||
-						!selection.anchorNode
-					) {
-						props.line.parent.clearSelection();
-						props.line.parent.clearMousePosition();
+					if (selection.isCollapsed) {
+						selectionManager.clearSelection();
+						selectionManager.clearMousePosition();
 						return;
 					}
-					props.line.parent.setSelection(
+					selectionManager.setSelection(
 						'focusIndex',
 						props.line.index
 					);
-					props.line.parent.setSelection(
+					selectionManager.setSelection(
 						'focusOffset',
 						selection.focusOffset
 					);
-					props.line.parent.setSelection(
+					selectionManager.setSelection(
 						'anchorOffset',
 						selection.anchorOffset
 					);
-					props.line.parent.confirmAndFixSelection();
-					props.line.parent.showFloatMenu(true);
+					if (selectionManager.confirmAndFixSelection()) {
+						selectionManager.showFloatMenu(true);
+					}
 				} else {
-					props.line.parent.clearSelection();
-					props.line.parent.clearMousePosition();
+					selectionManager.clearSelection();
+					selectionManager.clearMousePosition();
 					return;
 				}
 			}}
@@ -287,6 +286,7 @@ export const TextContent = () => {
 	return (
 		<TextContext.Provider value={book}>
 			<RegExpSet currentChapter={chapter} />
+			<CommentDialog />
 			<ChangedAlert />
 			<SideEnter3D
 				renderCatalog={() => {

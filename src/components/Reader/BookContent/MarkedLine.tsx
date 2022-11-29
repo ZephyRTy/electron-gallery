@@ -15,6 +15,7 @@ const MarkedLine = (props: {
 }) => {
 	const [hover, setHover] = useState(false);
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	return (
 		<div className={styles['marked-line-container']}>
 			{props.selection.map((e, i) => {
@@ -27,16 +28,22 @@ const MarkedLine = (props: {
 						key={i}
 						onClick={(event) => {
 							event.stopPropagation();
-							book.setMousePosition(
+							selectionManager.setMousePosition(
 								event.clientX - 50,
 								e.top - lineHeight
 							);
-							book.showFloatMenu(true);
+							selectionManager.convertToGroupedSelections(
+								props.selection[0].logic
+							);
+							selectionManager.showFloatMenu(true);
 							props.setActive([...props.selection]);
 						}}
 						onMouseEnter={() => {
 							setHover(true);
-							book.removeAllRange();
+							if (!window.getSelection()!.isCollapsed) {
+								selectionManager.removeAllRange();
+							}
+							//
 						}}
 						onMouseLeave={() => {
 							setHover(false);
@@ -73,15 +80,17 @@ export const MarkedLineContainer = (props: {
 
 export const MarkedContext = () => {
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	const [selections, setSelections] = useData(selectionStore);
 	const [active, setActive] = useState(
 		null as null | LineSelectionPosition[]
 	);
+
 	useEffect(() => {
 		if (book) {
-			book.initMarks().then(() => {
+			selectionManager.initMarks().then(() => {
 				setSelections(
-					book.divideAllSelections().map((e) => {
+					selectionManager.divideAllSelections().map((e) => {
 						return measureTextPosition(
 							e,
 							book,

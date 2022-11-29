@@ -9,10 +9,11 @@ import styles from '../style/catalog.module.scss';
 import { TextContext } from './TextContent';
 export const SideMarkDiv = () => {
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	const [, setShow] = useData(marksShowStore);
 	const anchors = useMemo(() => {
-		return book?.generateMarkAnchor() || [];
-	}, [book, book?.getMarks().length]);
+		return selectionManager?.generateMarkAnchor() || [];
+	}, [book, selectionManager?.getMarks().length]);
 	useEffect(() => {
 		return () => {
 			setShow(false);

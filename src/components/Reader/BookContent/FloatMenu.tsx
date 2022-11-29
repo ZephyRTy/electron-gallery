@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { LineSelectionPosition } from '../../../types/global';
 import styles from '../style/reader.module.scss';
-import { MarkLineBtn } from './FloatButton';
+import { CommentBtn, MarkLineBtn } from './FloatButton';
 import { TextContext } from './TextContent';
 
 const pixelOrOther = (value: string | number) => {
@@ -21,8 +21,9 @@ export const FloatMenu = (props: {
 		y: number | string;
 	});
 	const book = useContext(TextContext);
+	const selectionManager = book?.selectionManager;
 	useEffect(() => {
-		book?.registerFloatMenu(setPosition);
+		selectionManager?.registerFloatMenu(setPosition);
 	}, [book]);
 	useEffect(() => {
 		if (position.x === position.y && position.x === -1) {
@@ -42,6 +43,7 @@ export const FloatMenu = (props: {
 				setActive={props.setActive}
 				setSelections={props.setSelections}
 			/>
+			<CommentBtn marked={props.active} />
 		</div>
 	) : null;
 };
