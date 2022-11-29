@@ -1,16 +1,16 @@
-$size: 16px;
-$header-height: 34px;
-$fullscreen-height: 96vh;
+@import './variable';
 .header {
 	-webkit-app-region: drag;
 	display: flex;
-	height: $header-height;
+	height: 36px;
 	position: fixed;
-	width: 100%;
+	width: 95%;
+	right: 0;
 	justify-content: center;
 	align-items: center;
 	z-index: 1000;
-	background-color: #01abaa;
+	background-color: $active-color;
+	border-bottom: 1px #bdbdbd solid;
 	&__span {
 		&--regexp {
 			width: 100%;
@@ -51,7 +51,7 @@ $fullscreen-height: 96vh;
 			background: rgba(24, 207, 24, 0.89);
 		}
 		#minimize {
-			background: rgb(255, 252, 73);
+			background: rgb(255, 250, 114);
 		}
 		#console {
 			border: none;
@@ -65,7 +65,7 @@ $fullscreen-height: 96vh;
 				outline: none;
 			}
 			svg {
-				fill: white;
+				fill: rgb(0, 0, 0);
 				width: 20px;
 				height: 20px;
 			}

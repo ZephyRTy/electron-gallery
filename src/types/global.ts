@@ -75,6 +75,7 @@ export interface TextLine {
 	content: string;
 	className: string[];
 	isDecoded: boolean;
+	paraIndex: number;
 }
 export type ImageData = NormalImage | ImageDirectory | ImageBookmark;
 export interface Chapter {

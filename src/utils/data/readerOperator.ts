@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Book } from 'epubjs';
 import { Map } from 'immutable';
-import { SPACE_CODE } from '../../types/constant';
+import { lettersOfEachLine, SPACE_CODE } from '../../types/constant';
 import {
 	BookDirectory,
 	BookmarkOfBook,
@@ -50,7 +50,6 @@ export class ReaderOperator extends DataOperator<
 		}
 		return ReaderOperator.instance;
 	}
-	private lettersOfEachLine = 55;
 	formatContent(content: string): string {
 		let result = content.replace(/\n/g, '<br/>');
 		return result;
@@ -137,7 +136,7 @@ export class ReaderOperator extends DataOperator<
 				const words = [] as TextLine[];
 				const arr = splitWords(
 					line,
-					this.lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
+					lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
 				);
 				for (let i = 0; i < arr.length; i++) {
 					const item = arr[i];
@@ -145,7 +144,8 @@ export class ReaderOperator extends DataOperator<
 						index: lineNum++,
 						content: `${item}`,
 						className: ['text-line'],
-						isDecoded: encoding === 'utf8'
+						isDecoded: encoding === 'utf8',
+						paraIndex: paraDict.length - 1
 					});
 				}
 				para.end = lineNum - 1;
@@ -159,7 +159,8 @@ export class ReaderOperator extends DataOperator<
 				index: lineNum++,
 				content: '',
 				className: ['text-br'],
-				isDecoded: encoding === 'utf8'
+				isDecoded: encoding === 'utf8',
+				paraIndex: -1
 			});
 		}
 		paraDict.push(lineNum);

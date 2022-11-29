@@ -3,13 +3,6 @@ import { EpubMark, MetaBook } from '../../types/global';
 import { formatDate } from '../functions/functions';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
 import { commentVisStore, percentageStore, tocStore } from '../store';
-function viewportToPixels(value) {
-	let parts = value.match(/([0-9\.]+)(vh|vw)/);
-	let q = Number(parts[1]);
-	let side =
-		window[['innerHeight', 'innerWidth'][['vh', 'vw'].indexOf(parts[2])]];
-	return side * (q / 100);
-}
 export class EpubDetail {
 	private rendition: Rendition | null = null;
 	private book: Book | null = null;
@@ -31,8 +24,8 @@ export class EpubDetail {
 
 	renderTo(elementId: string) {
 		this.rendition = this.book!.renderTo(elementId, {
-			width: 800,
-			height: viewportToPixels('96vh'),
+			width: 799,
+			height: '96vh',
 			manager: 'continuous',
 			flow: 'paginated'
 		});

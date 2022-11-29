@@ -1,6 +1,5 @@
-$height: 60%;
-$active-color: #fedc3d;
-@import './header.module.scss';
+@import './variable';
+
 @mixin btn-with-bar($x) {
 	&:hover::after {
 		background-color: $active-color !important;
@@ -75,7 +74,7 @@ $active-color: #fedc3d;
 	background-color: transparent;
 	border: none;
 	cursor: pointer;
-	margin-top: 3px;
+	//margin-top: 3px !important;
 	display: flex;
 	justify-content: center;
 }
@@ -89,26 +88,15 @@ $active-color: #fedc3d;
 	&-crawler {
 		margin-top: 1px;
 	}
-	&-showDir {
-		position: relative;
-		left: 1px;
-	}
 	&-setting {
 		margin-top: 7px;
 	}
-	&-open-folder {
-		width: 40px !important;
-		margin: {
-			left: 2px;
-			top: 0;
-		}
-	}
-	&-catalog {
-		@include btn-with-bar(0);
-	}
-	&-show-marks {
-		@include btn-with-bar(-108%);
-	}
+	// &-catalog {
+	// 	@include btn-with-bar(0);
+	// }
+	// &-show-marks {
+	// 	@include btn-with-bar(-108%);
+	// }
 
 	&-show-marks {
 		margin-top: 2px;
@@ -149,21 +137,25 @@ svg {
 	bottom: 10px;
 	position: absolute;
 }
+
 .sidebar-container {
-	position: fixed;
 	list-style: none;
 	position: fixed;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	left: -40px;
-	height: 96vh;
-	width: 90px;
+	justify-content: flex-start;
+	left: 0px;
+	height: 100vh;
+	top: 0;
+	width: 52px;
 	display: flex;
-	background-color: #f3f3f3;
-	box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
+	background-color: $theme-color;
+	//box-shadow: 1px 1px 5px 1px rgb(0 0 0 / 20%);
+	border-right: 4px solid $active-color;
 	z-index: 2000;
 	ul {
+		width: 100%;
+		padding: 0;
 		margin: 0;
 		list-style: none;
 		flex-direction: column;
@@ -172,36 +164,138 @@ svg {
 	}
 
 	button {
-		width: 42px;
+		width: 100%;
+		height: 40px;
+		margin: 0 auto;
+		border: {
+			left: 4px solid transparent;
+		}
 		svg {
-			fill: gray;
+			width: 27px;
+			fill: rgb(255, 255, 255);
 			transition: all 0.15s ease-in;
+			position: relative;
+			right: 1px;
 		}
 		&:hover {
-			svg {
-				fill: $active-color;
+			border: {
+				left: 4px solid $active-color;
 			}
+			//box-shadow: inset $active-color 0px -1px 9px;
+			// background: linear-gradient(
+			// 	to left,
+			// 	$active-color,
+			// 	1%,
+			// 	$theme-color 60%
+			// );
 		}
 	}
 }
 
-button.activeMode {
-	svg {
-		fill: $active-color;
+@keyframes bg-linearColor {
+	0% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			1%,
+			$theme-color 1%
+		);
 	}
-	&::after {
-		background-color: $active-color;
+	10% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			11%,
+			$theme-color 11%
+		);
+	}
+	20% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			21%,
+			$theme-color 21%
+		);
+	}
+	30% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			31%,
+			$theme-color 31%
+		);
+	}
+	40% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			41%,
+			$theme-color 41%
+		);
+	}
+	50% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			51%,
+			$theme-color 51%
+		);
+	}
+	60% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			61%,
+			$theme-color 61%
+		);
+	}
+	70% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			71%,
+			$theme-color 71%
+		);
+	}
+	80% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			81%,
+			$theme-color 81%
+		);
+	}
+	90% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			91%,
+			$theme-color 91%
+		);
+	}
+	100% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			100%,
+			$theme-color 100%
+		);
 	}
 }
 .middle-menu {
-	li {
-		margin-top: 10px;
+	position: absolute;
+	top: 39%;
+	svg {
+		width: 25px !important;
 	}
 	button.activeMode {
-		svg {
-			fill: white;
-			filter: brightness(1.14) drop-shadow(0px 0px 6px $active-color);
-		}
+		animation: bg-linearColor 180ms linear 1;
+		background: $active-color;
+		//box-shadow: inset $theme-color 0px 0px 9px;
+		// svg {
+		// 	fill: white;
+		// 	filter: brightness(1.14) drop-shadow(0px 0px 6px $active-color);
+		// }
 	}
 }
 .crawler--active {

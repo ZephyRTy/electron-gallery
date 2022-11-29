@@ -11,6 +11,10 @@ const ensurePositive = (num: number | string) => {
 	return num < 0 ? 0 : num;
 };
 export class SelectionManager {
+	private lineNumberToLineLocation(lineNumber: number, offset: number) {
+		const line = this.book.getLine(lineNumber);
+		let res = `${line.paraIndex};`;
+	}
 	private currentSelection: GroupSelection = {
 		anchorIndex: -1,
 		focusIndex: -1,

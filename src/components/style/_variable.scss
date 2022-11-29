@@ -1,0 +1,34 @@
+$size: 16px;
+$header-height: 34px;
+$fullscreen-height: 96vh;
+$height: 60%;
+$active-color: #ffa101;
+$theme-color: #a3d9e1;
+@mixin scroll {
+	$width: 12px;
+	&::-webkit-scrollbar {
+		width: $width;
+		border-radius: 3px;
+		background-color: transparent;
+	}
+	&::-webkit-scrollbar-thumb {
+		background-color: skyblue;
+		background-image: -webkit-linear-gradient(
+			45deg,
+			rgba(255, 255, 255, 0.2) 25%,
+			transparent 25%,
+			transparent 50%,
+			rgba(255, 255, 255, 0.2) 50%,
+			rgba(255, 255, 255, 0.2) 75%,
+			transparent 75%,
+			transparent
+		);
+		border-radius: $width/2;
+	}
+
+	&::-webkit-scrollbar-track {
+		box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+		background: #ededed;
+		border-radius: 10px;
+	}
+}

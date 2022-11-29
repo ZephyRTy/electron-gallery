@@ -75,6 +75,7 @@ $confirm-btn-color: rgb(64, 202, 244);
 	&-cover {
 		z-index: 3000;
 		position: absolute;
+		top: 0;
 		background-color: rgba(99, 99, 99, 0.44);
 		height: 100%;
 		width: 100%;

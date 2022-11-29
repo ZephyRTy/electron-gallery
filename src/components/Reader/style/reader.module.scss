@@ -1,7 +1,7 @@
 @mixin marked-hover {
 	background-color: rgba(188, 188, 188, 0.428);
 }
-
+@import '../../style/variable';
 .reader {
 	display: flex;
 	flex-direction: column;
@@ -38,6 +38,7 @@
 }
 
 .scroll-content {
+	@include scroll();
 	overflow-y: auto;
 	height: 96vh;
 	position: relative;
