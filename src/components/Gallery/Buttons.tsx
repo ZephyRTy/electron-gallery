@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useController } from 'syill';
+import { useController, useData } from 'syill';
 import { getImgFrom24fa } from '../../crawler/fa24';
 import { ReactComponent as AddIcon } from '../../icon/add.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
@@ -26,6 +26,7 @@ import {
 	Mode
 } from '../../types/global';
 import { DataOperator } from '../../utils/data/DataOperator';
+import { stylesJoin } from '../../utils/functions/functions';
 import { openInExplorer } from '../../utils/functions/process';
 import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
 export const HomePage = (props: {
@@ -37,7 +38,9 @@ export const HomePage = (props: {
 		<button
 			className={
 				'btn-homepage icon index-btn' +
-				(props.activeMode === props.currentMode ? ' activeMode' : '')
+				(props.activeMode === props.currentMode
+					? ' activeMode'
+					: ' not-active')
 			}
 			onClick={() => {
 				window.location.href = '#/' + props.type + '';
@@ -78,7 +81,9 @@ export const Stared = (props: {
 		<button
 			className={
 				'btn-stared icon index-btn' +
-				(props.activeMode === props.currentMode ? ' activeMode' : '')
+				(props.activeMode === props.currentMode
+					? ' activeMode'
+					: ' not-active')
 			}
 			onClick={() => {
 				window.location.href =
@@ -97,11 +102,14 @@ export const Add = <
 >(props: {
 	util: DataOperator<A, B, C>;
 }) => {
-	const [visible, setVisible] = useController(fileDropVisibleStore);
+	const [visible, setVisible] = useData(fileDropVisibleStore);
 	return (
 		<>
 			<button
-				className="btn-add icon"
+				className={stylesJoin(
+					'btn-add icon',
+					visible ? 'activeMode' : ' not-active'
+				)}
 				onClick={() => {
 					setVisible((v) => !v);
 				}}
@@ -121,7 +129,9 @@ export const BookmarkBtn = (props: {
 		<button
 			className={
 				'btn-bookmark icon index-btn' +
-				(props.activeMode === props.currentMode ? ' activeMode' : '')
+				(props.activeMode === props.currentMode
+					? ' activeMode'
+					: ' not-active')
 			}
 			onClick={() => {
 				window.location.href =
@@ -142,7 +152,9 @@ export const HistoryBtn = (props: {
 		<button
 			className={
 				'btn-history icon index-btn' +
-				(props.activeMode === props.currentMode ? ' activeMode' : '')
+				(props.activeMode === props.currentMode
+					? ' activeMode'
+					: ' not-active')
 			}
 			onClick={() => {
 				window.location.href =
@@ -196,7 +208,9 @@ export const ShowDir = (props: {
 		<button
 			className={
 				'btn-showDir icon index-btn' +
-				(props.activeMode === props.currentMode ? ' activeMode' : '')
+				(props.activeMode === props.currentMode
+					? ' activeMode'
+					: ' not-active')
 			}
 			onClick={() => {
 				window.location.href =

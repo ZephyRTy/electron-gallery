@@ -1,5 +1,9 @@
 import { Book } from 'epubjs';
-import { lineHeight, SPACE_CODE } from '../../types/constant';
+import {
+	lettersOfEachLine,
+	lineHeight,
+	SPACE_CODE
+} from '../../types/constant';
 import {
 	GroupSelection,
 	LineSelection,
@@ -260,4 +264,29 @@ export function debounce(fn: Function, delay: number) {
 			fn.apply(this, arguments);
 		}, delay);
 	};
+}
+
+export const locationToLineNumber = (
+	lineLocation: string,
+	book: TextDetail
+) => {
+	const [para, offset] = lineLocation.split(';');
+	const paraStart = book.findParaStart(parseInt(para, 10));
+	const lineNum =
+		paraStart + Math.floor(parseInt(offset, 10) / lettersOfEachLine);
+	const offsetInLine = parseInt(offset, 10) % lettersOfEachLine;
+	return { lineNum, offsetInLine };
+};
+
+export function lineNumberToLocation(
+	lineNumber: number,
+	offset: number,
+	book: TextDetail
+) {
+	const line = book.getLine(lineNumber);
+	let res = `${line.paraIndex};`;
+	let paraOffset =
+		(line.index - book.findParaStart(line.paraIndex)) * lettersOfEachLine +
+		offset;
+	return res + paraOffset;
 }

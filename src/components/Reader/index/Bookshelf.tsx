@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useController } from 'syill';
 import { readerConfig } from '../../../types/constant';
@@ -52,12 +52,9 @@ export const Bookshelf = () => {
 			setTotal(res[1]);
 		});
 	}, [window.location.href, refresh]);
-	const topMenu = useMemo(() => {
+	const TopMenu = useCallback(() => {
 		return (
 			<Sidebar menuPosition="top">
-				<Refresh util={readerOperator} />
-				<Add util={readerOperator} />
-				<ConfigBtn />
 				<Back inSelect={inSelect} setInSelect={setInSelect} />
 				<GotoGalleryBtn />
 				<SelectPacks
@@ -73,6 +70,14 @@ export const Bookshelf = () => {
 			</Sidebar>
 		);
 	}, [inSelect]);
+	const BottomMenu = useCallback(() => {
+		return (
+			<Sidebar menuPosition="bottom">
+				<Add util={readerOperator} />
+				<ConfigBtn />
+			</Sidebar>
+		);
+	}, []);
 	const dirMap = useMemo(() => {
 		return <DirMap setInSelect={setInSelect} util={readerOperator} />;
 	}, []);
@@ -81,9 +86,11 @@ export const Bookshelf = () => {
 			{dirMap}
 			<Config oldConfig={readerConfig} type="reader" />
 			<SidebarContainer>
-				{topMenu} <Menu type="reader" />
+				<TopMenu /> <Menu type="reader" />
+				<BottomMenu />
 			</SidebarContainer>
 			<FileDrop itemType="file" operator={readerOperator} />
+			<Refresh util={readerOperator} />
 			<main className={styles['bookshelf-container']}>
 				<div className={styles['bookshelf-grid']}>
 					{books.map((e) => {

@@ -6,11 +6,11 @@ import {
 	BookmarkOfBook,
 	DirectoryInfo,
 	EpubMark,
-	GroupSelection,
 	ImageBookmark,
 	ImageDirectory,
 	Mode,
-	NormalImage
+	NormalImage,
+	TextComment
 } from '../../types/global';
 import { formatDate, generateFileMd5 } from '../functions/functions';
 import { getAllDrive } from '../functions/process';
@@ -86,12 +86,10 @@ export class SqliteOperatorForBook implements RequestOperator {
 		const stmt4 = `CREATE TABLE if not exists mark (
 			m_id int NOT NULL,
 			m_timeStamp timestamp NULL DEFAULT NULL,
-			anchor_index integer NOT NULL,
-			anchor_offset integer NOT NULL,
-			focus_index integer NOT NULL,
-			focus_offset integer NOT NULL,
+			start_location char(20) NOT NULL,
+			end_location char(20) NOT NULL,
 			comment varchar(600) default NULL,
-			PRIMARY KEY (m_id, anchor_index, anchor_offset),
+			PRIMARY KEY (m_id, start_location),
 			CONSTRAINT fk_mark_id FOREIGN KEY (m_id) REFERENCES book_list (id) ON DELETE CASCADE ON UPDATE CASCADE
 		  )`;
 		const stmt5 = `CREATE TABLE if not exists epub_mark (
@@ -125,10 +123,10 @@ export class SqliteOperatorForBook implements RequestOperator {
 		return SqliteOperatorForBook._instance;
 	}
 
-	async getMarks(bookId: number): Promise<GroupSelection[]> {
+	async getMarks(bookId: number): Promise<TextComment[]> {
 		return new Promise((resolve, reject) => {
 			this.db.all(
-				`select * from mark where m_id = ${bookId} order by anchor_index, anchor_offset`,
+				`select * from mark where m_id = ${bookId}`,
 				(err: any, res: any) => {
 					if (err) {
 						reject(err);
@@ -136,13 +134,11 @@ export class SqliteOperatorForBook implements RequestOperator {
 						resolve(
 							res.map((e) => {
 								return {
-									anchorIndex: e.anchor_index,
-									anchorOffset: e.anchor_offset,
-									focusIndex: e.focus_index,
-									focusOffset: e.focus_offset,
+									startLocation: e.start_location,
+									endLocation: e.end_location,
 									comment: e.comment,
 									timestamp: e.m_timeStamp
-								} as GroupSelection;
+								} as TextComment;
 							})
 						);
 					}
@@ -488,14 +484,10 @@ export class SqliteOperatorForBook implements RequestOperator {
 		});
 	}
 
-	async updateComment(
-		id: number,
-		comment: string,
-		selection: { anchorIndex: number; anchorOffset: number }
-	) {
+	async updateComment(id: number, comment: string, loc: string) {
 		let stmt = this.db.prepare(
-			`update mark set comment = ? where m_id = ? and anchor_index = ? and anchor_offset = ?`,
-			[comment, id, selection.anchorIndex, selection.anchorOffset]
+			`update mark set comment = ? where m_id = ? and start_location = ?`,
+			[comment, id, loc]
 		);
 		return new Promise((resolve, reject) => {
 			stmt.run((err: any) => {
@@ -671,14 +663,12 @@ export class SqliteOperatorForBook implements RequestOperator {
 
 	//TODO 插入注释
 
-	insertMark(id: number, selection: GroupSelection) {
+	insertMark(id: number, loc: TextComment) {
 		let sql = transformToSQL('mark', {
 			m_id: id,
 			m_timeStamp: formatDate(new Date()),
-			anchor_index: selection.anchorIndex,
-			focus_index: selection.focusIndex,
-			anchor_offset: selection.anchorOffset,
-			focus_offset: selection.focusOffset
+			start_location: loc.startLocation,
+			end_location: loc.endLocation
 		});
 
 		return new Promise((resolve, reject) => {
@@ -709,11 +699,11 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
-	async removeMark(id: number, selection: GroupSelection | null) {
-		if (!selection) {
+	async removeMark(id: number, loc: string) {
+		if (!loc) {
 			throw new Error('selection is null');
 		}
-		let sql = `delete from mark where m_id = ${id} and anchor_index = ${selection.anchorIndex} and anchor_offset = ${selection.anchorOffset}`;
+		let sql = `delete from mark where m_id = ${id} and start_location = ${loc}`;
 		return new Promise((resolve, reject) => {
 			this.db.run(sql, (err: any, res: any) => {
 				if (err) {

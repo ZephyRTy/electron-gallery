@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { SetStateAction } from 'react';
-import { lineHeight } from '../../types/constant';
+import { lettersOfEachLine, lineHeight } from '../../types/constant';
 import { GroupSelection, LineSelection, MarkAnchor } from '../../types/global';
 import { formatDate, selectionContains } from '../functions/functions';
 import { TextDetail } from './TextDetail';
@@ -11,10 +11,6 @@ const ensurePositive = (num: number | string) => {
 	return num < 0 ? 0 : num;
 };
 export class SelectionManager {
-	private lineNumberToLineLocation(lineNumber: number, offset: number) {
-		const line = this.book.getLine(lineNumber);
-		let res = `${line.paraIndex};`;
-	}
 	private currentSelection: GroupSelection = {
 		anchorIndex: -1,
 		focusIndex: -1,
@@ -32,6 +28,27 @@ export class SelectionManager {
 	private book: TextDetail;
 	constructor(book: TextDetail) {
 		this.book = book;
+	}
+	static lineNumberToLocation(
+		lineNumber: number,
+		offset: number,
+		book: TextDetail
+	) {
+		const line = book.getLine(lineNumber);
+		let res = `${line.paraIndex};`;
+		let paraOffset =
+			(line.index - book.findParaStart(line.paraIndex)) *
+				lettersOfEachLine +
+			offset;
+		return res + paraOffset;
+	}
+	static locationToLineNumber(lineLocation: string, book: TextDetail) {
+		const [para, offset] = lineLocation.split(';');
+		const paraStart = book.findParaStart(parseInt(para, 10));
+		const lineNum =
+			paraStart + Math.floor(parseInt(offset, 10) / lettersOfEachLine);
+		const offsetInLine = parseInt(offset, 10) % lettersOfEachLine;
+		return { lineNum, offsetInLine };
 	}
 	registerFloatMenu(setState: {
 		(
@@ -236,7 +253,20 @@ export class SelectionManager {
 		this.currentSelection = { ...this.currentSelection };
 		this.currentSelection.timestamp = formatDate(new Date());
 		this.selections.push({ ...this.currentSelection });
-		await this.book.sql.insertMark(this.book.id, this.currentSelection);
+		await this.book.sql.insertMark(this.book.id, {
+			startLocation: SelectionManager.lineNumberToLocation(
+				anchorIndex,
+				anchorOffset,
+				this.book
+			),
+			endLocation: SelectionManager.lineNumberToLocation(
+				focusIndex,
+				focusOffset,
+				this.book
+			),
+			comment: this.currentSelection.comment,
+			timestamp: this.currentSelection.timestamp
+		});
 		this.clearSelection();
 		return this.dividedSelection(this.selections.length - 1);
 	}
@@ -252,7 +282,15 @@ export class SelectionManager {
 			);
 		}) as GroupSelection;
 		e.comment = comment;
-		return this.book.sql.updateComment(id, comment, selection);
+		return this.book.sql.updateComment(
+			id,
+			comment,
+			SelectionManager.lineNumberToLocation(
+				selection.anchorIndex,
+				selection.anchorOffset,
+				this.book
+			)
+		);
 	}
 	async removeMark(logicLine: LineSelection) {
 		const arr = [] as GroupSelection[];
@@ -262,7 +300,14 @@ export class SelectionManager {
 				selection.anchorOffset === logicLine.offset
 			) {
 				await this.book.sql
-					.removeMark(this.book.id, selection)
+					.removeMark(
+						this.book.id,
+						SelectionManager.lineNumberToLocation(
+							selection.anchorIndex,
+							selection.anchorOffset,
+							this.book
+						)
+					)
 					.catch((e) => {
 						console.log(this.selections);
 						console.log(logicLine);
@@ -278,7 +323,26 @@ export class SelectionManager {
 	}
 
 	async initMarks() {
-		this.selections = await this.book.sql.getMarks(this.book.id);
+		this.selections = (await this.book.sql.getMarks(this.book.id)).map(
+			(e) => {
+				const start = SelectionManager.locationToLineNumber(
+					e.startLocation,
+					this.book
+				);
+				const end = SelectionManager.locationToLineNumber(
+					e.endLocation,
+					this.book
+				);
+				return {
+					anchorIndex: start.lineNum,
+					anchorOffset: start.offsetInLine,
+					focusIndex: end.lineNum,
+					focusOffset: end.offsetInLine,
+					comment: e.comment,
+					timestamp: e.timestamp
+				};
+			}
+		);
 		return this.selections;
 	}
 
