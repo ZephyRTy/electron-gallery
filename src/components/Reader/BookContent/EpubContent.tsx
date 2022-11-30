@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 import { EpubDetail } from '../../../utils/data/EpubDetail';
 import { readerOperator } from '../../../utils/data/galleryOperator';
 import { formatDate } from '../../../utils/functions/functions';
-import { CommentDialog } from '../../Dialog';
+import { EpubCommentDialog } from '../../Dialog';
 import { OpenInExplorerBtn } from '../../Gallery/Buttons';
 import { Sidebar, SidebarContainer } from '../../Menu';
 import { Back, CatalogBtn, Find, ShowMarksBtn } from '../Buttons';
@@ -65,7 +65,7 @@ export const EpubContent = () => {
 					return <EpubSideMarkDiv rendition={rendition} />;
 				}}
 			/>
-			<CommentDialog />
+			<EpubCommentDialog />
 			<SidebarContainer>
 				<Sidebar menuPosition="middle">
 					<Back quitBehavior={quit} />

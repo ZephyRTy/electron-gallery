@@ -53,7 +53,13 @@ $confirm-btn-color: rgb(64, 202, 244);
 				background-color: rgb(244, 190, 64);
 			}
 		}
-
+		&__delete {
+			color: white;
+			background-color: rgb(255, 96, 33);
+			&:hover {
+				background-color: rgb(255, 0, 0);
+			}
+		}
 		&-left,
 		&-right {
 			width: 20%;

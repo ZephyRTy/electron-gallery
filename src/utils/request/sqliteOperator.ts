@@ -486,8 +486,22 @@ export class SqliteOperatorForBook implements RequestOperator {
 
 	async updateComment(id: number, comment: string, loc: string) {
 		let stmt = this.db.prepare(
-			`update mark set comment = ? where m_id = ? and start_location = ?`,
-			[comment, id, loc]
+			`update mark set comment = ?, m_timeStamp = ? where m_id = ? and start_location = ?`,
+			[comment, formatDate(new Date()), id, loc]
+		);
+		return new Promise((resolve, reject) => {
+			stmt.run((err: any) => {
+				if (err) {
+					reject(err);
+				}
+				resolve('ok');
+			});
+		});
+	}
+	async updateEpubComment(id: number, comment: string, cfi: string) {
+		let stmt = this.db.prepare(
+			`update epub_mark set comment = ?, m_timeStamp = ? where m_id = ? and cfi = ?`,
+			[comment, formatDate(new Date()), id, cfi]
 		);
 		return new Promise((resolve, reject) => {
 			stmt.run((err: any) => {
