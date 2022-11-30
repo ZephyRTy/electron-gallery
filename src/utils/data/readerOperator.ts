@@ -87,7 +87,7 @@ export class ReaderOperator extends DataOperator<
 				const res = (await catalogCache.getCachedCatalog(
 					this.currentBook!.id
 				)) as string;
-				const catalog = JSON.parse(res) as any as number[];
+				const catalog = JSON.parse(res) as any as string[];
 				const book = this.parseBook(
 					text,
 					isNotUtf8 ? 'gbk' : 'utf8',
@@ -114,13 +114,13 @@ export class ReaderOperator extends DataOperator<
 	private parseBook(
 		text: string,
 		encoding: 'gbk' | 'utf8',
-		catalog: number[]
+		catalogLoc: string[]
 	) {
 		const book = new TextDetail(
 			this.currentBook!,
 			this.sql,
 			encoding,
-			!!catalog.length
+			!!catalogLoc.length
 		);
 		const lines = text.split('\n');
 		let lineNum = 0;
@@ -130,6 +130,9 @@ export class ReaderOperator extends DataOperator<
 			const line = lines[i];
 			let len = line.length;
 			if (len && line !== DOUBLE_SPACE) {
+				if (line === '\r') {
+					continue;
+				}
 				paraDict.push(lineNum);
 				const para = { start: lineNum, end: lineNum };
 				continuousBlankLine = 0;
@@ -165,8 +168,8 @@ export class ReaderOperator extends DataOperator<
 		}
 		paraDict.push(lineNum);
 		book.setParaDict(paraDict);
-		book.parseCachedCatalog(catalog);
-		if (!catalog.length && encoding === 'utf8') {
+		book.parseCachedCatalog(catalogLoc);
+		if (!catalogLoc.length && encoding === 'utf8') {
 			book.cacheCatalog();
 		}
 		return book;

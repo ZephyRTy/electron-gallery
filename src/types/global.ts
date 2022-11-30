@@ -126,6 +126,10 @@ export interface GroupSelection {
 	comment: string;
 }
 
+export interface TextLocation {
+	startLocation: string;
+	endLocation: string;
+}
 export interface MarkAnchor {
 	anchorIndex: number;
 	content: string;
@@ -143,3 +147,5 @@ export interface paragraph {
 	start: number;
 	end: number;
 }
+
+export type TextComment = TextLocation & { comment: string; timestamp: string };

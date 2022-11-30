@@ -91,6 +91,23 @@
 	&-setting {
 		margin-top: 7px;
 	}
+	&-refresh {
+		position: absolute;
+		z-index: 200;
+		background: $active-color;
+		width: 39px;
+		height: 35px;
+		top: 36px;
+		left: 56px;
+		border-radius: 0 0 23px 0;
+		&:hover {
+			background: #eb9706;
+		}
+		svg {
+			fill: white;
+			width: 80%;
+		}
+	}
 	// &-catalog {
 	// 	@include btn-with-bar(0);
 	// }
@@ -282,21 +299,111 @@ svg {
 		);
 	}
 }
+
+@keyframes bg-linearColor-reverse {
+	0% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			100%,
+			$theme-color 100%
+		);
+	}
+	10% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			90%,
+			$theme-color 90%
+		);
+	}
+	20% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			80%,
+			$theme-color 80%
+		);
+	}
+	30% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			70%,
+			$theme-color 70%
+		);
+	}
+	40% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			60%,
+			$theme-color 60%
+		);
+	}
+	50% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			50%,
+			$theme-color 50%
+		);
+	}
+	60% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			40%,
+			$theme-color 40%
+		);
+	}
+	70% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			30%,
+			$theme-color 30%
+		);
+	}
+	80% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			20%,
+			$theme-color 20%
+		);
+	}
+	90% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			10%,
+			$theme-color 10%
+		);
+	}
+	100% {
+		background: linear-gradient(
+			to left,
+			$active-color,
+			1%,
+			$theme-color 1%
+		);
+	}
+}
 .middle-menu {
 	position: absolute;
 	top: 39%;
 	svg {
 		width: 25px !important;
 	}
-	button.activeMode {
-		animation: bg-linearColor 180ms linear 1;
-		background: $active-color;
-		//box-shadow: inset $theme-color 0px 0px 9px;
-		// svg {
-		// 	fill: white;
-		// 	filter: brightness(1.14) drop-shadow(0px 0px 6px $active-color);
-		// }
-	}
+}
+button.not-active:not(.activeMode) {
+	animation: bg-linearColor-reverse 180ms ease-out 1;
+	background: $theme-color;
+}
+button.activeMode {
+	animation: bg-linearColor 180ms ease-out 1 !important;
+	background: $active-color;
 }
 .crawler--active {
 	fill: #3cfc52 !important;

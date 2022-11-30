@@ -1,10 +1,5 @@
 /* eslint-disable no-unused-vars */
-import {
-	Chapter,
-	GroupSelection,
-	MetaBook,
-	TextLine
-} from '../../types/global';
+import { Chapter, MetaBook, TextLine } from '../../types/global';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
 import { catalogCache } from './indexDB';
 import { SelectionManager } from './SelectionManager';
@@ -29,19 +24,6 @@ export class TextDetail {
 	private floatMenuControl = (...args: any[]) => {};
 	private catalogIsCached = false;
 	readonly selectionManager = new SelectionManager(this);
-	private currentSelection: GroupSelection = {
-		anchorIndex: -1,
-		focusIndex: -1,
-		anchorOffset: -1,
-		focusOffset: -1,
-		timestamp: '',
-		comment: ''
-	};
-	private selections: Readonly<GroupSelection>[] = [];
-	private mousePosition: { x: number | string; y: number | string } = {
-		x: -1,
-		y: -1
-	};
 	private paraDict: number[] = [];
 	regExp: RegExp;
 
@@ -61,7 +43,15 @@ export class TextDetail {
 	public cacheCatalog() {
 		catalogCache.setCachedCatalog(
 			this.id,
-			JSON.stringify(this.catalog.map((item) => item.index))
+			JSON.stringify(
+				this.catalog.map((item) => {
+					return SelectionManager.lineNumberToLocation(
+						item.index,
+						0,
+						this
+					);
+				})
+			)
 		);
 	}
 	public addChapter(chapter: Chapter) {
@@ -106,10 +96,15 @@ export class TextDetail {
 		}
 	}
 
-	parseCachedCatalog(catalog: number[]) {
+	parseCachedCatalog(catalogLoc: string[]) {
+		const catalog = catalogLoc.map((loc) => {
+			return SelectionManager.locationToLineNumber(loc, this);
+		});
 		for (let i of catalog) {
-			const item = this.decodeLine(i);
-			this.parseCatalog(item);
+			const item = this.decodeLine(i.lineNum);
+			if (item) {
+				this.parseCatalog(item);
+			}
 		}
 	}
 	private parseCatalog(line: TextLine) {
@@ -192,7 +187,7 @@ export class TextDetail {
 
 	private decodeLine(index: number);
 	private decodeLine(index: TextLine);
-	private decodeLine(index: TextLine | number): TextLine {
+	private decodeLine(index: TextLine | number): TextLine | undefined {
 		let line: TextLine;
 		if (typeof index === 'number') {
 			{
@@ -200,6 +195,9 @@ export class TextDetail {
 			}
 		} else {
 			line = index;
+		}
+		if (!line) {
+			return;
 		}
 		if (line.isDecoded) {
 			return line;
@@ -239,7 +237,9 @@ export class TextDetail {
 			this.content[i].isDecoded = true;
 			if (len >= decodedContent.length) {
 				this.content[i].content = '';
-				this.content[i].className.push('text-br');
+				if (!this.content[i].className.includes('text-br')) {
+					this.content[i].className.push('text-br');
+				}
 			} else {
 				this.content[i].content = decodedContent.slice(
 					len,
@@ -271,10 +271,7 @@ export class TextDetail {
 		this.cacheCatalog();
 	}
 	getCatalog() {
-		catalogCache.setCachedCatalog(
-			this.id,
-			JSON.stringify(this.catalog.map((e) => e.index))
-		);
+		//this.cacheCatalog();
 		return this.catalog;
 	}
 
@@ -371,5 +368,16 @@ export class TextDetail {
 
 	getChapter(index: number) {
 		return this.catalog[index];
+	}
+
+	findParaOfLine(line: TextLine | number) {
+		if (typeof line === 'number') {
+			return this.paraDict[this.getLine(line).paraIndex];
+		}
+		return this.paraDict[line.paraIndex];
+	}
+
+	findParaStart(paraIndex) {
+		return this.paraDict[paraIndex];
 	}
 }

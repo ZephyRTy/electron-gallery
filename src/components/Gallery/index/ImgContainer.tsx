@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useController } from 'syill';
 import galleryConfig, {
 	defaultCover,
@@ -57,14 +57,12 @@ export const ImgContainer = (props: {
 	const [inSelect, setInSelect] = useState(0);
 	const [dirMapVis, setDirMapVis] = useController(dirMapVisibleStore);
 	const [ready, setReady] = useState(false);
-	const topMenu = useMemo(() => {
+	const TopMenu = useCallback(() => {
 		return (
 			<Sidebar menuPosition="top">
 				<Back inSelect={inSelect} setInSelect={setInSelect} />
-				<Refresh util={props.util} />
-				<Add util={props.util} />
+
 				<CrawlerBtn />
-				<ConfigBtn />
 				<GotoReaderBtn />
 				<SelectPacks
 					handleClick={() => {
@@ -83,6 +81,14 @@ export const ImgContainer = (props: {
 		return () => {
 			waterfallCache.save();
 		};
+	}, []);
+	const BottomMenu = useCallback(() => {
+		return (
+			<Sidebar menuPosition="bottom">
+				<Add util={props.util} />
+				<ConfigBtn />
+			</Sidebar>
+		);
 	}, []);
 	const dirMap = useMemo(() => {
 		return <DirMap setInSelect={setInSelect} util={props.util} />;
@@ -222,12 +228,14 @@ export const ImgContainer = (props: {
 	return (
 		<>
 			<SidebarContainer>
-				{topMenu}
+				<TopMenu />
 				<Menu type="gallery" />
+				<BottomMenu />
 			</SidebarContainer>
 			{dirMap}
 			<Config oldConfig={galleryConfig} type="gallery" />
 			<Rename util={props.util} />
+			<Refresh util={props.util} />
 			{ready ? (
 				<>
 					<PageOfTotal
