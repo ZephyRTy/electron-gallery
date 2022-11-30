@@ -20,11 +20,13 @@ import {
 	configVisibleStore,
 	dialogActive,
 	dirMapVisibleStore,
+	epubCommentVisStore,
 	RegInputVisibleStore,
 	renameVisibleStore,
 	selectionStore
 } from '../utils/store';
-import { ButtonContainer } from './ButtonContainer';
+import { ButtonContainer, TripleButtonContainer } from './ButtonContainer';
+import { EpubContext } from './Reader/BookContent/EpubContent';
 import { TextContext } from './Reader/BookContent/TextContent';
 import styles from './style/dialog.module.scss';
 const fs = window.require('fs');
@@ -586,6 +588,57 @@ const CommentContent = (props: {
 		</div>
 	);
 };
+
+const EpubCommentContent = (props: {
+	setVisible: (v: boolean) => void;
+	visible: boolean;
+}) => {
+	const book = useContext(EpubContext);
+	const [len, setLen] = useState(0);
+	const [comment, setComment] = useState('');
+	const textarea = useRef<HTMLTextAreaElement>(null);
+	useEffect(() => {
+		if (book) {
+			const comment = book.getComment(book.getCurrentCfi());
+			setComment(comment || '');
+			setLen(comment?.length || 0);
+		}
+	}, [book, props.visible]);
+	return (
+		<div className={styles['regexp-container']}>
+			<textarea
+				className={styles['comment-input']}
+				onChange={(e) => {
+					if (e.target.value.length > 120) {
+						e.preventDefault();
+						return;
+					}
+					setLen(e.target.value.length);
+					setComment(e.target.value);
+				}}
+				ref={textarea}
+				value={comment}
+			/>
+			<span className={styles['comment-word']}>{len}/120</span>
+			<TripleButtonContainer
+				handleCancel={() => {
+					dialogActive.setActive(false);
+					props.setVisible(false);
+				}}
+				handleConfirm={(e) => {
+					if (book.getCurrentCfi()) {
+						book.addComment(book.getCurrentCfi(), comment);
+					}
+					props.setVisible(false);
+				}}
+				handleDelete={() => {
+					book.removeMark(book.getCurrentCfi());
+					props.setVisible(false);
+				}}
+			/>
+		</div>
+	);
+};
 export const DirMap = createDialog(DirMapContent, dirMapVisibleStore, 'dirMap');
 export const Rename = createDialog(RenameContent, renameVisibleStore, 'rename');
 export const Config = createDialog(configContent, configVisibleStore, 'config');
@@ -604,4 +657,10 @@ export const CommentDialog = createDialog(
 	CommentContent,
 	commentVisStore,
 	'comment'
+);
+
+export const EpubCommentDialog = createDialog(
+	EpubCommentContent,
+	epubCommentVisStore,
+	'epubComment'
 );

@@ -2,7 +2,7 @@ import { Book, Rendition } from 'epubjs';
 import { EpubMark, MetaBook } from '../../types/global';
 import { formatDate } from '../functions/functions';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
-import { commentVisStore, percentageStore, tocStore } from '../store';
+import { epubCommentVisStore, percentageStore, tocStore } from '../store';
 export class EpubDetail {
 	private rendition: Rendition | null = null;
 	private book: Book | null = null;
@@ -10,8 +10,10 @@ export class EpubDetail {
 	private sqlOperator: SqliteOperatorForBook;
 	private marks: EpubMark[] = [];
 	private setItems = tocStore.createController();
-	private showComment = commentVisStore.createController();
+	private showComment = epubCommentVisStore.createController();
 	private setPercentage = percentageStore.createController();
+	private selectionCFI = '';
+	handleDelete = () => {};
 	constructor(
 		book: Book,
 		meta: MetaBook,
@@ -118,8 +120,12 @@ export class EpubDetail {
 				name: fill
 			},
 			() => {
-				this.removeMark(cfi);
-				//this.showComment!(true);
+				this.selectionCFI = cfi;
+				this.showComment!(true);
+				this.handleDelete = () => {
+					this.removeMark(cfi);
+					this.handleDelete = () => {};
+				};
 			},
 			'epubjs-hl',
 			{
@@ -144,8 +150,26 @@ export class EpubDetail {
 			this.rendition?.location.start.cfi!
 		);
 	}
-
+	addComment(cfi: string, comment: string) {
+		const mark = this.marks.find((e) => e.cfi === cfi);
+		if (mark) {
+			mark.comment = comment;
+			this.setItems!(this.marks);
+			this.sqlOperator.updateEpubComment(
+				this.metaBook.id,
+				comment,
+				this.selectionCFI
+			);
+		}
+	}
+	getComment(cfi: string) {
+		return this.marks.find((e) => e.cfi === cfi)?.comment || '';
+	}
 	getBook() {
 		return this.book;
+	}
+
+	getCurrentCfi() {
+		return this.selectionCFI;
 	}
 }
