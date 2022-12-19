@@ -27,7 +27,7 @@ export class EpubDetail {
 	renderTo(elementId: string) {
 		this.rendition = this.book!.renderTo(elementId, {
 			width: 799,
-			height: '96vh',
+			height: '93vh',
 			manager: 'continuous',
 			flow: 'paginated'
 		});

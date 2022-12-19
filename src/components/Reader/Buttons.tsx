@@ -73,7 +73,8 @@ export const ShowMarksBtn = () => {
 	return (
 		<button
 			className={
-				'btn-show-marks detail-icon' + (marksShow ? ' activeMode' : '')
+				'btn-show-marks detail-icon' +
+				(marksShow ? ' activeMode' : ' not-active')
 			}
 			onClick={() => {
 				setMarksShow((v) => !v);
@@ -90,7 +91,10 @@ export const CatalogBtn = () => {
 	const [, setMarksShow] = useController(marksShowStore);
 	return (
 		<button
-			className={'btn-catalog icon' + (catalogShow ? ' activeMode' : '')}
+			className={
+				'btn-catalog icon' +
+				(catalogShow ? ' activeMode' : ' not-active')
+			}
 			onClick={() => {
 				setCatalogShow((v) => !v);
 				setMarksShow(false);

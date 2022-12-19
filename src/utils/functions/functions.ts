@@ -1,4 +1,6 @@
 import { Book } from 'epubjs';
+import img from '../../assets/photo.png';
+import styles from '../../components/Reader/style/reader.module.scss';
 import {
 	lettersOfEachLine,
 	lineHeight,
@@ -10,7 +12,6 @@ import {
 	LineSelectionPosition
 } from '../../types/global';
 import { TextDetail } from '../data/TextDetail';
-
 const fs = window.require('fs');
 const crypto = window.require('crypto');
 export const path = window.require('path');
@@ -129,6 +130,7 @@ export const rmDir = async (dirPath: string) => {
 	return true;
 };
 const textMetrics = window.require('text-metrics');
+const contentOffset = parseInt(styles['contentOffset'], 10);
 export const measureTextPosition = (
 	textInfo: LineSelection[],
 	book: TextDetail,
@@ -161,7 +163,7 @@ export const measureTextPosition = (
 		);
 		arr.push({
 			top: value.index * lineHeight - 3,
-			offset: 70 + offset,
+			offset: contentOffset + offset,
 			width,
 			logic: value
 		});
@@ -265,7 +267,6 @@ export function debounce(fn: Function, delay: number) {
 		}, delay);
 	};
 }
-
 export const locationToLineNumber = (
 	lineLocation: string,
 	book: TextDetail
@@ -273,8 +274,8 @@ export const locationToLineNumber = (
 	const [para, offset] = lineLocation.split(';');
 	const paraStart = book.findParaStart(parseInt(para, 10));
 	const lineNum =
-		paraStart + Math.floor(parseInt(offset, 10) / lettersOfEachLine);
-	const offsetInLine = parseInt(offset, 10) % lettersOfEachLine;
+		paraStart + Math.floor(parseInt(offset, 10) / lettersOfEachLine());
+	const offsetInLine = parseInt(offset, 10) % lettersOfEachLine();
 	return { lineNum, offsetInLine };
 };
 
@@ -286,7 +287,15 @@ export function lineNumberToLocation(
 	const line = book.getLine(lineNumber);
 	let res = `${line.paraIndex};`;
 	let paraOffset =
-		(line.index - book.findParaStart(line.paraIndex)) * lettersOfEachLine +
+		(line.index - book.findParaStart(line.paraIndex)) *
+			lettersOfEachLine() +
 		offset;
 	return res + paraOffset;
 }
+
+export const notification = (title, body) => {
+	new Notification(title, {
+		body: body,
+		icon: img
+	});
+};

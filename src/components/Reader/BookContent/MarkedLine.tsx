@@ -89,15 +89,14 @@ export const MarkedContext = () => {
 	useEffect(() => {
 		if (book) {
 			selectionManager.initMarks().then(() => {
-				setSelections(
-					selectionManager.divideAllSelections().map((e) => {
-						return measureTextPosition(
-							e,
-							book,
-							document.querySelector('.text-line')!
-						);
-					})
-				);
+				const res = selectionManager.divideAllSelections().map((e) => {
+					return measureTextPosition(
+						e,
+						book,
+						document.querySelector('.text-line')!
+					);
+				});
+				setSelections(res);
 			});
 		}
 		return () => {

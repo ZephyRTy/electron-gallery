@@ -16,7 +16,11 @@ require('esbuild')
 			'.png': 'file',
 			'.jpg': 'file',
 			'.gif': 'file',
-			'.webp': 'file'
+			'.webp': 'file',
+			'.ttf': 'file',
+			'.woff': 'file',
+			'.woff2': 'file',
+			'.otf': 'file'
 		},
 		define: {
 			'process.env.NODE_ENV': '"production"',

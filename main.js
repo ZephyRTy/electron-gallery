@@ -1,14 +1,6 @@
 /* eslint-disable no-undef */
-// 引入electron并创建一个BrowserWindow
 
-const {
-	app,
-	BrowserWindow,
-	ipcMain,
-	Tray,
-	Menu,
-	session
-} = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
 const url = require('url');
 const remote = require('@electron/remote/main');
@@ -20,9 +12,13 @@ remote.initialize();
 module.exports = { mainWindow: mainWindow };
 function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
-	tray = new Tray('D:\\webDemo\\desktop-reader\\public\\photo_circle.ico'); // 用ico图标格式
+	const src =
+		process.env.NODE_ENV === 'development'
+			? 'public/photo_circle.ico'
+			: 'dist/photo_circle.ico';
+	tray = new Tray(path.join(__dirname, src)); // 用ico图标格式
 	mainWindow = new BrowserWindow({
-		width: 1000,
+		width: 1020,
 		height: 900,
 		frame: false,
 		webPreferences: {
@@ -36,13 +32,13 @@ function createWindow() {
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
-			`http://localhost:${parseInt(process.env.PORT, 10) || 8097}/`
+			`http://localhost:${parseInt(process.env.PORT, 10) || 8096}/`
 		);
 	} else {
 		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
-				pathname: path.join(__dirname, 'build', 'index.html'),
+				pathname: path.join(__dirname, 'dist', 'index.html'),
 				protocol: 'file:',
 				slashes: true
 			})
@@ -103,10 +99,18 @@ if (!gotTheLock) {
 		// 	default: installExtension,
 		// 	REACT_DEVELOPER_TOOLS
 		// } = require('electron-devtools-installer');
+
+		const {
+			default: installExtension,
+			REACT_DEVELOPER_TOOLS
+		} = require('electron-devtools-installer');
 		app.whenReady().then(async () => {
-			await session.defaultSession.loadExtension(
-				String.raw`C:\Users\Yang\AppData\Local\Microsoft\Edge Dev\User Data\Default\Extensions\gpphkfbcpidddadnkolkpfckpihlkkil\4.25.0_0`
-			);
+			// await session.defaultSession.loadExtension(
+			// 	String.raw`C:\Users\Yang\AppData\Local\Microsoft\Edge Dev\User Data\Default\Extensions\gpphkfbcpidddadnkolkpfckpihlkkil\4.27.0_0`
+			// );
+			installExtension(REACT_DEVELOPER_TOOLS)
+				.then((name) => console.log(`Added Extension:  ${name}`))
+				.catch((err) => console.log('An error occurred: ', err));
 		});
 	}
 	ipcMain.on('min', () => mainWindow.minimize());

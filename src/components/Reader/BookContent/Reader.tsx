@@ -11,17 +11,19 @@ export const Reader = () => {
 		readerOperator.titleUpdate();
 	}, [readerOperator.packWillOpen()]);
 	return (
-		<main className={styles['reader'] + ' main-content'}>
-			{(
-				JSON.parse(window.sessionStorage.getItem('currentBook')!)
-					.path as string
-			)
-				.toLocaleLowerCase()
-				.endsWith('.txt') ? (
-				<TextContent />
-			) : (
-				<EpubContent />
-			)}
-		</main>
+		<>
+			<main className={styles['reader'] + ' main-content'}>
+				{(
+					JSON.parse(window.sessionStorage.getItem('currentBook')!)
+						.path as string
+				)
+					.toLocaleLowerCase()
+					.endsWith('.txt') ? (
+					<TextContent />
+				) : (
+					<EpubContent />
+				)}
+			</main>
+		</>
 	);
 };

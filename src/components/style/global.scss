@@ -1,5 +1,16 @@
 @import './variable';
-
+@font-face {
+	font-family: '方正悠黑';
+	src: url('../../assets/font/FangZhengYouHeiJianTi-1.ttf');
+}
+@font-face {
+	font-family: '得意黑';
+	src: url('../../assets/font/SmileySans-Oblique.ttf');
+}
+@font-face {
+	font-family: '思源黑体';
+	src: url('../../assets/font/SourceHanSansCN-Normal.otf');
+}
 @mixin btn-with-bar($x) {
 	&:hover::after {
 		background-color: $active-color !important;
@@ -484,4 +495,8 @@ button.goto-btn {
 	100% {
 		--rotate: 360deg;
 	}
+}
+#viewer {
+	position: relative;
+	bottom: -3vh;
 }

@@ -19,7 +19,7 @@ const fsp = window.require('fs/promises');
 const fs = window.require('fs');
 const iconv = window.require('iconv-lite');
 iconv.skipDecodeWarning = true;
-const splitWords = (str: string, len: number) => {
+export const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
 	let result: string[] = [];
 	for (let i = 0; i < strLen; i += len) {
@@ -139,7 +139,7 @@ export class ReaderOperator extends DataOperator<
 				const words = [] as TextLine[];
 				const arr = splitWords(
 					line,
-					lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
+					lettersOfEachLine() * (encoding === 'utf8' ? 1 : 2)
 				);
 				for (let i = 0; i < arr.length; i++) {
 					const item = arr[i];
@@ -168,7 +168,7 @@ export class ReaderOperator extends DataOperator<
 		}
 		paraDict.push(lineNum);
 		book.setParaDict(paraDict);
-		book.parseCachedCatalog(catalogLoc);
+		book.parseCachedCatalog(catalogLoc || []);
 		if (!catalogLoc.length && encoding === 'utf8') {
 			book.cacheCatalog();
 		}

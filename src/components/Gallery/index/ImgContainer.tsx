@@ -128,11 +128,11 @@ export const ImgContainer = (props: {
 						imgPath.split('/').slice(0, -1).join('/') +
 						'/thumb.jpg';
 				}
+				let flag = String.raw`${coverPath}`.includes('%');
 				img.src = String.raw`${coverPath.replace(/\\/g, '/')}`
 					.replaceAll(/%/g, encodeURIComponent('%'))
 					.replaceAll(/\s/g, encodeURIComponent(' '))
 					.replaceAll(/#/g, encodeURIComponent('#'));
-
 				img.onload = () => {
 					img.onload = null;
 					buffer.push({ img, data: v });

@@ -13,7 +13,7 @@ import { Back, CatalogBtn, Find, ShowMarksBtn } from '../Buttons';
 import { EpubSideCatalog } from './EpubSideCatalog';
 import { EpubSideMarkDiv } from './EpubSideMarkDiv';
 import { Progress } from './Progress';
-import { SideEnter3D } from './SideEnter3D';
+import { SideEnter3D } from './SideEnter/SideEnter3D';
 function viewportToPixels(value) {
 	let parts = value.match(/([0-9\.]+)(vh|vw)/);
 	let q = Number(parts[1]);

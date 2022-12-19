@@ -1,7 +1,7 @@
 import { getImg } from '../crawler/utils/getImg';
 import { downloadPath, otherPath } from '../types/constant';
 import { GalleryOperator } from '../utils/data/galleryOperator';
-import { parseUrlQuery } from '../utils/functions/functions';
+import { notification, parseUrlQuery } from '../utils/functions/functions';
 const fs = window.require('fs');
 const http = window.require('http');
 const replaceInvalidDirName = (str: string) => {
@@ -68,9 +68,18 @@ export class ImgServer {
 				}
 				this.titleSet.add(title);
 				this.taskQueue.push({ imgList, title, target });
-				console.log(title, imgList.length, target ?? '', '加入队列');
 				if (this.taskQueue.length === 1 && !this.hasTask) {
 					this.nextTask();
+				} else {
+					console.log(
+						title,
+						imgList.length,
+						target ?? '',
+						'加入队列'
+					);
+					const NOTIFICATION_TITLE = '加入队列';
+					const NOTIFICATION_BODY = `${title} 已加入队列， 共${imgList.length}张图片`;
+					notification(NOTIFICATION_TITLE, NOTIFICATION_BODY);
 				}
 				//getImgList(imgList, title, target);
 			});
@@ -83,7 +92,6 @@ export class ImgServer {
 			return;
 		}
 		this.isActive = false;
-		console.log('close');
 		this.server.close();
 	}
 
@@ -94,6 +102,10 @@ export class ImgServer {
 	) {
 		const max = 10;
 		console.log(title, imgList.length, target ?? '', '开始下载');
+		notification(
+			'开始下载',
+			`${title} 开始下载, 共${imgList.length}张图片`
+		);
 		this.hasTask = true;
 		let dirTitle = target || title;
 		let srcList = imgList;
@@ -148,6 +160,9 @@ export class ImgServer {
 			}
 		}
 		console.log(title, '完成');
+		const NOTIFICATION_TITLE = '下载完成';
+		const NOTIFICATION_BODY = `${title} 下载完成`;
+		notification(NOTIFICATION_TITLE, NOTIFICATION_BODY);
 		this.hasTask = false;
 		this.nextTask();
 	}

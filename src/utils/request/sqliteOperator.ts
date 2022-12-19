@@ -20,6 +20,7 @@ const sq3 = window.require('sqlite3');
 const path = window.require('path');
 const fs = window.require('fs');
 const os = window.require('os');
+
 const transformToSQL = <T extends object>(table: string, obj: T) => {
 	let columns = '(';
 	let values = '';
@@ -139,7 +140,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 									comment: e.comment,
 									timestamp: e.m_timeStamp
 								} as TextComment;
-							})
+							}) || []
 						);
 					}
 				}
@@ -163,7 +164,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 									timestamp: e.m_timeStamp,
 									data: ''
 								} as EpubMark;
-							})
+							}) || []
 						);
 					}
 				}
@@ -717,11 +718,10 @@ export class SqliteOperatorForBook implements RequestOperator {
 		if (!loc) {
 			throw new Error('selection is null');
 		}
-		let sql = `delete from mark where m_id = ${id} and start_location = ${loc}`;
+		let sql = `delete from mark where m_id = ? and start_location = ?`;
 		return new Promise((resolve, reject) => {
-			this.db.run(sql, (err: any, res: any) => {
+			this.db.run(sql, [id, loc], (err: any, res: any) => {
 				if (err) {
-					console.log(err);
 					reject(err);
 				}
 				resolve(res);

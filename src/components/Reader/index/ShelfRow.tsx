@@ -1,7 +1,7 @@
 import { Book } from 'epubjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import favoriteCover from '../../../assets/favorite.jpg';
-import txtCover from '../../../assets/Txt.jpg';
+import favoriteCover from '../../../assets/cover/favorite.jpg';
+import txtCover from '../../../assets/cover/Txt.jpg';
 import { ReactComponent as DeleteIcon } from '../../../icon/cross.svg';
 import { ReactComponent as StarIcon } from '../../../icon/star.svg';
 import { ReactComponent as TrashIcon } from '../../../icon/trash.svg';

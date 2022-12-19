@@ -2,6 +2,7 @@
 import { Chapter, MetaBook, TextLine } from '../../types/global';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
 import { catalogCache } from './indexDB';
+import { splitWords } from './readerOperator';
 import { SelectionManager } from './SelectionManager';
 const iconv = window.require('iconv-lite');
 const ensurePositive = (num: number | string) => {
@@ -211,24 +212,11 @@ export class TextDetail {
 	}
 
 	private decodeParagraph(lineIndex: number) {
-		let paraLineIndex = 0;
-		let nextParaIndex = 0;
-		for (let i = 0; i < this.paraDict.length - 1; i++) {
-			if (
-				this.paraDict[i + 1] > lineIndex &&
-				this.paraDict[i] <= lineIndex
-			) {
-				paraLineIndex = this.paraDict[i];
-				nextParaIndex = this.paraDict[i + 1];
-				break;
-			}
-		}
+		let paraLineIndex = this.paraDict[this.getLine(lineIndex).paraIndex];
+		let nextParaIndex =
+			this.paraDict[this.getLine(lineIndex).paraIndex + 1];
 		let text = '';
-
 		for (let i = paraLineIndex; i < nextParaIndex; i++) {
-			if (this.content[i].className.includes('chapter-title')) {
-				console.log(this.content[i]);
-			}
 			text += this.content[i].content;
 		}
 		const decodedContent = this.binaryToGBK(text);
@@ -379,5 +367,52 @@ export class TextDetail {
 
 	findParaStart(paraIndex) {
 		return this.paraDict[paraIndex];
+	}
+
+	typeset(fontSize: number) {
+		const letterNum = Math.floor(900 / fontSize);
+		this.lettersOfEachLine = letterNum;
+		let i = 0,
+			count = 0;
+		const content = [] as TextLine[];
+		while (i < this.content.length && this.content[i].paraIndex === -1) {
+			i++;
+		}
+		count = i;
+		while (i < this.content.length) {
+			let text = '';
+			const paraIndex = this.content[i].paraIndex;
+
+			let isDecoded = this.content[i].isDecoded;
+			while (this.content[i].paraIndex !== -1) {
+				text += this.content[i].content;
+				i++;
+			}
+			let n = letterNum;
+			if (this.encoding === 'gbk' && !isDecoded) {
+				n = 2 * letterNum;
+			}
+			this.paraDict[paraIndex] = count;
+			const lines = splitWords(text, n);
+			const newContent: TextLine[] = lines.map((e) => {
+				return {
+					index: count++,
+					paraIndex,
+					content: e,
+					className: ['text-line'],
+					isDecoded
+				};
+			});
+			content.push(...newContent);
+			while (
+				i < this.content.length &&
+				this.content[i].paraIndex === -1
+			) {
+				content.push({ ...this.content[i], index: count++ });
+				i++;
+			}
+		}
+		this.paraDict[this.paraDict.length - 1] = count;
+		this.content = [...content];
 	}
 }
