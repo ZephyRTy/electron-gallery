@@ -26,7 +26,7 @@ import {
 	parseUrlQuery,
 	stylesJoin
 } from '../../../utils/functions/functions';
-import { changedAlertStore } from '../../../utils/store';
+import { changedAlertStore, chapterStore } from '../../../utils/store';
 import { ChangedAlert, CommentDialog, RegExpSet } from '../../Dialog';
 import { OpenInExplorerBtn } from '../../Gallery/Buttons';
 import { Sidebar, SidebarContainer } from '../../Menu';
@@ -98,7 +98,7 @@ export const TextContent = () => {
 	const [start, setStart] = useState(0);
 	const [book, setBook] = useState(null as any as TextDetail);
 	const [content, setContent] = useState([] as TextLine[]);
-	const [chapter, setChapter] = useState(0);
+	const [chapter, setChapter] = useController(chapterStore);
 	const [fontSize, setFontSize] = useState(16);
 	const scrollEle = useRef(null);
 	const jump = useRef(false);
@@ -111,6 +111,7 @@ export const TextContent = () => {
 			if (!book) return;
 			let lineIndex = Math.ceil(eleScrollTop / lineHeight);
 			let startLine = Math.max(lineIndex - deltaLine - overflowNum, 0);
+			console.log('before drag');
 			setChapter(book.updateCurrentChapter(lineIndex, 'drag'));
 			if (startLine + contentRange >= book.length) {
 				startLine = book.length - contentRange;
@@ -193,6 +194,7 @@ export const TextContent = () => {
 							return;
 						}
 						if (distance >= 0) {
+							console.log('before scroll down');
 							setChapter(
 								book.updateCurrentChapter(
 									Math.ceil(eleScrollTop / lineHeight),
@@ -222,6 +224,7 @@ export const TextContent = () => {
 							return;
 						}
 						if (distance <= 0) {
+							console.log('before scroll up');
 							setChapter(
 								book.updateCurrentChapter(
 									Math.ceil(eleScrollTop / lineHeight),
@@ -266,7 +269,13 @@ export const TextContent = () => {
 		});
 	}, []);
 	useEffect(() => {
-		if (scroll) {
+		if (scroll && book) {
+			setChapter(
+				book.updateCurrentChapter(
+					Math.ceil(scroll / lineHeight),
+					'drag'
+				)
+			);
 			jumpTo(scroll);
 		}
 	}, [book]);
@@ -292,11 +301,10 @@ export const TextContent = () => {
 	return (
 		<TextContext.Provider value={book}>
 			<TypeSetting fontSize={fontSize} typeset={typeset} />
-			<RegExpSet currentChapter={chapter} />
+			<RegExpSet />
 			<CommentDialog />
 			<ChangedAlert />
 			<SideEnter3D
-				currentChapter={chapter}
 				renderMarkDiv={() => {
 					return <SideMarkDiv />;
 				}}

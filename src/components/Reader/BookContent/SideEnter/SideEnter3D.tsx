@@ -8,7 +8,6 @@ import { SideCatalog } from './Catalog';
 // eslint-disable-next-line no-undef
 export const SideEnter3D = (props: {
 	// eslint-disable-next-line no-unused-vars
-	currentChapter?: number;
 	renderMarkDiv: (...args: any[]) => JSX.Element;
 	renderCatalog?: (...args: any[]) => JSX.Element;
 }) => {
@@ -27,7 +26,7 @@ export const SideEnter3D = (props: {
 					marksShow ? styles['bottom-side'] : styles['top-side']
 				)}
 			>
-				<SideCatalog currentChapter={props.currentChapter || 0} />
+				<SideCatalog />
 				<props.renderMarkDiv />
 			</div>
 		</div>

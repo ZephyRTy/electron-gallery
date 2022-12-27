@@ -478,10 +478,7 @@ const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	}, [props.chapter, props.current]);
 	return <>{item}</>;
 };
-const RegExpSetContent = (props: {
-	setVisible: (v: boolean) => void;
-	currentChapter: number;
-}) => {
+const RegExpSetContent = (props: { setVisible: (v: boolean) => void }) => {
 	const book = useContext(TextContext);
 	const [reg, setReg] = useState(book?.reg || '');
 	const [catalog, setCatalog] = useState(book?.getCatalog() || []);

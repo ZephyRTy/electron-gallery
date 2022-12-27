@@ -1,13 +1,21 @@
 /* eslint-disable no-unused-vars */
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useController, useData } from 'syill';
 import { lineHeight } from '../../../../types/constant';
 import { Chapter } from '../../../../types/global';
 import { stylesJoin } from '../../../../utils/functions/functions';
-import { catalogShowStore, marksShowStore } from '../../../../utils/store';
+import {
+	catalogShowStore,
+	chapterStore,
+	marksShowStore
+} from '../../../../utils/store';
 import styles from '../../style/catalog.module.scss';
 import { TextContext } from '../TextContent';
-export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
+export const CatalogItem = (props: {
+	chapter: Chapter;
+	current: boolean;
+	index: number;
+}) => {
 	const [, setVis] = useController(catalogShowStore);
 	const item = useMemo(() => {
 		return (
@@ -18,6 +26,7 @@ export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 					props.current ? styles['current-chapter'] : '',
 					styles['text-center']
 				)}
+				data-index={props.index}
 				onClick={() => {
 					document.querySelector('#reader-scroll-ele')!.scrollTop =
 						props.chapter.index * lineHeight;
@@ -33,14 +42,23 @@ export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 	}, [props.chapter, props.current]);
 	return <>{item}</>;
 };
-export const SideCatalog = (props: { currentChapter: number }) => {
+export const SideCatalog = () => {
 	const book = useContext(TextContext);
 	const [catalog, setCatalog] = useState(book?.getCatalog() || []);
 	const [show, setShow] = useData(catalogShowStore);
 	const [marksShow, setMarksShow] = useData(marksShowStore);
+	const [chapter, setChapter] = useData(chapterStore);
+	const ele = useRef(null);
 	useEffect(() => {
 		setCatalog(book?.getCatalog() || []);
 	}, [book, book?.reg]);
+	useEffect(() => {
+		if (show) {
+			document
+				.querySelector(`li.${styles['current-chapter']}`)
+				?.scrollIntoView();
+		}
+	}, [show]);
 	useEffect(() => {
 		return () => {
 			setShow(false);
@@ -55,12 +73,13 @@ export const SideCatalog = (props: { currentChapter: number }) => {
 					styles['side-enter']
 				)}
 			>
-				<ul className={styles['side-list']}>
+				<ul className={styles['side-list']} ref={ele}>
 					{catalog.map((e, i) => {
 						return (
 							<CatalogItem
 								chapter={e}
-								current={i === props.currentChapter}
+								current={i === chapter}
+								index={i}
 								key={e.index}
 							/>
 						);
