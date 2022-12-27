@@ -135,6 +135,7 @@ export abstract class DataOperator<
 		this.searchCache.valid = true;
 		this.searchCache.key = key;
 		this.searchCache.res = [];
+		this.searchCache.mode = this.mode;
 		this.titleWillUpdate('Search=' + this.searchCache.key);
 		let result = [] as normal[];
 		if (this.mode === Mode.DirContent) {
@@ -294,7 +295,7 @@ export abstract class DataOperator<
 	}
 	//刷新
 	refresh() {
-		this.switchMode(Mode.Init);
+		//this.switchMode(Mode.Init);
 		this.refreshFn((v) => !v);
 	}
 
@@ -377,7 +378,7 @@ export abstract class DataOperator<
 					this.refresh();
 				});
 		}
-		this.switchMode(Mode.Init);
+		//this.switchMode(Mode.Init);
 	}
 
 	modeType(mode: Mode) {

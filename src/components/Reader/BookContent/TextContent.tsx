@@ -171,6 +171,7 @@ export const TextContent = () => {
 	const beforeScrollTop = useRef(0);
 
 	const handleScroll = useMemo(() => {
+		if (!book) return;
 		let timer: number;
 		return (e: { stopPropagation: () => void }) => {
 			if (timer) {

@@ -63,7 +63,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 	const removePack = useCallback(() => {
 		props.util.removeFileFromDir(
 			props.data.id,
-			parseInt(/directory=(\d+)/.exec(window.location.hash)![1])
+			props.util.currentDirectory
 		);
 		return;
 	}, [props.data.id, props.util]);
@@ -159,8 +159,9 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 						};
 					}}
 				/>
-				{props.util.inDir ||
-				props.util.modeOfSearch === Mode.DirContent ? (
+				{(props.util.inDir ||
+					props.util.modeOfSearch === Mode.DirContent) &&
+				!!props.data.parent ? (
 					<Cross className={styles['cross']} onClick={removePack} />
 				) : null}
 			</span>

@@ -52,7 +52,14 @@ export const ImgContainer = (props: {
 		img: HTMLImageElement;
 		data: ImageData;
 	}[][]);
-	const length = useRef({ value: 0, loaded: 0 }).current;
+	const imageInfo = useRef({
+		total: 0,
+		loaded: 0,
+		list: [] as {
+			img: HTMLImageElement;
+			data: NormalImage;
+		}[]
+	}).current;
 	const waterfallCache = useRef(ImgWaterfallCache.getInstance()).current;
 	const [inSelect, setInSelect] = useState(0);
 	const [dirMapVis, setDirMapVis] = useController(dirMapVisibleStore);
@@ -82,6 +89,50 @@ export const ImgContainer = (props: {
 			waterfallCache.save();
 		};
 	}, []);
+	const renderImage = useCallback(
+		(
+			buffer: {
+				img: HTMLImageElement;
+				data: NormalImage;
+			}[]
+		) => {
+			let heights = [0, 0, 0, 0];
+			let waterfall: { img: HTMLImageElement; data: NormalImage }[][] = [
+				[],
+				[],
+				[],
+				[]
+			];
+			buffer
+				.sort((a, b) => {
+					if (
+						(isImageBookmark(a.data) && isImageBookmark(b.data)) ||
+						(isImageDir(a.data) && isImageDir(b.data))
+					) {
+						return b.data.timeStamp > a.data.timeStamp ? 1 : -1;
+					}
+					return b.data.id > a.data.id ? 1 : -1;
+				})
+				.forEach((v, i) => {
+					let min = minIndex(heights);
+					if (isImageDir(v.data)) {
+						min = i % 4;
+					}
+					let height = isImageDir(v)
+						? 100
+						: Math.ceil(
+								180 * (v.img.naturalHeight / v.img.naturalWidth)
+						  );
+					heights[min] += height;
+					waterfall[min].push({
+						img: v.img,
+						data: v.data
+					});
+				});
+			return waterfall;
+		},
+		[]
+	);
 	const BottomMenu = useCallback(() => {
 		return (
 			<Sidebar menuPosition="bottom">
@@ -98,22 +149,15 @@ export const ImgContainer = (props: {
 			setReady(true);
 			return;
 		}
-		length.loaded = 0;
+		imageInfo.loaded = 0;
 		if (waterfallCache.isNeeded(props.packs)) {
 			setImages(waterfallCache.load());
 		} else {
-			length.value = props.packs.length;
-			let waterfall: { img: HTMLImageElement; data: NormalImage }[][] = [
-				[],
-				[],
-				[],
-				[]
-			];
-			let heights = [0, 0, 0, 0];
+			imageInfo.total = props.packs.length;
 			const buffer: { img: HTMLImageElement; data: NormalImage }[] = [];
+			imageInfo.list = buffer;
 			props.packs.forEach(async (v) => {
 				let img = new Image();
-				let hasExternalDriver = props.util.external;
 				let imgPath = !galleryConfig.r18
 					? defaultCover
 					: ((v.path ?? '') + v.cover).replace(/\\/g, '/');
@@ -136,49 +180,49 @@ export const ImgContainer = (props: {
 				img.onload = () => {
 					img.onload = null;
 					buffer.push({ img, data: v });
-					length.loaded++;
-					if (length.loaded >= length.value) {
-						buffer
-							.sort((a, b) => {
-								if (
-									(isImageBookmark(a.data) &&
-										isImageBookmark(b.data)) ||
-									(isImageDir(a.data) && isImageDir(b.data))
-								) {
-									return b.data.timeStamp > a.data.timeStamp
-										? 1
-										: -1;
-								}
-								return b.data.id > a.data.id ? 1 : -1;
-							})
-							.forEach((v, i) => {
-								let min = minIndex(heights);
-								if (isImageDir(v.data)) {
-									min = i % 4;
-								}
-								let height = isImageDir(v)
-									? 100
-									: Math.ceil(
-											180 *
-												(v.img.naturalHeight /
-													v.img.naturalWidth)
-									  );
-								heights[min] +=
-									height +
-									waterfall[min].push({
-										img: v.img,
-										data: v.data
-									});
-							});
+					imageInfo.loaded++;
+					if (imageInfo.loaded >= imageInfo.total) {
+						// buffer
+						// 	.sort((a, b) => {
+						// 		if (
+						// 			(isImageBookmark(a.data) &&
+						// 				isImageBookmark(b.data)) ||
+						// 			(isImageDir(a.data) && isImageDir(b.data))
+						// 		) {
+						// 			return b.data.timeStamp > a.data.timeStamp
+						// 				? 1
+						// 				: -1;
+						// 		}
+						// 		return b.data.id > a.data.id ? 1 : -1;
+						// 	})
+						// 	.forEach((v, i) => {
+						// 		let min = minIndex(heights);
+						// 		if (isImageDir(v.data)) {
+						// 			min = i % 4;
+						// 		}
+						// 		let height = isImageDir(v)
+						// 			? 100
+						// 			: Math.ceil(
+						// 					180 *
+						// 						(v.img.naturalHeight /
+						// 							v.img.naturalWidth)
+						// 			  );
+						// 		heights[min] += height;
+						// 		waterfall[min].push({
+						// 			img: v.img,
+						// 			data: v.data
+						// 		});
+						// 	});
+						const waterfall = renderImage(buffer);
 						setImages([...waterfall]);
 						setReady(true);
 					}
 				};
 				img.onerror = () => {
-					--length.value;
+					--imageInfo.total;
 					img.onerror = null;
-					if (length.loaded >= length.value) {
-						setImages([...waterfall]);
+					if (imageInfo.loaded >= imageInfo.total) {
+						setImages([...renderImage(imageInfo.list)]);
 						setReady(true);
 					}
 					let err = new Error(
@@ -205,7 +249,7 @@ export const ImgContainer = (props: {
 		return () => {
 			setImages([[], [], [], []]);
 			setReady(false);
-			length.loaded = 0;
+			imageInfo.loaded = 0;
 		};
 	}, [props.packs]);
 	useEffect(() => {

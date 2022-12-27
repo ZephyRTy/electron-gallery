@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { useData } from 'syill';
+import { useController, useData } from 'syill';
 import { lineHeight } from '../../../../types/constant';
 import { Chapter } from '../../../../types/global';
 import { stylesJoin } from '../../../../utils/functions/functions';
@@ -8,6 +8,7 @@ import { catalogShowStore, marksShowStore } from '../../../../utils/store';
 import styles from '../../style/catalog.module.scss';
 import { TextContext } from '../TextContent';
 export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
+	const [, setVis] = useController(catalogShowStore);
 	const item = useMemo(() => {
 		return (
 			<li
@@ -20,6 +21,9 @@ export const CatalogItem = (props: { chapter: Chapter; current: boolean }) => {
 				onClick={() => {
 					document.querySelector('#reader-scroll-ele')!.scrollTop =
 						props.chapter.index * lineHeight;
+					setTimeout(() => {
+						setVis(false);
+					}, 100);
 				}}
 				title={props.chapter.title}
 			>

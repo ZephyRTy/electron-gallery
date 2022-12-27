@@ -49,7 +49,7 @@ export const getImgFrom24fa = async () => {
 		status: 0 | 1;
 	}[] = await new Promise((resolve) => {
 		connection.query(
-			'select * from pack_list order by id desc limit 3000',
+			'select * from pack_list order by id desc limit 10000',
 			(err: any, res: any) => {
 				if (err) {
 					console.log(err);
@@ -233,3 +233,4 @@ export const getImgFrom24fa = async () => {
 		}
 	});
 };
+// file is valid image or not

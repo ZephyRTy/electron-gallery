@@ -17,6 +17,10 @@ import { ReaderOperator } from './readerOperator';
 const fs = window.require('fs');
 const isImage = (v: string) =>
 	endsWith(v.toLocaleLowerCase(), '.jpg', 'png', 'jpeg', 'webp');
+const isValidImage = (v: string) => {
+	const stat = fs.statSync(v);
+	return stat.size > 1024;
+};
 // 对文件进行操作，可与数据进行交互
 export class GalleryOperator extends DataOperator<
 	NormalImage,
@@ -25,6 +29,7 @@ export class GalleryOperator extends DataOperator<
 > {
 	protected static instance: GalleryOperator;
 	protected override sql: MysqlOperator;
+	currentDirectory: number = -1;
 	static getInstance(): GalleryOperator {
 		if (!GalleryOperator.instance) {
 			GalleryOperator.instance = new GalleryOperator();
@@ -103,6 +108,17 @@ export class GalleryOperator extends DataOperator<
 				stared: 0 as 0
 			};
 			const img = newPack.path + newPack.cover;
+			if (!isValidImage(img)) {
+				const files = fs.readdirSync(e.path);
+				const valid = files.find((v: string) =>
+					isValidImage(e.path + v)
+				);
+				if (!valid) {
+					result.push(`${e.title}:::图片无效`);
+					return;
+				}
+				newPack.cover = '/' + valid || '';
+			}
 			success.push(
 				this.sql.insertPack(newPack).then((res) => {
 					if (!res) {
