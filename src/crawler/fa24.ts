@@ -233,4 +233,3 @@ export const getImgFrom24fa = async () => {
 		}
 	});
 };
-// file is valid image or not

@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
+import { readerR18 } from '../../types/constant';
 import {
 	BasicData,
 	BookmarkOfBook,
@@ -12,7 +13,7 @@ import {
 	NormalImage,
 	TextComment
 } from '../../types/global';
-import { formatDate, generateFileMd5 } from '../functions/functions';
+import { formatDate } from '../functions/functions';
 import { getAllDrive } from '../functions/process';
 import { RequestOperator } from './requestOperator';
 /* eslint-disable no-underscore-dangle */
@@ -57,9 +58,12 @@ export class SqliteOperatorForBook implements RequestOperator {
 		if (!fs.existsSync(dbPath)) {
 			fs.mkdirSync(dbPath);
 		}
-		this.db = new sq3.Database(path.resolve(dbPath, 'books.db'), () => {
-			this.readerInitialize();
-		});
+		this.db = new sq3.Database(
+			path.resolve(dbPath, readerR18 ? 'books.db' : 'test.db'),
+			() => {
+				this.readerInitialize();
+			}
+		);
 		this.checkExternalDriver();
 	}
 	private readerInitialize() {
@@ -558,8 +562,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 		},
 		duplicate: boolean = false
 	) {
-		const md5 = generateFileMd5(newPack.path);
-		let sql = `insert into ${this.mainTableName} (title, stared, path, md5) values ('${newPack.title}' , ${newPack.stared} , '${newPack.path}', '${md5}')`;
+		let sql = `insert into ${this.mainTableName} (title, stared, path) values ('${newPack.title}' , ${newPack.stared} , '${newPack.path}')`;
 		return new Promise((resolve) => {
 			this.db.run(sql, (res) => {
 				if (res && !duplicate) {

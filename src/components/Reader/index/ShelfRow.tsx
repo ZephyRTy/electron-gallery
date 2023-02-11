@@ -139,7 +139,6 @@ export const ShelfItem = (props: {
 					)}
 					onClick={() => {
 						if (confirmed) {
-							console.log('delete');
 							readerOperator.removePack(props.bookItem);
 							if (id) {
 								clearTimeout(id.current);

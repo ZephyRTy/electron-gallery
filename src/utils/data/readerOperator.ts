@@ -269,7 +269,22 @@ export class ReaderOperator extends DataOperator<
 		}
 		return -1;
 	}
-
+	removePack(pack: MetaBook) {
+		if (pack.parent) {
+			this.removeFileFromDir(pack.id, pack.parent);
+		}
+		this.deletePack(pack.id);
+		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
+		this.starModel.remove(pack.id);
+		this.bookmarkModel.remove(pack.id);
+		this.fileCache.data = this.fileCache.data.filter(
+			(e) => e.id !== pack.id
+		);
+		this.searchCache.res = this.searchCache.res.filter(
+			(e) => e.id !== pack.id
+		);
+		this.refresh();
+	}
 	override removeFileFromDir(packId: number, dirId: number) {
 		this.sql.updateDir(dirId, packId, 0).then(() => {
 			this.dirMap.get(dirId.toString())!.count--;
@@ -287,9 +302,5 @@ export class ReaderOperator extends DataOperator<
 		window.sessionStorage.setItem('currentBook', JSON.stringify(book));
 		this.titleWillUpdate(book.title);
 		this.currentBook = book;
-	}
-
-	getProgress(id: number) {
-		return this.bookmarkModel.data.find((v) => v.id === id)?.url;
 	}
 }

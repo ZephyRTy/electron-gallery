@@ -15,6 +15,7 @@ import {
 	deltaLine,
 	DELTA_HEIGHT,
 	distanceToUpdate,
+	fontSize,
 	lineHeight,
 	overflowNum
 } from '../../../types/constant';
@@ -99,19 +100,18 @@ export const TextContent = () => {
 	const [book, setBook] = useState(null as any as TextDetail);
 	const [content, setContent] = useState([] as TextLine[]);
 	const [chapter, setChapter] = useController(chapterStore);
-	const [fontSize, setFontSize] = useState(16);
+	const [textFontSize, setFontSize] = useState(fontSize);
 	const scrollEle = useRef(null);
 	const jump = useRef(false);
 	const initBottom = useMemo(
 		() => (book ? (book.length - contentRange) * lineHeight : 0),
-		[book, book?.length, fontSize]
+		[book, book?.length, textFontSize]
 	);
 	const updateWhenDrag = useCallback(
 		(eleScrollTop: number) => {
 			if (!book) return;
 			let lineIndex = Math.ceil(eleScrollTop / lineHeight);
 			let startLine = Math.max(lineIndex - deltaLine - overflowNum, 0);
-			console.log('before drag');
 			setChapter(book.updateCurrentChapter(lineIndex, 'drag'));
 			if (startLine + contentRange >= book.length) {
 				startLine = book.length - contentRange;
@@ -194,7 +194,6 @@ export const TextContent = () => {
 							return;
 						}
 						if (distance >= 0) {
-							console.log('before scroll down');
 							setChapter(
 								book.updateCurrentChapter(
 									Math.ceil(eleScrollTop / lineHeight),
@@ -224,7 +223,6 @@ export const TextContent = () => {
 							return;
 						}
 						if (distance <= 0) {
-							console.log('before scroll up');
 							setChapter(
 								book.updateCurrentChapter(
 									Math.ceil(eleScrollTop / lineHeight),
@@ -287,7 +285,7 @@ export const TextContent = () => {
 				<article
 					className={stylesJoin(styles['reader-content'])}
 					ref={article}
-					style={{ fontSize: `${fontSize}px` }}
+					style={{ fontSize: `${textFontSize}px` }}
 				>
 					{content.map((line) => {
 						return <ContentLine key={line.index} line={line} />;
@@ -296,11 +294,11 @@ export const TextContent = () => {
 				<Placeholder height={bottom} />
 			</>
 		);
-	}, [content, top, bottom, book, fontSize]);
+	}, [content, top, bottom, book, textFontSize]);
 
 	return (
 		<TextContext.Provider value={book}>
-			<TypeSetting fontSize={fontSize} typeset={typeset} />
+			<TypeSetting fontSize={textFontSize} typeset={typeset} />
 			<RegExpSet />
 			<CommentDialog />
 			<ChangedAlert />

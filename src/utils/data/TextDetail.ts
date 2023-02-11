@@ -169,7 +169,6 @@ export class TextDetail {
 				chapter = i;
 			}
 		} else if (direction === 'down') {
-			console.log('currentChapter', this.currentChapter);
 			if (this.currentChapter < this.catalog.length - 1) {
 				if (
 					this.getChapter(this.currentChapter + 1).index <= lineIndex
@@ -185,7 +184,6 @@ export class TextDetail {
 			}
 		}
 		this.currentChapter = chapter;
-		console.log(chapter);
 		return chapter;
 	}
 
