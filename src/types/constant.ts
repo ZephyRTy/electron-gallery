@@ -61,8 +61,8 @@ export const CATALOG_REG =
 export const SPACE_CODE = decodeURIComponent('%E3%80%80');
 const typeSetting = new (class TypeSetting {
 	width = 900;
-	fontSize = 16;
-	lettersOfEachLine = Math.floor(this.width / this.fontSize);
+	fontSize = fontSize;
+	lettersOfEachLine = Math.floor(this.width / this.fontSize) - 1;
 })();
 
 export const lettersOfEachLine = () => typeSetting.lettersOfEachLine;
