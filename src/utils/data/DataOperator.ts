@@ -38,6 +38,14 @@ const checkImageSize = (path: string) => {
 	const size = fs.statSync(path).size;
 	return size;
 };
+/**
+ *
+ * @param time 要睡眠的毫秒数
+ */
+const sleep = (time) => {
+	const start = new Date().getTime();
+	while (new Date().getTime() - start < time) {}
+};
 // 对文件进行操作，可与数据进行交互
 export abstract class DataOperator<
 	normal extends BasicData,
@@ -333,18 +341,24 @@ export abstract class DataOperator<
 		}
 		let cover = '';
 		let count = 0;
-		this.currentPacks.forEach((e, i) => {
+		let n = 0;
+		for (let i = 0; i < this.currentPacks.length; ++i) {
+			const e = this.currentPacks[i];
 			if (this.selection.selected.has(e.id)) {
 				if (hasCover(e)) {
 					if (count === 0) {
 						cover = e.path + e.cover;
 					}
 				}
-				++count;
+				++n;
+				if (n > 0 && n % 10 === 0) {
+					sleep(100);
+				}
 				e.parent = dirIndex;
 				this.sql
 					.updateDir(dirIndex, e.id, 1, count === 1 ? cover : '')
 					.then(() => {
+						++count;
 						if (count === this.selection.selected.size) {
 							this.dirMap.get(dirIndex.toString())!.count +=
 								this.selection.selected.size;
@@ -356,7 +370,8 @@ export abstract class DataOperator<
 						}
 					});
 			}
-		});
+		}
+		this.currentPacks.forEach((e, i) => {});
 	}
 
 	abstract addNewDir(dirName: string);
@@ -459,7 +474,7 @@ export abstract class DataOperator<
 	}
 
 	protected deletePack(packId: number) {
-		this.sql.delete(packId);
+		return this.sql.delete(packId);
 	}
 	get modeOfSearch() {
 		return this.searchCache.mode;
@@ -531,13 +546,18 @@ export abstract class DataOperator<
 		if (pack.parent) {
 			this.removeFileFromDir(pack.id, pack.parent);
 		}
-		this.deletePack(pack.id);
+
 		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
 		this.starModel.remove(pack.id);
 		this.bookmarkModel.remove(pack.id);
 		this.searchCache.res = this.searchCache.res.filter(
 			(e) => e.id !== pack.id
 		);
-		this.refresh();
+		this.deletePack(pack.id).then(() => {
+			this.refresh();
+		});
+	}
+	getProgress(id: number) {
+		return this.bookmarkModel.data.find((v) => v.id === id)?.url;
 	}
 }

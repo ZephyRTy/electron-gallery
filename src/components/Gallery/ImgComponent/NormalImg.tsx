@@ -1,5 +1,5 @@
 /* eslint-disable no-undefined */
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useController } from 'syill';
 import { ReactComponent as Cross } from '../../../icon/cross.svg';
 import { ReactComponent as RenameIcon } from '../../../icon/rename.svg';
@@ -38,6 +38,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 			clearTimeout(flag.current.id);
 			if (!flag.current.holding && !props.inSelect && e.button === 0) {
 				window.location.href =
+					props.util.getProgress(props.data.id) ||
 					'#/gallery/pack/' + props.data.id + '?page=1';
 			}
 		},
@@ -73,7 +74,7 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 		},
 		[props.data.id, props.util]
 	);
-	const image = useMemo(() => {
+	const Image = useCallback(() => {
 		return (
 			<div
 				className={
@@ -106,10 +107,13 @@ export const NormalImg: ImageComponent<NormalImage> = (props: {
 				}
 				type="checkbox"
 			/>
-			{image}
+			<Image />
 			<a
 				className={styles['pack-title']}
-				href={'#/gallery/pack/' + props.data.id + '?page=1'}
+				href={
+					props.util.getProgress(props.data.id) ||
+					'#/gallery/pack/' + props.data.id + '?page=1'
+				}
 			>
 				<span
 					className={styles['pack-title-name']}

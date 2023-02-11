@@ -173,6 +173,7 @@ export const ImgContainer = (props: {
 						'/thumb.jpg';
 				}
 				let flag = String.raw`${coverPath}`.includes('%');
+
 				img.src = String.raw`${coverPath.replace(/\\/g, '/')}`
 					.replaceAll(/%/g, encodeURIComponent('%'))
 					.replaceAll(/\s/g, encodeURIComponent(' '))
@@ -230,12 +231,13 @@ export const ImgContainer = (props: {
 					);
 					console.error(err);
 					console.log(decodeURIComponent(img.src));
+					img.src = '/blank.jpg';
 					if (isImageBookmark(v)) {
 						compress(
 							decodeURIComponent(v.path + v.cover),
 							getBookmarkThumb(v)
 						);
-					} else {
+					} else if (!isImageDir(v)) {
 						compress(decodeURIComponent(v.path + v.cover)).catch(
 							(err) => {
 								console.log('compress failed');

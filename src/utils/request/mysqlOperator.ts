@@ -35,7 +35,7 @@ export class MysqlOperator implements RequestOperator {
 			password: '123456',
 			database: 'GALLERY',
 			port: 3306,
-			connectionLimit: 10
+			connectionLimit: 20
 		};
 		this._pool = mysql.createPool(this._config);
 	}
