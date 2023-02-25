@@ -16,6 +16,7 @@ import { DataOperator } from '../utils/data/DataOperator';
 import { GalleryOperator } from '../utils/data/galleryOperator';
 import {
 	changedAlertStore,
+	clearConfirmStore,
 	commentVisStore,
 	configVisibleStore,
 	dialogActive,
@@ -636,6 +637,38 @@ const EpubCommentContent = (props: {
 		</div>
 	);
 };
+
+const ClearConfirmContent = (props: {
+	util: DataOperator<any, any, any>;
+	setVisible: (v: boolean) => void;
+	visible: boolean;
+}) => {
+	const book = useContext(TextContext);
+	useEffect(() => {
+		if (book) {
+		}
+	}, [book, props.visible]);
+	return (
+		<div className={styles['clear_confirm-container']}>
+			<div className={styles['clear_confirm-info']}>
+				<span className={styles['clear_confirm-span']}>
+					是否清除所有阅读记录？
+				</span>
+			</div>
+			<ButtonContainer
+				handleCancel={() => {
+					dialogActive.setActive(false);
+					props.setVisible(false);
+				}}
+				handleConfirm={async () => {
+					await props.util.clearBookmark();
+					props.util.refresh();
+					props.setVisible(false);
+				}}
+			/>
+		</div>
+	);
+};
 export const DirMap = createDialog(DirMapContent, dirMapVisibleStore, 'dirMap');
 export const Rename = createDialog(RenameContent, renameVisibleStore, 'rename');
 export const Config = createDialog(configContent, configVisibleStore, 'config');
@@ -660,4 +693,9 @@ export const EpubCommentDialog = createDialog(
 	EpubCommentContent,
 	epubCommentVisStore,
 	'epubComment'
+);
+export const ClearConfirmDialog = createDialog(
+	ClearConfirmContent,
+	clearConfirmStore,
+	'clearConfirm'
 );

@@ -55,6 +55,7 @@ export interface Model<T> {
 	dataToUpdate: T[];
 	update(newData?: T, ...args: any[]): void;
 	remove(id: number): void;
+	clear(): void;
 	sqlOperator: RequestOperator;
 }
 export interface HttpImagePack {

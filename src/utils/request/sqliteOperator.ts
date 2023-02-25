@@ -585,6 +585,20 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
+
+	clearBookmark(): Promise<unknown> {
+		const sql = 'delete from bookmark';
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, (err, res) => {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
+
 	updateGalleryBookmark(
 		bookmark: ImageBookmark,
 		marked: boolean,

@@ -366,7 +366,29 @@ $confirm-btn-color: rgb(64, 202, 244);
 		width: 100%;
 	}
 }
-
+.clear_confirm {
+	display: block;
+	height: 40px;
+	text-align: center;
+	line-height: 40px;
+	margin: 20px auto;
+	&-info {
+		height: 100px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	&-span {
+		height: 30px;
+		width: 200px;
+		text-align: center;
+		margin: 0 auto;
+		display: block;
+	}
+	&-container {
+		width: 100%;
+	}
+}
 textarea.comment-input {
 	min-height: 50px;
 	width: 350px;

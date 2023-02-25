@@ -9,10 +9,11 @@ import {
 	isBookmarkOfBook
 } from '../../../utils/functions/typeAssertion';
 import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
-import { Config, DirMap } from '../../Dialog';
+import { ClearConfirmDialog, Config, DirMap } from '../../Dialog';
 import {
 	Add,
 	Back,
+	ClearBtn,
 	ConfigBtn,
 	Refresh,
 	SelectPacks
@@ -84,6 +85,7 @@ export const Bookshelf = () => {
 	return (
 		<div className={styles['bookshelf'] + ' main-content'}>
 			{dirMap}
+			<ClearConfirmDialog util={readerOperator} />
 			<Config oldConfig={readerConfig} type="reader" />
 			<SidebarContainer>
 				<TopMenu /> <Menu type="reader" />
@@ -91,6 +93,9 @@ export const Bookshelf = () => {
 			</SidebarContainer>
 			<FileDrop itemType="file" operator={readerOperator} />
 			<Refresh util={readerOperator} />
+			{readerOperator.getMode() === 'Bookmark' ? (
+				<ClearBtn util={readerOperator} />
+			) : null}
 			<main className={styles['bookshelf-container']}>
 				<div className={styles['bookshelf-grid']}>
 					{books.map((e) => {
@@ -110,6 +115,7 @@ export const Bookshelf = () => {
 					})}
 				</div>
 			</main>
+
 			<PageNav current={page} total={Math.ceil(total / 20)} />
 		</div>
 	);

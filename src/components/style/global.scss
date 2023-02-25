@@ -110,7 +110,23 @@
 		height: 35px;
 		top: 36px;
 		left: 56px;
-		border-radius: 0 0 23px 0;
+
+		&:hover {
+			background: #eb9706;
+		}
+		svg {
+			fill: white;
+			width: 80%;
+		}
+	}
+	&-clear {
+		position: absolute;
+		z-index: 800;
+		background: $active-color;
+		width: 39px;
+		height: 35px;
+		top: 70px;
+		left: 56px;
 		&:hover {
 			background: #eb9706;
 		}

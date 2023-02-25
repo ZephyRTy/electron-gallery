@@ -48,3 +48,4 @@ export const percentageStore = new Store(0);
 export const commentVisStore = new Store(false);
 export const epubCommentVisStore = new Store(false);
 export const chapterStore = new Store(0);
+export const clearConfirmStore = new Store(false);

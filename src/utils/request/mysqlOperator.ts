@@ -628,5 +628,20 @@ export class MysqlOperator implements RequestOperator {
 			});
 		});
 	}
+
+	clearBookmark(): Promise<unknown> {
+		const sql = 'truncate table bookmark';
+		return new Promise((resolve, reject) => {
+			this._pool.getConnection((err: any, connection: any) => {
+				connection.query(sql, (err: any, res: any) => {
+					connection.release();
+					if (err) {
+						reject(err);
+					}
+					resolve(res);
+				});
+			});
+		});
+	}
 }
 export const mysqlOperator = MysqlOperator.getInstance();

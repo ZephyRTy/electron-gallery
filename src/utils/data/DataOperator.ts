@@ -541,7 +541,11 @@ export abstract class DataOperator<
 			await this.load();
 		}
 	}
-
+	async clearBookmark() {
+		return this.sql.clearBookmark().then(() => {
+			this.bookmarkModel.clear();
+		});
+	}
 	removePack(pack: normal, shouldDelete = false) {
 		if (pack.parent) {
 			this.removeFileFromDir(pack.id, pack.parent);
