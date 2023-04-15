@@ -2,11 +2,11 @@ import { ImageBookmark } from './global';
 
 /* eslint-disable no-unused-vars */
 const fs = window.require('fs');
+const path = window.require('path');
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.resolve();
 const allConfig = JSON.parse(
-	fs.readFileSync(
-		'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
-		'utf-8'
-	)
+	fs.readFileSync(path.resolve(__dirname, './appConfig/config.json'), 'utf-8')
 );
 const galleryConfig = allConfig.gallery;
 
@@ -22,7 +22,7 @@ export {
 
 export const translation = JSON.parse(
 	fs.readFileSync(
-		'D:\\webDemo\\desktop-reader\\src\\config\\translation.json',
+		path.resolve(__dirname, './appConfig/translation.json'),
 		'utf-8'
 	)
 );

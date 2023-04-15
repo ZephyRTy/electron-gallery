@@ -236,6 +236,10 @@
 			"from": "public/",
 			"to": "public/"
 		},
+		"extraFiles": {
+			"from": "appConfig/",
+			"to": "appConfig/"
+		},
 		"directories": {
 			"output": "app"
 		},
@@ -247,7 +251,8 @@
 		],
 		"files": [
 			"dist/",
-			"main.js"
+			"main.js",
+			"preload.js"
 		],
 		"nsis": {
 			"oneClick": false,

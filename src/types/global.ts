@@ -22,6 +22,7 @@ export interface BasicFolder {
 	title: string;
 	timeStamp: string;
 }
+
 export interface NormalImage extends BasicData {
 	cover: string;
 }
@@ -89,6 +90,7 @@ export interface EpubChapter {
 	href: string;
 	id: string;
 }
+
 export interface MetaBook extends BasicData {
 	reg: string;
 	bookCover?: string;

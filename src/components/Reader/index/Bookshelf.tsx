@@ -26,6 +26,8 @@ import styles from '../style/bookshelf.module.scss';
 import { ShelfBookFolder } from './BookFolder';
 import { ShelfBookmark } from './BookmarkOfBook';
 import { ShelfItem } from './ShelfRow';
+
+const path = window.require('path');
 export const Bookshelf = () => {
 	const [books, setBooks] = useState([] as MetaBook[]);
 	const [total, setTotal] = useState(0);
@@ -42,6 +44,15 @@ export const Bookshelf = () => {
 	useEffect(() => {
 		readerOperator.switchMainTable('book_list').then(() => {
 			readerOperator.register(setRefresh);
+		});
+		const { ipcRenderer } = window.require('electron');
+		ipcRenderer.on('open-url', (event, url: string) => {
+			if (path.extname(url) === '.txt') {
+				readerOp.addNewPack(
+					[{ path: url, title: path.basename(url, '.txt') }],
+					false
+				);
+			}
 		});
 	}, []);
 	useEffect(() => {
@@ -108,6 +119,7 @@ export const Bookshelf = () => {
 							<ShelfItem
 								bookItem={e}
 								inSelect={inSelect}
+								isNew={!!window.sessionStorage.getItem(e.path)}
 								key={e.id}
 								setInSelect={setInSelect}
 							/>

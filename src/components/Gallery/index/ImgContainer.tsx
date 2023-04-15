@@ -40,6 +40,7 @@ import { PageNav } from '../PageNav';
 import { PageOfTotal } from '../PageOfTotal';
 import styles from '../style/img.module.scss';
 let index = 0;
+const fs = window.require('fs');
 export const ImgContainer = (props: {
 	packs: NormalImage[] | ImageBookmark[];
 	util: GalleryOperator;
@@ -183,37 +184,6 @@ export const ImgContainer = (props: {
 					buffer.push({ img, data: v });
 					imageInfo.loaded++;
 					if (imageInfo.loaded >= imageInfo.total) {
-						// buffer
-						// 	.sort((a, b) => {
-						// 		if (
-						// 			(isImageBookmark(a.data) &&
-						// 				isImageBookmark(b.data)) ||
-						// 			(isImageDir(a.data) && isImageDir(b.data))
-						// 		) {
-						// 			return b.data.timeStamp > a.data.timeStamp
-						// 				? 1
-						// 				: -1;
-						// 		}
-						// 		return b.data.id > a.data.id ? 1 : -1;
-						// 	})
-						// 	.forEach((v, i) => {
-						// 		let min = minIndex(heights);
-						// 		if (isImageDir(v.data)) {
-						// 			min = i % 4;
-						// 		}
-						// 		let height = isImageDir(v)
-						// 			? 100
-						// 			: Math.ceil(
-						// 					180 *
-						// 						(v.img.naturalHeight /
-						// 							v.img.naturalWidth)
-						// 			  );
-						// 		heights[min] += height;
-						// 		waterfall[min].push({
-						// 			img: v.img,
-						// 			data: v.data
-						// 		});
-						// 	});
 						const waterfall = renderImage(buffer);
 						setImages([...waterfall]);
 						setReady(true);
@@ -238,12 +208,19 @@ export const ImgContainer = (props: {
 							getBookmarkThumb(v)
 						);
 					} else if (!isImageDir(v)) {
-						compress(decodeURIComponent(v.path + v.cover)).catch(
-							(err) => {
-								console.log('compress failed');
-								props.util.removePack(v);
-							}
-						);
+						const imgList: string[] = fs.readdirSync(v.path);
+						const cover = imgList.find((v) => {
+							return /\.(jpg|png|bmp|jpeg)$/i.test(v);
+						});
+						if (!cover) {
+							props.util.removePack(v);
+						}
+						compress(
+							decodeURIComponent(v.path + '/' + cover)
+						).catch((err) => {
+							console.log('compress failed');
+							props.util.removePack(v);
+						});
 					}
 				};
 			});

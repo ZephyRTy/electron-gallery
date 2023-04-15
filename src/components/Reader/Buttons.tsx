@@ -4,11 +4,13 @@ import { useController, useData } from 'syill';
 import { ReactComponent as AddBookmarkIcon } from '../../icon/addBookmark.svg';
 import { ReactComponent as BackBtn } from '../../icon/back.svg';
 import { ReactComponent as CatalogIcon } from '../../icon/catalog.svg';
+import { ReactComponent as ExchangeIcon } from '../../icon/exchange.svg';
 import { ReactComponent as FindIcon } from '../../icon/find.svg';
 import { ReactComponent as GotoGalleryIcon } from '../../icon/images.svg';
 import { ReactComponent as RegExpIcon } from '../../icon/regexp.svg';
 import {
 	catalogShowStore,
+	changeWordStore,
 	cursorStore,
 	findStore,
 	marksShowStore,
@@ -157,6 +159,25 @@ export const FindInEpub = () => {
 			}}
 		>
 			<FindIcon />
+		</button>
+	);
+};
+
+export const ChangeWordBtn = () => {
+	const [dialogShow, setDialogShow] = useData(changeWordStore);
+	const [, setMarksShow] = useController(marksShowStore);
+	return (
+		<button
+			className={
+				'btn-catalog icon' +
+				(dialogShow ? ' activeMode' : ' not-active')
+			}
+			onClick={() => {
+				setDialogShow((v) => !v);
+				setMarksShow(false);
+			}}
+		>
+			<ExchangeIcon />
 		</button>
 	);
 };

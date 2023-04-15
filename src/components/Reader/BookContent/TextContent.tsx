@@ -28,10 +28,22 @@ import {
 	stylesJoin
 } from '../../../utils/functions/functions';
 import { changedAlertStore, chapterStore } from '../../../utils/store';
-import { ChangedAlert, CommentDialog, RegExpSet } from '../../Dialog';
+import {
+	ChangedAlert,
+	ChangeWordDialog,
+	CommentDialog,
+	RegExpSet
+} from '../../Dialog';
 import { OpenInExplorerBtn } from '../../Gallery/Buttons';
 import { Sidebar, SidebarContainer } from '../../Menu';
-import { Back, CatalogBtn, Find, RegExpBtn, ShowMarksBtn } from '../Buttons';
+import {
+	Back,
+	CatalogBtn,
+	ChangeWordBtn,
+	Find,
+	RegExpBtn,
+	ShowMarksBtn
+} from '../Buttons';
 import styles from '../style/reader.module.scss';
 import { FindDialog, FindMaskContainer } from './FindDialog';
 import { MarkedContext } from './MarkedLine';
@@ -300,6 +312,7 @@ export const TextContent = () => {
 		<TextContext.Provider value={book}>
 			<TypeSetting fontSize={textFontSize} typeset={typeset} />
 			<RegExpSet />
+			<ChangeWordDialog />
 			<CommentDialog />
 			<ChangedAlert />
 			<SideEnter3D
@@ -332,6 +345,7 @@ export const TextContent = () => {
 					<ShowMarksBtn />
 					<Find />
 					<OpenInExplorerBtn filePath={book?.path} />
+					<ChangeWordBtn />
 				</Sidebar>
 			</SidebarContainer>
 			<div

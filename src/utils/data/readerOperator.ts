@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 import { Book } from 'epubjs';
 import { Map } from 'immutable';
@@ -17,6 +18,7 @@ import { catalogCache } from './indexDB';
 import { TextDetail } from './TextDetail';
 const fsp = window.require('fs/promises');
 const fs = window.require('fs');
+const path = window.require('path');
 const iconv = window.require('iconv-lite');
 iconv.skipDecodeWarning = true;
 export const splitWords = (str: string, len: number) => {
@@ -198,6 +200,7 @@ export class ReaderOperator extends DataOperator<
 				stared: 0 as 0
 			};
 			await this.sql.insertPack(newPack, duplicate);
+			window.sessionStorage.setItem(data.path, 'true');
 			this.switchMode(Mode.Init);
 			this.refresh();
 			return true;
@@ -205,31 +208,24 @@ export class ReaderOperator extends DataOperator<
 		let result = [] as string[];
 		let successCount = 0;
 		let success = [] as Promise<any>[];
+		const __dirname = path.resolve();
+		const removePattern = JSON.parse(
+			fs.readFileSync(
+				path.resolve(__dirname, './appConfig/uselessWord.json')
+			)
+		) as string[];
 		for (const [i, e] of data.entries()) {
 			if (!e.path || !e.title || !isText(e.path)) {
 				return;
 			}
 			//NOTE 正式发布时删除
-			// const novelPath = path.resolve('D:/小说', path.basename(e.path));
-			// if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
-			// 	await fs.rename(e.path, novelPath, () => {});
-			// 	e.path = novelPath;
-			// }
 			let title = e.title;
 			if (e.path.endsWith('.epub')) {
 				title = await getEpubTitle(e.path);
 			}
 			let newPack = {
 				path: e.path,
-				title: deleteUselessWords(
-					title,
-					'soushu2022.com@',
-					'[搜书吧]',
-					'-soushu2022.com-[搜书吧网址]',
-					'-soushu555.org-[搜书吧网址]',
-					'.txt',
-					'.epub'
-				),
+				title: deleteUselessWords(title, ...removePattern),
 				stared: 0 as 0
 			};
 			success.push(
@@ -237,6 +233,7 @@ export class ReaderOperator extends DataOperator<
 					if (!res) {
 						result.push(`${e.title}:::重复`);
 					} else {
+						window.sessionStorage.setItem(e.path, 'true');
 						successCount++;
 					}
 
@@ -254,6 +251,7 @@ export class ReaderOperator extends DataOperator<
 			return result;
 		});
 	}
+
 	async addNewDir(dirName: string) {
 		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
 			return -1;

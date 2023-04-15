@@ -53,7 +53,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 			os.userInfo().homedir,
 			'AppData',
 			'Roaming',
-			'YReader'
+			'y-Reader'
 		);
 		if (!fs.existsSync(dbPath)) {
 			fs.mkdirSync(dbPath);

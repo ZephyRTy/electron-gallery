@@ -82,6 +82,7 @@ export abstract class DataOperator<
 		reg: false,
 		valid: false
 	};
+
 	protected constructor(
 		protected databaseConfig: { database: string; tableName: string },
 		protected sql: RequestOperator
@@ -106,7 +107,9 @@ export abstract class DataOperator<
 				this.dirMap = Map(res);
 			});
 		})();
-	} //获取图包
+	}
+
+	//获取图包
 	protected async getPacksNormally(page: number) {
 		let res = this.fileCache.data;
 		if (
@@ -393,7 +396,6 @@ export abstract class DataOperator<
 					this.refresh();
 				});
 		}
-		//this.switchMode(Mode.Init);
 	}
 
 	modeType(mode: Mode) {
@@ -514,21 +516,6 @@ export abstract class DataOperator<
 		this.bookmarkModel.data = bookmark;
 		this.directories = showDir;
 		return true;
-		// this.sql.getCount().then((res) => {
-		// 	this.total = res;
-		// });
-		// this.sql.select<normal, folder>([], Mode.Stared).then((res) => {
-		// 	this.starModel.data = res as normal[];
-		// });
-		// this.sql.select<normal, folder>([], Mode.Bookmark).then((res) => {
-		// 	this.bookmarkModel.data = res as unknown as bookmark[];
-		// });
-		// this.sql.select<normal, folder>([], Mode.ShowDir).then((res) => {
-		// 	this.directories = res as normal[];
-		// });
-		// this.sql.mapDir().then((res) => {
-		// 	this.dirMap = Map(res);
-		// });
 	}
 	async switchMainTable(name: string) {
 		currentOperator.op = this;

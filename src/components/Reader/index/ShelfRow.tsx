@@ -12,6 +12,7 @@ import { isBookmarkOfBook } from '../../../utils/functions/typeAssertion';
 import { epubCoverCache } from '../../../utils/models';
 import styles from '../style/bookshelf.module.scss';
 import { BookTitle } from './BookTitle';
+import { NewPackDot } from './NewPackDot';
 export const ShelfBookTitle = (props: { title: string; index: number }) => {
 	return (
 		<span
@@ -25,33 +26,37 @@ export const ShelfBookTitle = (props: { title: string; index: number }) => {
 };
 export const ShelfItem = (props: {
 	bookItem: MetaBook;
+	isNew?: boolean;
 	inSelect?: number;
 	setInSelect?: any;
 }) => {
-	const [stared, setStared] = useState(props.bookItem.stared);
+	const { bookItem, inSelect, isNew, setInSelect } = props;
+	const [stared, setStared] = useState(bookItem.stared);
 	const flag = useRef({ id: null as any, isDown: false, holding: false });
 	const id = useRef(null as any);
 	const [confirmed, setConfirmed] = useState(false);
-	const [src, setSrc] = useState(
-		props.bookItem.stared ? favoriteCover : txtCover
-	);
+
+	const [src, setSrc] = useState(bookItem.stared ? favoriteCover : txtCover);
 	const up = useCallback(
 		(e: any) => {
 			flag.current.isDown = false;
 			clearTimeout(flag.current.id);
-			if (!flag.current.holding && !props.inSelect && e.button === 0) {
-				readerOperator.mountBook(props.bookItem);
-				if (isBookmarkOfBook(props.bookItem)) {
-					gotoHash(props.bookItem.url);
+			if (!flag.current.holding && !inSelect && e.button === 0) {
+				if (window.sessionStorage.getItem(bookItem.path)) {
+					window.sessionStorage.removeItem(bookItem.path);
+				}
+				readerOperator.mountBook(bookItem);
+				if (isBookmarkOfBook(bookItem)) {
+					gotoHash(bookItem.url);
 					return;
 				}
 				gotoHash(
-					readerOperator.getProgress(props.bookItem.id) ||
-						`#/reader/book/${props.bookItem.id}`
+					readerOperator.getProgress(bookItem.id) ||
+						`#/reader/book/${bookItem.id}`
 				);
 			}
 		},
-		[props.bookItem.id, props.inSelect]
+		[bookItem.id, inSelect]
 	);
 	const down = useCallback(() => {
 		if (readerOperator.getMode() === Mode.DirContent) {
@@ -60,42 +65,42 @@ export const ShelfItem = (props: {
 		flag.current.isDown = true;
 		flag.current.holding = false;
 		flag.current.id = setTimeout(() => {
-			if (flag.current.isDown && !props.inSelect) {
-				props.setInSelect(1);
+			if (flag.current.isDown && !inSelect) {
+				setInSelect(1);
 				flag.current.holding = true;
 			}
 		}, 700);
 	}, [props]);
 	useEffect(() => {
-		if (props.bookItem) setStared(props.bookItem.stared);
-	}, [props.bookItem?.stared]);
+		if (bookItem) setStared(bookItem.stared);
+	}, [bookItem?.stared]);
 	useEffect(() => {
-		if (props.bookItem.path.endsWith('.epub')) {
-			if (!epubCoverCache.has(props.bookItem.id)) {
+		if (bookItem.path.endsWith('.epub')) {
+			if (!epubCoverCache.has(bookItem.id)) {
 				const e = new Book();
-				e.open(props.bookItem.path).then(() => {
+				e.open(bookItem.path).then(() => {
 					e.coverUrl().then((url) => {
 						setSrc(url || src);
-						epubCoverCache.set(props.bookItem.id, url || src);
+						epubCoverCache.set(bookItem.id, url || src);
 					});
 				});
 			} else {
-				setSrc(epubCoverCache.get(props.bookItem.id)!);
+				setSrc(epubCoverCache.get(bookItem.id)!);
 			}
 		}
-	}, [props.bookItem]);
+	}, [bookItem]);
 	const selectHandler = useCallback(
 		(e: any) => {
-			readerOperator.updateSelection(props.bookItem.id, e.target.checked);
+			readerOperator.updateSelection(bookItem.id, e.target.checked);
 		},
-		[props.bookItem.id]
+		[bookItem.id]
 	);
 	useEffect(() => {
-		if (!props.bookItem.path.endsWith('.epub')) {
-			setSrc(props.bookItem.stared ? favoriteCover : txtCover);
+		if (!bookItem.path.endsWith('.epub')) {
+			setSrc(bookItem.stared ? favoriteCover : txtCover);
 		}
 	}, [stared]);
-	if (!props.bookItem) {
+	if (!bookItem) {
 		return null;
 	}
 	return (
@@ -108,28 +113,30 @@ export const ShelfItem = (props: {
 				)}
 				onMouseDown={down}
 				onMouseUp={up}
-				title={props.bookItem.title}
+				title={bookItem.title}
 			>
-				<img className={styles['book-cover']} src={src}></img>
+				<img
+					className={stylesJoin(styles['book-cover'])}
+					src={src}
+				></img>
 				<input
-					className={styles['check-box'] + ' img__checkbox'}
-					disabled={Boolean(props.bookItem.parent) || !props.inSelect}
-					id={props.bookItem.id.toString()}
+					className={stylesJoin(styles['check-box'], 'img__checkbox')}
+					disabled={Boolean(bookItem.parent) || !inSelect}
+					id={bookItem.id.toString()}
 					onChange={selectHandler}
 					style={{
-						display: props.inSelect ? 'initial' : 'none'
+						display: inSelect ? 'initial' : 'none'
 					}}
 					title={
-						Boolean(props.bookItem.parent) || !props.inSelect
-							? readerOperator.searchParentName(
-									props.bookItem.parent
-							  )
+						Boolean(bookItem.parent) || !inSelect
+							? readerOperator.searchParentName(bookItem.parent)
 							: undefined
 					}
 					type="checkbox"
 				/>
+				{isNew && <NewPackDot />}
 			</div>
-			<BookTitle title={props.bookItem.title} />
+			<BookTitle title={bookItem.title} />
 			<span className={styles['icon-span']}>
 				<TrashIcon
 					className={stylesJoin(
@@ -139,7 +146,7 @@ export const ShelfItem = (props: {
 					)}
 					onClick={() => {
 						if (confirmed) {
-							readerOperator.removePack(props.bookItem);
+							readerOperator.removePack(bookItem);
 							if (id) {
 								clearTimeout(id.current);
 								id.current = null;
@@ -160,7 +167,7 @@ export const ShelfItem = (props: {
 					)}
 					onClick={() => {
 						setStared(!stared);
-						readerOperator.updateStared(props.bookItem);
+						readerOperator.updateStared(bookItem);
 					}}
 				/>
 				{readerOperator.getMode() === Mode.DirContent ? (
@@ -171,8 +178,8 @@ export const ShelfItem = (props: {
 						)}
 						onClick={() => {
 							readerOperator.removeFileFromDir(
-								props.bookItem.id,
-								props.bookItem.parent!
+								bookItem.id,
+								bookItem.parent!
 							);
 						}}
 					/>

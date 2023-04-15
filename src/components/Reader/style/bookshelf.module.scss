@@ -52,6 +52,16 @@ $bar-color: #80ffad;
 			&:hover {
 				transform: scale(1.08, 1.08);
 			}
+			.new {
+				position: absolute;
+				background-color: rgb(255, 70, 70);
+				width: 11px;
+				height: 11px;
+				z-index: 200;
+				top: -4px;
+				right: -4px;
+				border-radius: 50%;
+			}
 		}
 		&-cover.bookshelf-row-folder {
 			background-color: #3b4675;

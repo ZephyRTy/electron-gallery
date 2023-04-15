@@ -124,24 +124,7 @@ export class TextDetail {
 			);
 		}
 	}
-	/**
-	 *
-	 * @param text
-	 * @returns 与数据库中的md5值相同则返回true，否则返回false
-	 */
-	// async verify(text: string) {
-	// 	if (window.sessionStorage.getItem(this.id.toString())) {
-	// 		return true;
-	// 	}
-	// 	const md5 = generateTextMd5(text);
-	// 	window.sessionStorage.setItem(this.metaBook.id.toString(), 'true');
-	// 	if (await this.sqlOperator.verifyBook(this.id, md5)) {
-	// 		return true;
-	// 	} else {
-	// 		await this.sqlOperator.updateMd5(this.id, md5);
-	// 		return false;
-	// 	}
-	// }
+
 	private binaryToGBK(str: string) {
 		return iconv.decode(str, 'gbk');
 	}

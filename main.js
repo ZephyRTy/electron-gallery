@@ -7,9 +7,25 @@ const remote = require('@electron/remote/main');
 let tray = null;
 // 保持window对象的全局引用,避免JavaScript对象被垃圾回收时,窗口被自动关闭.
 let mainWindow;
+let openFromProtocolUrl = '';
+
+const openUrl = (url) => {
+	mainWindow.isMinimized() && mainWindow.restore();
+	// 正则中的 protocol 为自己定义的伪协议
+	mainWindow.webContents.send('open-url', decodeURIComponent(url));
+};
 
 remote.initialize();
 module.exports = { mainWindow: mainWindow };
+if (process.defaultApp) {
+	if (process.argv.length >= 2) {
+		app.setAsDefaultProtocolClient('file', process.execPath, [
+			path.resolve(process.argv[1])
+		]);
+	}
+} else {
+	app.setAsDefaultProtocolClient('file');
+}
 function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
 	const src =
@@ -22,6 +38,7 @@ function createWindow() {
 		height: 900,
 		frame: false,
 		webPreferences: {
+			preload: path.join(__dirname, 'preload.js'),
 			nodeIntegration: true,
 			contextIsolation: false,
 			enableRemoteModule: true,
@@ -29,13 +46,21 @@ function createWindow() {
 		}
 	});
 	remote.enable(mainWindow.webContents);
+	setTimeout(() => {
+		openFromProtocolUrl = process.argv.slice(2).join(' ');
+		if (openFromProtocolUrl) {
+			openUrl(openFromProtocolUrl);
+			openFromProtocolUrl = '';
+		}
+	}, 1500);
+
 	if (!app.isPackaged) {
 		mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			`http://localhost:${parseInt(process.env.PORT, 10) || 8096}/`
 		);
 	} else {
-		//mainWindow.webContents.openDevTools({ mode: 'detach' });
+		mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
 				pathname: path.join(__dirname, 'dist', 'index.html'),
@@ -81,6 +106,7 @@ if (!gotTheLock) {
 			}
 			mainWindow.focus();
 			mainWindow.show();
+			openUrl(commandLine.slice(2).join(' '));
 		}
 	});
 	//app.disableHardwareAcceleration();
@@ -93,21 +119,20 @@ if (!gotTheLock) {
 			app.quit();
 		}
 	});
-
+	const openUrlListener = function (event, url) {
+		if (mainWindow) {
+			openUrl(url);
+		} else {
+			openFromProtocolUrl = url; // 如果 mainWindow 还没创建，就先缓存
+		}
+	};
+	app.on('open-url', openUrlListener);
 	if (!app.isPackaged) {
-		// const {
-		// 	default: installExtension,
-		// 	REACT_DEVELOPER_TOOLS
-		// } = require('electron-devtools-installer');
-
 		const {
 			default: installExtension,
 			REACT_DEVELOPER_TOOLS
 		} = require('electron-devtools-installer');
 		app.whenReady().then(async () => {
-			// await session.defaultSession.loadExtension(
-			// 	String.raw`C:\Users\Yang\AppData\Local\Microsoft\Edge Dev\User Data\Default\Extensions\gpphkfbcpidddadnkolkpfckpihlkkil\4.27.0_0`
-			// );
 			installExtension(REACT_DEVELOPER_TOOLS)
 				.then((name) => console.log(`Added Extension:  ${name}`))
 				.catch((err) => console.log('An error occurred: ', err));
@@ -115,11 +140,6 @@ if (!gotTheLock) {
 	}
 	ipcMain.on('min', () => mainWindow.minimize());
 	ipcMain.on('hide', () => {
-		// if (mainWindow.isMaximized()) {
-		// 	mainWindow.restore();
-		// } else {
-		// 	mainWindow.maximize();
-		// }
 		mainWindow.hide();
 		mainWindow.setSkipTaskbar(false);
 	});
@@ -134,6 +154,3 @@ if (!gotTheLock) {
 		app.exit();
 	});
 }
-// 创建 myWindow, 加载应用的其余部分, etc...
-// app.on('ready', () => {
-// })
