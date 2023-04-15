@@ -38,6 +38,14 @@ const checkImageSize = (path: string) => {
 	const size = fs.statSync(path).size;
 	return size;
 };
+/**
+ *
+ * @param time 要睡眠的毫秒数
+ */
+const sleep = (time) => {
+	const start = new Date().getTime();
+	while (new Date().getTime() - start < time) {}
+};
 // 对文件进行操作，可与数据进行交互
 export abstract class DataOperator<
 	normal extends BasicData,
@@ -74,6 +82,7 @@ export abstract class DataOperator<
 		reg: false,
 		valid: false
 	};
+
 	protected constructor(
 		protected databaseConfig: { database: string; tableName: string },
 		protected sql: RequestOperator
@@ -98,7 +107,9 @@ export abstract class DataOperator<
 				this.dirMap = Map(res);
 			});
 		})();
-	} //获取图包
+	}
+
+	//获取图包
 	protected async getPacksNormally(page: number) {
 		let res = this.fileCache.data;
 		if (
@@ -135,6 +146,7 @@ export abstract class DataOperator<
 		this.searchCache.valid = true;
 		this.searchCache.key = key;
 		this.searchCache.res = [];
+		this.searchCache.mode = this.mode;
 		this.titleWillUpdate('Search=' + this.searchCache.key);
 		let result = [] as normal[];
 		if (this.mode === Mode.DirContent) {
@@ -294,7 +306,7 @@ export abstract class DataOperator<
 	}
 	//刷新
 	refresh() {
-		this.switchMode(Mode.Init);
+		//this.switchMode(Mode.Init);
 		this.refreshFn((v) => !v);
 	}
 
@@ -332,18 +344,24 @@ export abstract class DataOperator<
 		}
 		let cover = '';
 		let count = 0;
-		this.currentPacks.forEach((e, i) => {
+		let n = 0;
+		for (let i = 0; i < this.currentPacks.length; ++i) {
+			const e = this.currentPacks[i];
 			if (this.selection.selected.has(e.id)) {
 				if (hasCover(e)) {
 					if (count === 0) {
 						cover = e.path + e.cover;
 					}
 				}
-				++count;
+				++n;
+				if (n > 0 && n % 10 === 0) {
+					sleep(100);
+				}
 				e.parent = dirIndex;
 				this.sql
 					.updateDir(dirIndex, e.id, 1, count === 1 ? cover : '')
 					.then(() => {
+						++count;
 						if (count === this.selection.selected.size) {
 							this.dirMap.get(dirIndex.toString())!.count +=
 								this.selection.selected.size;
@@ -355,7 +373,8 @@ export abstract class DataOperator<
 						}
 					});
 			}
-		});
+		}
+		this.currentPacks.forEach((e, i) => {});
 	}
 
 	abstract addNewDir(dirName: string);
@@ -377,7 +396,6 @@ export abstract class DataOperator<
 					this.refresh();
 				});
 		}
-		this.switchMode(Mode.Init);
 	}
 
 	modeType(mode: Mode) {
@@ -458,7 +476,7 @@ export abstract class DataOperator<
 	}
 
 	protected deletePack(packId: number) {
-		this.sql.delete(packId);
+		return this.sql.delete(packId);
 	}
 	get modeOfSearch() {
 		return this.searchCache.mode;
@@ -498,21 +516,6 @@ export abstract class DataOperator<
 		this.bookmarkModel.data = bookmark;
 		this.directories = showDir;
 		return true;
-		// this.sql.getCount().then((res) => {
-		// 	this.total = res;
-		// });
-		// this.sql.select<normal, folder>([], Mode.Stared).then((res) => {
-		// 	this.starModel.data = res as normal[];
-		// });
-		// this.sql.select<normal, folder>([], Mode.Bookmark).then((res) => {
-		// 	this.bookmarkModel.data = res as unknown as bookmark[];
-		// });
-		// this.sql.select<normal, folder>([], Mode.ShowDir).then((res) => {
-		// 	this.directories = res as normal[];
-		// });
-		// this.sql.mapDir().then((res) => {
-		// 	this.dirMap = Map(res);
-		// });
 	}
 	async switchMainTable(name: string) {
 		currentOperator.op = this;
@@ -525,18 +528,27 @@ export abstract class DataOperator<
 			await this.load();
 		}
 	}
-
+	async clearBookmark() {
+		return this.sql.clearBookmark().then(() => {
+			this.bookmarkModel.clear();
+		});
+	}
 	removePack(pack: normal, shouldDelete = false) {
 		if (pack.parent) {
 			this.removeFileFromDir(pack.id, pack.parent);
 		}
-		this.deletePack(pack.id);
+
 		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
 		this.starModel.remove(pack.id);
 		this.bookmarkModel.remove(pack.id);
 		this.searchCache.res = this.searchCache.res.filter(
 			(e) => e.id !== pack.id
 		);
-		this.refresh();
+		this.deletePack(pack.id).then(() => {
+			this.refresh();
+		});
+	}
+	getProgress(id: number) {
+		return this.bookmarkModel.data.find((v) => v.id === id)?.url;
 	}
 }

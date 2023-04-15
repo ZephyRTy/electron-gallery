@@ -19,7 +19,8 @@ export const createStarModel = <T extends BasicData>(
 		},
 		remove(id) {
 			this.data = this.data.filter((item) => item.id !== id);
-		}
+		},
+		clear() {}
 	};
 };
 
@@ -33,6 +34,9 @@ export const createBookmarkModel = <T extends BasicBookmark>(
 		sqlOperator: sqlOperator,
 		remove(id) {
 			this.data = this.data.filter((item) => item.id !== id);
+		},
+		clear() {
+			this.data = [];
 		},
 		async update(newData: T, marked: boolean = true) {
 			const dataIndex = this.data.findIndex(

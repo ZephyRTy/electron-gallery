@@ -9,10 +9,11 @@ import {
 	isBookmarkOfBook
 } from '../../../utils/functions/typeAssertion';
 import { dialogActive, dirMapVisibleStore } from '../../../utils/store';
-import { Config, DirMap } from '../../Dialog';
+import { ClearConfirmDialog, Config, DirMap } from '../../Dialog';
 import {
 	Add,
 	Back,
+	ClearBtn,
 	ConfigBtn,
 	Refresh,
 	SelectPacks
@@ -25,6 +26,8 @@ import styles from '../style/bookshelf.module.scss';
 import { ShelfBookFolder } from './BookFolder';
 import { ShelfBookmark } from './BookmarkOfBook';
 import { ShelfItem } from './ShelfRow';
+
+const path = window.require('path');
 export const Bookshelf = () => {
 	const [books, setBooks] = useState([] as MetaBook[]);
 	const [total, setTotal] = useState(0);
@@ -41,6 +44,15 @@ export const Bookshelf = () => {
 	useEffect(() => {
 		readerOperator.switchMainTable('book_list').then(() => {
 			readerOperator.register(setRefresh);
+		});
+		const { ipcRenderer } = window.require('electron');
+		ipcRenderer.on('open-url', (event, url: string) => {
+			if (path.extname(url) === '.txt') {
+				readerOp.addNewPack(
+					[{ path: url, title: path.basename(url, '.txt') }],
+					false
+				);
+			}
 		});
 	}, []);
 	useEffect(() => {
@@ -84,6 +96,7 @@ export const Bookshelf = () => {
 	return (
 		<div className={styles['bookshelf'] + ' main-content'}>
 			{dirMap}
+			<ClearConfirmDialog util={readerOperator} />
 			<Config oldConfig={readerConfig} type="reader" />
 			<SidebarContainer>
 				<TopMenu /> <Menu type="reader" />
@@ -91,6 +104,9 @@ export const Bookshelf = () => {
 			</SidebarContainer>
 			<FileDrop itemType="file" operator={readerOperator} />
 			<Refresh util={readerOperator} />
+			{readerOperator.getMode() === 'Bookmark' ? (
+				<ClearBtn util={readerOperator} />
+			) : null}
 			<main className={styles['bookshelf-container']}>
 				<div className={styles['bookshelf-grid']}>
 					{books.map((e) => {
@@ -103,6 +119,7 @@ export const Bookshelf = () => {
 							<ShelfItem
 								bookItem={e}
 								inSelect={inSelect}
+								isNew={!!window.sessionStorage.getItem(e.path)}
 								key={e.id}
 								setInSelect={setInSelect}
 							/>
@@ -110,6 +127,7 @@ export const Bookshelf = () => {
 					})}
 				</div>
 			</main>
+
 			<PageNav current={page} total={Math.ceil(total / 20)} />
 		</div>
 	);

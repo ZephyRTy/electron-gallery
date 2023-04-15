@@ -2,6 +2,7 @@
 const svgrPlugin = require('esbuild-plugin-svgr');
 const sassPlugin = require('esbuild-plugin-sass');
 const { ScssModulesPlugin } = require('../plugins/sassModulePlugin');
+const { RemoveDevDepPlugin } = require('../plugins/removeDevDep');
 const fse = require('fs-extra');
 const path = require('path');
 if (!fse.existsSync(path.join('./dist'))) {
@@ -16,7 +17,11 @@ require('esbuild')
 			'.png': 'file',
 			'.jpg': 'file',
 			'.gif': 'file',
-			'.webp': 'file'
+			'.webp': 'file',
+			'.ttf': 'file',
+			'.woff': 'file',
+			'.woff2': 'file',
+			'.otf': 'file'
 		},
 		define: {
 			'process.env.NODE_ENV': '"production"',
@@ -39,6 +44,7 @@ require('esbuild')
 				namedExport: 'ReactComponent',
 				exportType: 'named'
 			})
+			//RemoveDevDepPlugin
 		]
 	})
 	.then(async () => {

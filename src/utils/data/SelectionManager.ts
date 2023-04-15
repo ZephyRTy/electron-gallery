@@ -38,7 +38,7 @@ export class SelectionManager {
 		let res = `${line.paraIndex};`;
 		let paraOffset =
 			(line.index - book.findParaStart(line.paraIndex)) *
-				lettersOfEachLine +
+				lettersOfEachLine() +
 			offset;
 		return res + paraOffset;
 	}
@@ -46,8 +46,8 @@ export class SelectionManager {
 		const [para, offset] = lineLocation.split(';');
 		const paraStart = book.findParaStart(parseInt(para, 10));
 		const lineNum =
-			paraStart + Math.floor(parseInt(offset, 10) / lettersOfEachLine);
-		const offsetInLine = parseInt(offset, 10) % lettersOfEachLine;
+			paraStart + Math.floor(parseInt(offset, 10) / lettersOfEachLine());
+		const offsetInLine = parseInt(offset, 10) % lettersOfEachLine();
 		return { lineNum, offsetInLine };
 	}
 	registerFloatMenu(setState: {
@@ -87,6 +87,7 @@ export class SelectionManager {
 		if (key !== 'timestamp' && key !== 'comment') {
 			this.currentSelection[key] = value;
 		}
+		return this;
 	}
 	/**
 	 * 确认选区结果
@@ -169,7 +170,6 @@ export class SelectionManager {
 				return selection.anchorIndex === lineSelection.index;
 			})!
 		};
-		console.log(this.currentSelection);
 	}
 
 	getCurrentSelection() {
@@ -311,9 +311,6 @@ export class SelectionManager {
 					.catch((e) => {
 						console.log(this.selections);
 						console.log(logicLine);
-					})
-					.then(() => {
-						console.log('删除成功');
 					});
 			} else {
 				arr.push(selection);
@@ -323,26 +320,26 @@ export class SelectionManager {
 	}
 
 	async initMarks() {
-		this.selections = (await this.book.sql.getMarks(this.book.id)).map(
-			(e) => {
-				const start = SelectionManager.locationToLineNumber(
-					e.startLocation,
-					this.book
-				);
-				const end = SelectionManager.locationToLineNumber(
-					e.endLocation,
-					this.book
-				);
-				return {
-					anchorIndex: start.lineNum,
-					anchorOffset: start.offsetInLine,
-					focusIndex: end.lineNum,
-					focusOffset: end.offsetInLine,
-					comment: e.comment,
-					timestamp: e.timestamp
-				};
-			}
-		);
+		const arr = await this.book.sql.getMarks(this.book.id);
+		if (arr.length === 0) return [];
+		this.selections = arr.map((e) => {
+			const start = SelectionManager.locationToLineNumber(
+				e.startLocation,
+				this.book
+			);
+			const end = SelectionManager.locationToLineNumber(
+				e.endLocation,
+				this.book
+			);
+			return {
+				anchorIndex: start.lineNum,
+				anchorOffset: start.offsetInLine,
+				focusIndex: end.lineNum,
+				focusOffset: end.offsetInLine,
+				comment: e.comment,
+				timestamp: e.timestamp
+			};
+		});
 		return this.selections;
 	}
 

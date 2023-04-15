@@ -4,6 +4,7 @@ import galleryConfig, {
 	proxyEnabled
 } from '../types/constant';
 import { GalleryOperator } from '../utils/data/galleryOperator';
+import { notification } from '../utils/functions/functions';
 import { Circuit } from './stream/Circuit';
 import { Req } from './stream/req';
 import { Stream } from './stream/stream';
@@ -48,7 +49,7 @@ export const getImgFrom24fa = async () => {
 		status: 0 | 1;
 	}[] = await new Promise((resolve) => {
 		connection.query(
-			'select * from pack_list order by id desc limit 3000',
+			'select * from pack_list order by id desc limit 10000',
 			(err: any, res: any) => {
 				if (err) {
 					console.log(err);
@@ -218,6 +219,7 @@ export const getImgFrom24fa = async () => {
 				)
 				.close(() => {
 					console.log('end');
+					notification('采集完成', '采集完成');
 					if (mode === 'new') {
 						GalleryOperator.getInstance()
 							.addNewPack(newPacks)

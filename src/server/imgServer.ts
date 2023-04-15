@@ -1,9 +1,14 @@
 import { getImg } from '../crawler/utils/getImg';
 import { downloadPath, otherPath } from '../types/constant';
-import { GalleryOperator } from '../utils/data/galleryOperator';
-import { parseUrlQuery } from '../utils/functions/functions';
+import {
+	galleryOperator,
+	GalleryOperator
+} from '../utils/data/galleryOperator';
+import { notification, parseUrlQuery } from '../utils/functions/functions';
 const fs = window.require('fs');
 const http = window.require('http');
+const Buffer = window.require('buffer').Buffer;
+const path = window.require('path');
 const replaceInvalidDirName = (str: string) => {
 	return str.replace(/[\\/:*?"<>|]/g, '_');
 };
@@ -12,7 +17,7 @@ export class ImgServer {
 	private readonly server;
 	private static instance: ImgServer;
 	private isActive = false;
-	private titleSet = new Set();
+	private titleMap = new Map<string, number>();
 	private taskQueue: {
 		imgList: string[];
 		title: string;
@@ -42,48 +47,133 @@ export class ImgServer {
 		if (this.isActive) {
 			return;
 		}
-		this.titleSet = new Set();
+		this.titleMap = new Map();
 		this.isActive = true;
 		this.server.listen('8081', () => console.log('http://localhost:8081/'));
+		const ins = this;
 		this.server.on('request', (req: any, res: any) => {
-			let data = this.parseRoute(req.url);
-			if (data) {
-				res.end(JSON.stringify(data));
+			let data = [] as any[];
+			if ((req.url as string).startsWith('/xhr')) {
+				req.on('data', (chunk) => {
+					//const str = JSON.parse(chunk.toString()).data;
+					if (chunk) {
+						data.push(chunk);
+					}
+					res.end();
+				});
+				req.on('end', function () {
+					const buffer = JSON.parse(
+						Buffer.concat(data).toString()
+					) as {
+						base64: string;
+						title: string;
+						index: number;
+					};
+					const title = buffer.title;
+					if (buffer.base64.length === 0) {
+						ins.titleMap.set(title, buffer.index);
+						const NOTIFICATION_TITLE = '开始下载';
+						const NOTIFICATION_BODY = `${title} 开始下载, 共${buffer.index}张图片`;
+						notification(NOTIFICATION_TITLE, NOTIFICATION_BODY);
+						return;
+					}
+					let src = Buffer.from(
+						buffer.base64.replace(/^data:image\/\w+;base64,/, ''),
+						'base64'
+					);
+
+					try {
+						fs.mkdirSync(path.join(downloadPath, title));
+					} catch {}
+					if (ins.titleMap.has(title)) {
+						const index = ins.titleMap.get(title);
+						if (index && index === buffer.index) {
+							const NOTIFICATION_TITLE = '下载完成';
+							const NOTIFICATION_BODY = `${title} 下载完成`;
+							notification(NOTIFICATION_TITLE, NOTIFICATION_BODY);
+						}
+					}
+					fs.writeFile(
+						path.join(
+							downloadPath,
+							buffer.title,
+							`${buffer.index}.jpg`
+						),
+						src,
+						(err) => {
+							if (!err && buffer.index === 1) {
+								galleryOperator.addNewPack(
+									{
+										path: path.join(
+											downloadPath,
+											buffer.title
+										) as string,
+										title: buffer.title,
+										cover: '/1.jpg'
+									},
+									true
+								);
+							}
+							if (err) {
+								console.log(err);
+							}
+						}
+					);
+				});
+				return;
 			} else {
-				res.end('404');
+				let data = this.parseRoute(req.url);
+				if (data) {
+					res.end(JSON.stringify(data));
+				} else {
+					res.end('404');
+				}
+				req.on('data', (postData: { toString: () => string }) => {
+					// 注意 postData 是一个Buffer类型的数据，也就是post请求的数据存到了缓冲区
+					let { imgList, title, target } = JSON.parse(
+						postData.toString()
+					) as {
+						imgList: string[];
+						title: string;
+						target?: string;
+					};
+					title = replaceInvalidDirName(title);
+					if (this.titleMap.has(title)) {
+						console.log(`${title} 已获取`);
+						return;
+					}
+					this.titleMap.set(title, imgList.length);
+					this.taskQueue.push({ imgList, title, target });
+					if (this.taskQueue.length === 1 && !this.hasTask) {
+						this.nextTask();
+					} else {
+						console.log(
+							title,
+							imgList.length,
+							target ?? '',
+							'加入队列'
+						);
+						const NOTIFICATION_TITLE = '加入队列';
+						const NOTIFICATION_BODY = `${title} 已加入队列， 共${imgList.length}张图片`;
+						notification(NOTIFICATION_TITLE, NOTIFICATION_BODY);
+					}
+					//getImgList(imgList, title, target);
+				});
+				res.end();
 			}
-			req.on('data', (postData: { toString: () => string }) => {
-				// 注意 postData 是一个Buffer类型的数据，也就是post请求的数据存到了缓冲区
-				let { imgList, title, target } = JSON.parse(
-					postData.toString()
-				) as {
-					imgList: string[];
-					title: string;
-					target?: string;
-				};
-				title = replaceInvalidDirName(title);
-				if (this.titleSet.has(title)) {
-					console.log(`${title} 已获取`);
-					return;
-				}
-				this.titleSet.add(title);
-				this.taskQueue.push({ imgList, title, target });
-				console.log(title, imgList.length, target ?? '', '加入队列');
-				if (this.taskQueue.length === 1 && !this.hasTask) {
-					this.nextTask();
-				}
-				//getImgList(imgList, title, target);
-			});
-			res.end();
 		});
 	}
-
+	check(title) {
+		if (!this.titleMap.has(title)) {
+			notification('开始下载', `${title} 开始下载`);
+			this.titleMap.set(title, 0);
+		}
+	}
 	off() {
 		if (!this.isActive) {
 			return;
 		}
 		this.isActive = false;
-		console.log('close');
 		this.server.close();
 	}
 
@@ -93,7 +183,7 @@ export class ImgServer {
 		target?: string
 	) {
 		const max = 10;
-		console.log(title, imgList.length, target ?? '', '开始下载');
+
 		this.hasTask = true;
 		let dirTitle = target || title;
 		let srcList = imgList;
@@ -148,6 +238,9 @@ export class ImgServer {
 			}
 		}
 		console.log(title, '完成');
+		const NOTIFICATION_TITLE = '下载完成';
+		const NOTIFICATION_BODY = `${title} 下载完成`;
+		notification(NOTIFICATION_TITLE, NOTIFICATION_BODY);
 		this.hasTask = false;
 		this.nextTask();
 	}
@@ -174,9 +267,18 @@ export class ImgServer {
 		if (!task) {
 			return;
 		}
+		console.log(
+			task.title,
+			task.imgList.length,
+			task.target ?? '',
+			'开始下载'
+		);
+		notification(
+			'开始下载',
+			`${task.title} 开始下载, 共${task.imgList.length}张图片`
+		);
 		this.getImgList(task.imgList, task.title, task.target);
 	}
-
 	private parseRoute(url: string) {
 		let [uri] = url.split('?');
 		const query = parseUrlQuery(url);

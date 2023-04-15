@@ -28,7 +28,11 @@ import {
 import { DataOperator } from '../../utils/data/DataOperator';
 import { stylesJoin } from '../../utils/functions/functions';
 import { openInExplorer } from '../../utils/functions/process';
-import { configVisibleStore, fileDropVisibleStore } from '../../utils/store';
+import {
+	clearConfirmStore,
+	configVisibleStore,
+	fileDropVisibleStore
+} from '../../utils/store';
 export const HomePage = (props: {
 	activeMode: Mode;
 	currentMode: Mode;
@@ -323,6 +327,26 @@ export const GotoReaderBtn = () => {
 export const TrashBtn = () => {
 	return (
 		<button className={'btn-trash icon'} onClick={() => {}}>
+			<TrashIcon />
+		</button>
+	);
+};
+
+export const ClearBtn = <
+	A extends BasicData,
+	B extends BasicBookmark,
+	C extends BasicFolder
+>(props: {
+	util: DataOperator<A, B, C>;
+}) => {
+	const [, setVis] = useController(clearConfirmStore);
+	return (
+		<button
+			className={'btn-clear icon'}
+			onClick={async () => {
+				setVis(true);
+			}}
+		>
 			<TrashIcon />
 		</button>
 	);

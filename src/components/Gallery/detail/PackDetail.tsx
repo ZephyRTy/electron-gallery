@@ -38,6 +38,16 @@ const endsWith = (str: string, ...arg: string[]) => {
 	}
 	return false;
 };
+const isValidImage = (src: string) => {
+	return endsWith(
+		src.toLocaleLowerCase(),
+		'jpg',
+		'jpeg',
+		'png',
+		'gif',
+		'bmp'
+	);
+};
 // 图包详情页面外层组件
 export const PackDetail = () => {
 	const { pack } = useParams();
@@ -76,7 +86,7 @@ export const PackDetail = () => {
 			}));
 		} else {
 			imgList.current = fileList
-				.filter((e) => !e.includes('thumb'))
+				.filter((e) => !e.startsWith('thumb.jpg') && isValidImage(e))
 				.map((v: any, i: any) => {
 					return {
 						src: path.join(filePath, v),

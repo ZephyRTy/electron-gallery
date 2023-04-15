@@ -2,11 +2,11 @@ import { ImageBookmark } from './global';
 
 /* eslint-disable no-unused-vars */
 const fs = window.require('fs');
+const path = window.require('path');
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.resolve();
 const allConfig = JSON.parse(
-	fs.readFileSync(
-		'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
-		'utf-8'
-	)
+	fs.readFileSync(path.resolve(__dirname, './appConfig/config.json'), 'utf-8')
 );
 const galleryConfig = allConfig.gallery;
 
@@ -22,7 +22,7 @@ export {
 
 export const translation = JSON.parse(
 	fs.readFileSync(
-		'D:\\webDemo\\desktop-reader\\src\\config\\translation.json',
+		path.resolve(__dirname, './appConfig/translation.json'),
 		'utf-8'
 	)
 );
@@ -59,4 +59,10 @@ export const DELTA_HEIGHT = lineHeight * deltaLine;
 export const CATALOG_REG =
 	/[第卷][0123456789一二三四五六七八九十百千万亿零壹贰叁肆伍陆柒捌玖拾佰仟]+[章节回卷集部篇幕][^<]*/g;
 export const SPACE_CODE = decodeURIComponent('%E3%80%80');
-export const lettersOfEachLine = 55;
+const typeSetting = new (class TypeSetting {
+	width = 900;
+	fontSize = fontSize;
+	lettersOfEachLine = Math.floor(this.width / this.fontSize) - 1;
+})();
+
+export const lettersOfEachLine = () => typeSetting.lettersOfEachLine;

@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
+import { readerR18 } from '../../types/constant';
 import {
 	BasicData,
 	BookmarkOfBook,
@@ -12,7 +13,7 @@ import {
 	NormalImage,
 	TextComment
 } from '../../types/global';
-import { formatDate, generateFileMd5 } from '../functions/functions';
+import { formatDate } from '../functions/functions';
 import { getAllDrive } from '../functions/process';
 import { RequestOperator } from './requestOperator';
 /* eslint-disable no-underscore-dangle */
@@ -20,6 +21,7 @@ const sq3 = window.require('sqlite3');
 const path = window.require('path');
 const fs = window.require('fs');
 const os = window.require('os');
+
 const transformToSQL = <T extends object>(table: string, obj: T) => {
 	let columns = '(';
 	let values = '';
@@ -51,14 +53,17 @@ export class SqliteOperatorForBook implements RequestOperator {
 			os.userInfo().homedir,
 			'AppData',
 			'Roaming',
-			'YReader'
+			'y-Reader'
 		);
 		if (!fs.existsSync(dbPath)) {
 			fs.mkdirSync(dbPath);
 		}
-		this.db = new sq3.Database(path.resolve(dbPath, 'books.db'), () => {
-			this.readerInitialize();
-		});
+		this.db = new sq3.Database(
+			path.resolve(dbPath, readerR18 ? 'books.db' : 'test.db'),
+			() => {
+				this.readerInitialize();
+			}
+		);
 		this.checkExternalDriver();
 	}
 	private readerInitialize() {
@@ -139,7 +144,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 									comment: e.comment,
 									timestamp: e.m_timeStamp
 								} as TextComment;
-							})
+							}) || []
 						);
 					}
 				}
@@ -163,7 +168,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 									timestamp: e.m_timeStamp,
 									data: ''
 								} as EpubMark;
-							})
+							}) || []
 						);
 					}
 				}
@@ -557,8 +562,7 @@ export class SqliteOperatorForBook implements RequestOperator {
 		},
 		duplicate: boolean = false
 	) {
-		const md5 = generateFileMd5(newPack.path);
-		let sql = `insert into ${this.mainTableName} (title, stared, path, md5) values ('${newPack.title}' , ${newPack.stared} , '${newPack.path}', '${md5}')`;
+		let sql = `insert into ${this.mainTableName} (title, stared, path) values ('${newPack.title}' , ${newPack.stared} , '${newPack.path}')`;
 		return new Promise((resolve) => {
 			this.db.run(sql, (res) => {
 				if (res && !duplicate) {
@@ -581,6 +585,20 @@ export class SqliteOperatorForBook implements RequestOperator {
 			});
 		});
 	}
+
+	clearBookmark(): Promise<unknown> {
+		const sql = 'delete from bookmark';
+		return new Promise((resolve, reject) => {
+			this.db.run(sql, (err, res) => {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+				resolve(res);
+			});
+		});
+	}
+
 	updateGalleryBookmark(
 		bookmark: ImageBookmark,
 		marked: boolean,
@@ -717,11 +735,10 @@ export class SqliteOperatorForBook implements RequestOperator {
 		if (!loc) {
 			throw new Error('selection is null');
 		}
-		let sql = `delete from mark where m_id = ${id} and start_location = ${loc}`;
+		let sql = `delete from mark where m_id = ? and start_location = ?`;
 		return new Promise((resolve, reject) => {
-			this.db.run(sql, (err: any, res: any) => {
+			this.db.run(sql, [id, loc], (err: any, res: any) => {
 				if (err) {
-					console.log(err);
 					reject(err);
 				}
 				resolve(res);

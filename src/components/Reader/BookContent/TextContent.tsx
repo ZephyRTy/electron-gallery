@@ -15,25 +15,42 @@ import {
 	deltaLine,
 	DELTA_HEIGHT,
 	distanceToUpdate,
+	fontSize,
 	lineHeight,
 	overflowNum
 } from '../../../types/constant';
 import { TextLine } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
 import { TextDetail } from '../../../utils/data/TextDetail';
-import { formatDate, parseUrlQuery } from '../../../utils/functions/functions';
-import { changedAlertStore } from '../../../utils/store';
-import { ChangedAlert, CommentDialog, RegExpSet } from '../../Dialog';
+import {
+	formatDate,
+	parseUrlQuery,
+	stylesJoin
+} from '../../../utils/functions/functions';
+import { changedAlertStore, chapterStore } from '../../../utils/store';
+import {
+	ChangedAlert,
+	ChangeWordDialog,
+	CommentDialog,
+	RegExpSet
+} from '../../Dialog';
 import { OpenInExplorerBtn } from '../../Gallery/Buttons';
 import { Sidebar, SidebarContainer } from '../../Menu';
-import { Back, CatalogBtn, Find, RegExpBtn, ShowMarksBtn } from '../Buttons';
+import {
+	Back,
+	CatalogBtn,
+	ChangeWordBtn,
+	Find,
+	RegExpBtn,
+	ShowMarksBtn
+} from '../Buttons';
 import styles from '../style/reader.module.scss';
-import { SideCatalog } from './Catalog';
 import { FindDialog, FindMaskContainer } from './FindDialog';
 import { MarkedContext } from './MarkedLine';
 import { Placeholder } from './Placeholder';
-import { SideEnter3D } from './SideEnter3D';
-import { SideMarkDiv } from './SideMarkDiv';
+import { SideEnter3D } from './SideEnter/SideEnter3D';
+import { SideMarkDiv } from './SideEnter/SideMarkDiv';
+import { TypeSetting } from './Typesetting/TypeSetting';
 
 export const TextContext = React.createContext(null as any as TextDetail);
 const ContentLine = (props: { line: TextLine }) => {
@@ -47,11 +64,12 @@ const ContentLine = (props: { line: TextLine }) => {
 				e.stopPropagation();
 				selectionManager.removeAllRange();
 				selectionManager.clearSelection();
-				selectionManager.setSelection('anchorIndex', props.line.index);
-				selectionManager.setMousePosition(
-					e.clientX,
-					props.line.index * lineHeight ?? e.clientY
-				);
+				selectionManager
+					.setSelection('anchorIndex', props.line.index)
+					.setMousePosition(
+						e.clientX,
+						props.line.index * lineHeight ?? e.clientY
+					);
 				selectionManager.showFloatMenu(false);
 			}}
 			onMouseUp={(e) => {
@@ -63,18 +81,10 @@ const ContentLine = (props: { line: TextLine }) => {
 						selectionManager.clearMousePosition();
 						return;
 					}
-					selectionManager.setSelection(
-						'focusIndex',
-						props.line.index
-					);
-					selectionManager.setSelection(
-						'focusOffset',
-						selection.focusOffset
-					);
-					selectionManager.setSelection(
-						'anchorOffset',
-						selection.anchorOffset
-					);
+					selectionManager
+						.setSelection('focusIndex', props.line.index)
+						.setSelection('focusOffset', selection.focusOffset)
+						.setSelection('anchorOffset', selection.anchorOffset);
 					if (selectionManager.confirmAndFixSelection()) {
 						selectionManager.showFloatMenu(true);
 					}
@@ -101,24 +111,24 @@ export const TextContent = () => {
 	const [start, setStart] = useState(0);
 	const [book, setBook] = useState(null as any as TextDetail);
 	const [content, setContent] = useState([] as TextLine[]);
-	const [chapter, setChapter] = useState(0);
+	const [chapter, setChapter] = useController(chapterStore);
+	const [textFontSize, setFontSize] = useState(fontSize);
 	const scrollEle = useRef(null);
 	const jump = useRef(false);
 	const initBottom = useMemo(
 		() => (book ? (book.length - contentRange) * lineHeight : 0),
-		[book]
+		[book, book?.length, textFontSize]
 	);
 	const updateWhenDrag = useCallback(
 		(eleScrollTop: number) => {
 			if (!book) return;
 			let lineIndex = Math.ceil(eleScrollTop / lineHeight);
-			let startLine =
-				lineIndex - deltaLine - overflowNum > 0
-					? lineIndex - deltaLine - overflowNum
-					: 0;
+			let startLine = Math.max(lineIndex - deltaLine - overflowNum, 0);
 			setChapter(book.updateCurrentChapter(lineIndex, 'drag'));
-			if (startLine + contentRange >= book.length)
+			if (startLine + contentRange >= book.length) {
 				startLine = book.length - contentRange;
+				startLine = Math.max(startLine, 0);
+			}
 			let bottom = 0,
 				top = 0;
 			if (
@@ -154,6 +164,9 @@ export const TextContent = () => {
 		},
 		[updateWhenDrag]
 	);
+	// useEffect(() => {
+	// 	console.log(start);
+	// }, [start]);
 	// eslint-disable-next-line no-unused-vars
 	const scrollToLineNum = useCallback(
 		(lineNum: number) => {
@@ -171,6 +184,7 @@ export const TextContent = () => {
 	const beforeScrollTop = useRef(0);
 
 	const handleScroll = useMemo(() => {
+		if (!book) return;
 		let timer: number;
 		return (e: { stopPropagation: () => void }) => {
 			if (timer) {
@@ -203,14 +217,13 @@ export const TextContent = () => {
 						if (distance < 0) {
 							updateWhenDrag(eleScrollTop);
 						} else if (distance < distanceToUpdate) {
-							setContent(
-								book.getContent(
-									start + deltaLine,
-									start + deltaLine + contentRange
-								)
-							);
+							const n =
+								start + deltaLine + contentRange > book.length
+									? book.length - contentRange
+									: start + deltaLine;
+							setContent(book.getContent(n, n + contentRange));
 							let v = Math.min(top + DELTA_HEIGHT, initBottom);
-							setStart(start + deltaLine);
+							setStart(n);
 							setTop(v);
 							setBottom(initBottom - v);
 						}
@@ -234,15 +247,10 @@ export const TextContent = () => {
 						if (distance > 0) {
 							updateWhenDrag(eleScrollTop);
 						} else if (distance > -distanceToUpdate) {
-							setContent(
-								book.getContent(
-									start - deltaLine,
-									start - deltaLine + contentRange
-								)
-							);
-
+							const n = Math.max(start - deltaLine, 0);
+							setContent(book.getContent(n, n + contentRange));
 							let v = Math.max(top - DELTA_HEIGHT, 0);
-							setStart(start - deltaLine);
+							setStart(n);
 							setTop(v);
 							setBottom(initBottom - v);
 						}
@@ -251,6 +259,13 @@ export const TextContent = () => {
 			}, 200);
 		};
 	}, [start, top, bottom]);
+	const typeset = useCallback(
+		(font: number) => {
+			setFontSize(font);
+			setContent(book.getContent(start, start + contentRange));
+		},
+		[start, book]
+	);
 	useEffect(() => {
 		readerOperator.loadText().then((res) => {
 			const { book, changed } = res;
@@ -264,16 +279,26 @@ export const TextContent = () => {
 		});
 	}, []);
 	useEffect(() => {
-		if (scroll) {
+		if (scroll && book) {
+			setChapter(
+				book.updateCurrentChapter(
+					Math.ceil(scroll / lineHeight),
+					'drag'
+				)
+			);
 			jumpTo(scroll);
 		}
 	}, [book]);
-	const mainContent = useMemo(() => {
+	const MainContent = useCallback(() => {
 		return (
 			<>
 				<MarkedContext />
 				<Placeholder height={top} />
-				<article className={styles['reader-content']} ref={article}>
+				<article
+					className={stylesJoin(styles['reader-content'])}
+					ref={article}
+					style={{ fontSize: `${textFontSize}px` }}
+				>
 					{content.map((line) => {
 						return <ContentLine key={line.index} line={line} />;
 					})}
@@ -281,17 +306,16 @@ export const TextContent = () => {
 				<Placeholder height={bottom} />
 			</>
 		);
-	}, [content, top, bottom, book]);
+	}, [content, top, bottom, book, textFontSize]);
 
 	return (
 		<TextContext.Provider value={book}>
-			<RegExpSet currentChapter={chapter} />
+			<TypeSetting fontSize={textFontSize} typeset={typeset} />
+			<RegExpSet />
+			<ChangeWordDialog />
 			<CommentDialog />
 			<ChangedAlert />
 			<SideEnter3D
-				renderCatalog={() => {
-					return <SideCatalog currentChapter={chapter} />;
-				}}
 				renderMarkDiv={() => {
 					return <SideMarkDiv />;
 				}}
@@ -321,6 +345,7 @@ export const TextContent = () => {
 					<ShowMarksBtn />
 					<Find />
 					<OpenInExplorerBtn filePath={book?.path} />
+					<ChangeWordBtn />
 				</Sidebar>
 			</SidebarContainer>
 			<div
@@ -331,7 +356,7 @@ export const TextContent = () => {
 			>
 				<FindMaskContainer />
 				<div className={styles['find-mask']}></div>
-				{mainContent}
+				<MainContent />
 			</div>
 			<FindDialog scrollToLine={scrollToLineNum} />
 		</TextContext.Provider>

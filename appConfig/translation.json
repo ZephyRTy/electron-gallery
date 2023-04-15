@@ -1,0 +1,18 @@
+{
+	"imageCountOfSinglePage": "每页显示图片数量",
+	"packCountOfSinglePage": "每页显示图包数量",
+	"downloadPath": "下载路径",
+	"otherPath": "其他下载路径",
+	"r18": "测试",
+	"proxy": "代理地址",
+	"proxyEnabled": "启用代理",
+	"domainOf24fa": "24fa的域名",
+	"lineHeight": "行高",
+	"deltaLine": "更新行数",
+	"contentRange": "内容范围",
+	"overflowNum": "溢出数量",
+	"distanceToUpdate": "更新距离",
+	"fontSize": "字体大小",
+	"3d-animation": "3D效果",
+	"maxRetryCount": "最大重试次数"
+}

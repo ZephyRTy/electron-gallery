@@ -52,6 +52,16 @@ $bar-color: #80ffad;
 			&:hover {
 				transform: scale(1.08, 1.08);
 			}
+			.new {
+				position: absolute;
+				background-color: rgb(255, 70, 70);
+				width: 11px;
+				height: 11px;
+				z-index: 200;
+				top: -4px;
+				right: -4px;
+				border-radius: 50%;
+			}
 		}
 		&-cover.bookshelf-row-folder {
 			background-color: #3b4675;
@@ -168,9 +178,7 @@ svg.icon {
 
 	&--bookmark {
 		width: 18px;
-		&:hover {
-			fill: rgb(184, 31, 227);
-		}
+
 		&__marked {
 			fill: rgb(184, 31, 227);
 		}
@@ -203,4 +211,10 @@ svg.icon {
 	100% {
 		box-shadow: 2px 3px 8px 2px #4dff7cac, -2px -2px 8px 2px #5cb9fcac;
 	}
+}
+
+.clear-history {
+	width: 100px;
+	height: 100px;
+	background-color: $active-color;
 }

@@ -35,7 +35,7 @@ export class MysqlOperator implements RequestOperator {
 			password: '123456',
 			database: 'GALLERY',
 			port: 3306,
-			connectionLimit: 10
+			connectionLimit: 20
 		};
 		this._pool = mysql.createPool(this._config);
 	}
@@ -619,6 +619,21 @@ export class MysqlOperator implements RequestOperator {
 		return new Promise((resolve, reject) => {
 			this._pool.getConnection((err: any, connection: any) => {
 				connection.query(sql, [packID], (err: any, res: any) => {
+					connection.release();
+					if (err) {
+						reject(err);
+					}
+					resolve(res);
+				});
+			});
+		});
+	}
+
+	clearBookmark(): Promise<unknown> {
+		const sql = 'truncate table bookmark';
+		return new Promise((resolve, reject) => {
+			this._pool.getConnection((err: any, connection: any) => {
+				connection.query(sql, (err: any, res: any) => {
 					connection.release();
 					if (err) {
 						reject(err);

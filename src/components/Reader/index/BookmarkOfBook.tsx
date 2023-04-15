@@ -1,6 +1,6 @@
 import { Book } from 'epubjs';
 import { useEffect, useState } from 'react';
-import bookmarkCover from '../../../assets/bookmark-cover.jpg';
+import bookmarkCover from '../../../assets/cover/bookmark-cover.jpg';
 import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
 import { BookmarkOfBook } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';

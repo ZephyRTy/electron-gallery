@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 import { Book } from 'epubjs';
 import { Map } from 'immutable';
@@ -17,9 +18,10 @@ import { catalogCache } from './indexDB';
 import { TextDetail } from './TextDetail';
 const fsp = window.require('fs/promises');
 const fs = window.require('fs');
+const path = window.require('path');
 const iconv = window.require('iconv-lite');
 iconv.skipDecodeWarning = true;
-const splitWords = (str: string, len: number) => {
+export const splitWords = (str: string, len: number) => {
 	let strLen = str.length;
 	let result: string[] = [];
 	for (let i = 0; i < strLen; i += len) {
@@ -139,7 +141,7 @@ export class ReaderOperator extends DataOperator<
 				const words = [] as TextLine[];
 				const arr = splitWords(
 					line,
-					lettersOfEachLine * (encoding === 'utf8' ? 1 : 2)
+					lettersOfEachLine() * (encoding === 'utf8' ? 1 : 2)
 				);
 				for (let i = 0; i < arr.length; i++) {
 					const item = arr[i];
@@ -168,7 +170,7 @@ export class ReaderOperator extends DataOperator<
 		}
 		paraDict.push(lineNum);
 		book.setParaDict(paraDict);
-		book.parseCachedCatalog(catalogLoc);
+		book.parseCachedCatalog(catalogLoc || []);
 		if (!catalogLoc.length && encoding === 'utf8') {
 			book.cacheCatalog();
 		}
@@ -198,6 +200,7 @@ export class ReaderOperator extends DataOperator<
 				stared: 0 as 0
 			};
 			await this.sql.insertPack(newPack, duplicate);
+			window.sessionStorage.setItem(data.path, 'true');
 			this.switchMode(Mode.Init);
 			this.refresh();
 			return true;
@@ -205,31 +208,24 @@ export class ReaderOperator extends DataOperator<
 		let result = [] as string[];
 		let successCount = 0;
 		let success = [] as Promise<any>[];
+		const __dirname = path.resolve();
+		const removePattern = JSON.parse(
+			fs.readFileSync(
+				path.resolve(__dirname, './appConfig/uselessWord.json')
+			)
+		) as string[];
 		for (const [i, e] of data.entries()) {
 			if (!e.path || !e.title || !isText(e.path)) {
 				return;
 			}
 			//NOTE 正式发布时删除
-			// const novelPath = path.resolve('D:/小说', path.basename(e.path));
-			// if (path.dirname(e.path).replaceAll('\\', '/') !== 'D:/小说') {
-			// 	await fs.rename(e.path, novelPath, () => {});
-			// 	e.path = novelPath;
-			// }
 			let title = e.title;
 			if (e.path.endsWith('.epub')) {
 				title = await getEpubTitle(e.path);
 			}
 			let newPack = {
 				path: e.path,
-				title: deleteUselessWords(
-					title,
-					'soushu2022.com@',
-					'[搜书吧]',
-					'-soushu2022.com-[搜书吧网址]',
-					'-soushu555.org-[搜书吧网址]',
-					'.txt',
-					'.epub'
-				),
+				title: deleteUselessWords(title, ...removePattern),
 				stared: 0 as 0
 			};
 			success.push(
@@ -237,6 +233,7 @@ export class ReaderOperator extends DataOperator<
 					if (!res) {
 						result.push(`${e.title}:::重复`);
 					} else {
+						window.sessionStorage.setItem(e.path, 'true');
 						successCount++;
 					}
 
@@ -254,6 +251,7 @@ export class ReaderOperator extends DataOperator<
 			return result;
 		});
 	}
+
 	async addNewDir(dirName: string) {
 		if (this.dirMap.valueSeq().find((v) => v.title === dirName)) {
 			return -1;
@@ -269,7 +267,22 @@ export class ReaderOperator extends DataOperator<
 		}
 		return -1;
 	}
-
+	removePack(pack: MetaBook) {
+		if (pack.parent) {
+			this.removeFileFromDir(pack.id, pack.parent);
+		}
+		this.deletePack(pack.id);
+		this.currentPacks = this.currentPacks.filter((e) => e.id !== pack.id);
+		this.starModel.remove(pack.id);
+		this.bookmarkModel.remove(pack.id);
+		this.fileCache.data = this.fileCache.data.filter(
+			(e) => e.id !== pack.id
+		);
+		this.searchCache.res = this.searchCache.res.filter(
+			(e) => e.id !== pack.id
+		);
+		this.refresh();
+	}
 	override removeFileFromDir(packId: number, dirId: number) {
 		this.sql.updateDir(dirId, packId, 0).then(() => {
 			this.dirMap.get(dirId.toString())!.count--;
@@ -287,9 +300,5 @@ export class ReaderOperator extends DataOperator<
 		window.sessionStorage.setItem('currentBook', JSON.stringify(book));
 		this.titleWillUpdate(book.title);
 		this.currentBook = book;
-	}
-
-	getProgress(id: number) {
-		return this.bookmarkModel.data.find((v) => v.id === id)?.url;
 	}
 }

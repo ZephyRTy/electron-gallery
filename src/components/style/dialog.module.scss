@@ -77,7 +77,9 @@ $confirm-btn-color: rgb(64, 202, 244);
 			border-radius: 0 0 10px 0;
 		}
 	}
-
+	&-container {
+		width: 100%;
+	}
 	&-cover {
 		z-index: 3000;
 		position: absolute;
@@ -366,7 +368,29 @@ $confirm-btn-color: rgb(64, 202, 244);
 		width: 100%;
 	}
 }
-
+.clear_confirm {
+	display: block;
+	height: 40px;
+	text-align: center;
+	line-height: 40px;
+	margin: 20px auto;
+	&-info {
+		height: 100px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	&-span {
+		height: 30px;
+		width: 200px;
+		text-align: center;
+		margin: 0 auto;
+		display: block;
+	}
+	&-container {
+		width: 100%;
+	}
+}
 textarea.comment-input {
 	min-height: 50px;
 	width: 350px;
@@ -383,4 +407,17 @@ span.comment-word {
 	margin: 10px auto;
 	text-align: center;
 	font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.change-word {
+	&-container {
+		width: 100%;
+	}
+	display: block;
+	height: 20px;
+	line-height: 40px;
+	margin: 20px auto;
+	outline: none;
+	border: none;
+	border-bottom: 1px solid black;
 }

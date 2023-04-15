@@ -1,5 +1,16 @@
 @import './variable';
-
+@font-face {
+	font-family: '方正悠黑';
+	src: url('../../assets/font/FangZhengYouHeiJianTi-1.ttf');
+}
+@font-face {
+	font-family: '得意黑';
+	src: url('../../assets/font/SmileySans-Oblique.ttf');
+}
+@font-face {
+	font-family: '思源黑体';
+	src: url('../../assets/font/SourceHanSansCN-Normal.otf');
+}
 @mixin btn-with-bar($x) {
 	&:hover::after {
 		background-color: $active-color !important;
@@ -28,7 +39,7 @@
 	flex-direction: column;
 	background-color: whitesmoke;
 	margin: 0 auto;
-	max-width: 1200px;
+	//max-width: 1200px;
 	padding: 0;
 	margin: {
 		top: $header-height;
@@ -99,7 +110,23 @@
 		height: 35px;
 		top: 36px;
 		left: 56px;
-		border-radius: 0 0 23px 0;
+
+		&:hover {
+			background: #eb9706;
+		}
+		svg {
+			fill: white;
+			width: 80%;
+		}
+	}
+	&-clear {
+		position: absolute;
+		z-index: 800;
+		background: $active-color;
+		width: 39px;
+		height: 35px;
+		top: 70px;
+		left: 56px;
 		&:hover {
 			background: #eb9706;
 		}
@@ -484,4 +511,8 @@ button.goto-btn {
 	100% {
 		--rotate: 360deg;
 	}
+}
+#viewer {
+	position: relative;
+	bottom: -3vh;
 }

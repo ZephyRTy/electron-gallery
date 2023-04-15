@@ -22,6 +22,7 @@ export interface BasicFolder {
 	title: string;
 	timeStamp: string;
 }
+
 export interface NormalImage extends BasicData {
 	cover: string;
 }
@@ -55,6 +56,7 @@ export interface Model<T> {
 	dataToUpdate: T[];
 	update(newData?: T, ...args: any[]): void;
 	remove(id: number): void;
+	clear(): void;
 	sqlOperator: RequestOperator;
 }
 export interface HttpImagePack {
@@ -88,6 +90,7 @@ export interface EpubChapter {
 	href: string;
 	id: string;
 }
+
 export interface MetaBook extends BasicData {
 	reg: string;
 	bookCover?: string;

@@ -13,7 +13,12 @@ export const ImageDir: ImageComponent<ImageDirectory> = (props: {
 	return (
 		<div className={styles.img}>
 			<div className={styles['img-wrapper']}>
-				<a href={`#/gallery?directory=${props.data.id}&page=1`}>
+				<a
+					href={`#/gallery?directory=${props.data.id}&page=1`}
+					onClick={() => {
+						props.util.currentDirectory = props.data.id;
+					}}
+				>
 					<div className={styles['directory']}>
 						<img alt="" src={props.src}></img>
 					</div>

@@ -85,25 +85,30 @@ export const MarkedContext = () => {
 	const [active, setActive] = useState(
 		null as null | LineSelectionPosition[]
 	);
-
 	useEffect(() => {
 		if (book) {
-			selectionManager.initMarks().then(() => {
-				setSelections(
-					selectionManager.divideAllSelections().map((e) => {
-						return measureTextPosition(
-							e,
-							book,
-							document.querySelector('.text-line')!
-						);
-					})
-				);
-			});
+			selectionManager
+				.initMarks()
+				.then(() => {
+					const res = selectionManager
+						.divideAllSelections()
+						.map((e) => {
+							return measureTextPosition(
+								e,
+								book,
+								document.querySelector('.text-line')!
+							);
+						});
+					return res;
+				})
+				.then((res) => {
+					setSelections(() => [...res]);
+				});
 		}
-		return () => {
-			setSelections([]);
-		};
 	}, [book]);
+	// useEffect(() => {
+	// 	console.log(selections);
+	// }, [selections]);
 	return (
 		<>
 			<FloatMenu

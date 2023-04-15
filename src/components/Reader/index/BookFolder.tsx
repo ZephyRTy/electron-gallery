@@ -1,4 +1,4 @@
-import folderCover from '../../../assets/folder-cover.jpg';
+import folderCover from '../../../assets/cover/folder-cover.jpg';
 import { BookDirectory } from '../../../types/global';
 import styles from '../style/bookshelf.module.scss';
 import { BookTitle } from './BookTitle';
