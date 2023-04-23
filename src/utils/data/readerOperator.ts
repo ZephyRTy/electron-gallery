@@ -80,16 +80,20 @@ export class ReaderOperator extends DataOperator<
 			})
 			.then(async (isNotUtf8) => {
 				let text: string;
+				const res =
+					((await catalogCache.getCachedCatalog(
+						this.currentBook!.id
+					)) as string) || '';
+				const catalog = (JSON.parse(res) as any as string[]) || [];
 				if (isNotUtf8) {
 					text = await fsp.readFile(this.currentBook!.path, 'binary');
+					if (!catalog.length) {
+						text = iconv.decode(text, 'gbk');
+					}
 				} else {
 					text = await fsp.readFile(this.currentBook!.path, 'utf8');
 				}
 
-				const res = (await catalogCache.getCachedCatalog(
-					this.currentBook!.id
-				)) as string;
-				const catalog = JSON.parse(res) as any as string[];
 				const book = this.parseBook(
 					text,
 					isNotUtf8 ? 'gbk' : 'utf8',
@@ -128,6 +132,7 @@ export class ReaderOperator extends DataOperator<
 		let lineNum = 0;
 		let continuousBlankLine = 0;
 		const paraDict: number[] = [];
+		const isDecoded = encoding === 'utf8' || catalogLoc.length < 1;
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
 			let len = line.length;
@@ -141,7 +146,7 @@ export class ReaderOperator extends DataOperator<
 				const words = [] as TextLine[];
 				const arr = splitWords(
 					line,
-					lettersOfEachLine() * (encoding === 'utf8' ? 1 : 2)
+					lettersOfEachLine() * (isDecoded ? 1 : 2)
 				);
 				for (let i = 0; i < arr.length; i++) {
 					const item = arr[i];
@@ -149,7 +154,7 @@ export class ReaderOperator extends DataOperator<
 						index: lineNum++,
 						content: `${item}`,
 						className: ['text-line'],
-						isDecoded: encoding === 'utf8',
+						isDecoded,
 						paraIndex: paraDict.length - 1
 					});
 				}

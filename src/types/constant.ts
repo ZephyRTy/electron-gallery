@@ -3,13 +3,28 @@ import { ImageBookmark } from './global';
 /* eslint-disable no-unused-vars */
 const fs = window.require('fs');
 const path = window.require('path');
+const crypto = window.require('crypto');
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.resolve();
-const allConfig = JSON.parse(
-	fs.readFileSync(path.resolve(__dirname, './appConfig/config.json'), 'utf-8')
-);
+export const configPath = path.resolve(__dirname, './appConfig/config.json');
+export const generateMagicCode = (code: string): string => {
+	const hash = crypto.createHash('sha256');
+	return hash.update(code).digest('hex');
+};
+const allConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 const galleryConfig = allConfig.gallery;
-
+export const magicCode = generateMagicCode('yty7895123');
+const verifyCode = (code: string) => {
+	if (generateMagicCode(code) === magicCode) {
+		window.localStorage.setItem('magicCode', magicCode);
+		location.reload();
+	}
+};
+(window as any).verifyCode = verifyCode;
+export const translatePath = path.resolve(
+	__dirname,
+	'./appConfig/translation.json'
+);
 export {
 	imageCountOfSinglePage,
 	packCountOfSinglePage,
@@ -20,12 +35,7 @@ export {
 	proxyEnabled
 };
 
-export const translation = JSON.parse(
-	fs.readFileSync(
-		path.resolve(__dirname, './appConfig/translation.json'),
-		'utf-8'
-	)
-);
+export const translation = JSON.parse(fs.readFileSync(translatePath, 'utf-8'));
 const {
 	imageCountOfSinglePage,
 	packCountOfSinglePage,

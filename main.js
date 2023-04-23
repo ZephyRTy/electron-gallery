@@ -60,7 +60,7 @@ function createWindow() {
 			`http://localhost:${parseInt(process.env.PORT, 10) || 8096}/`
 		);
 	} else {
-		mainWindow.webContents.openDevTools({ mode: 'detach' });
+		//mainWindow.webContents.openDevTools({ mode: 'detach' });
 		mainWindow.loadURL(
 			url.format({
 				pathname: path.join(__dirname, 'dist', 'index.html'),

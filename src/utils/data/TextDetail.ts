@@ -19,13 +19,13 @@ export class TextDetail {
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
 	private currentChapter = 0;
-	private encoding: 'gbk' | 'utf8';
 	private sqlOperator: SqliteOperatorForBook;
 	// eslint-disable-next-line no-unused-vars
 	private floatMenuControl = (...args: any[]) => {};
 	private catalogIsCached = false;
 	readonly selectionManager = new SelectionManager(this);
 	private paraDict: number[] = [];
+	public readonly encoding: 'gbk' | 'utf8';
 	regExp: RegExp;
 
 	constructor(
@@ -237,13 +237,11 @@ export class TextDetail {
 			return;
 		}
 		for (let i = 0; i < this.content.length; i++) {
-			this.decodeLine(i);
 			this.parseCatalog(this.content[i]);
 		}
 		this.cacheCatalog();
 	}
 	getCatalog() {
-		//this.cacheCatalog();
 		return this.catalog;
 	}
 

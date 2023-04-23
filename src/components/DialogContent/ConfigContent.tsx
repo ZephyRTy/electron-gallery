@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import galleryConfig, { readerConfig, translation } from '../../types/constant';
+import galleryConfig, {
+	configPath,
+	readerConfig,
+	translation
+} from '../../types/constant';
 import { dialogActive } from '../../utils/store';
 import { ButtonContainer } from '../ButtonContainer';
 import { fs } from '../Dialog';
@@ -41,10 +45,7 @@ export const configContent = (props: {
 						reader: readerConfig
 					};
 					obj[props.type] = newConfig.current;
-					fs.writeFileSync(
-						'D:\\webDemo\\desktop-reader\\src\\config\\config.json',
-						JSON.stringify(obj)
-					);
+					fs.writeFileSync(configPath, JSON.stringify(obj));
 					ipcRenderer.send('relaunch');
 				}}
 			/>

@@ -42,7 +42,8 @@ export const ChangeWordContent = (props: {
 					const oldV = oldName.current!.value;
 					const newV = newName.current!.value;
 					const newP = newPro.current!.value;
-					changeWord(book.path, oldV, newV, newP);
+					const { path, encoding } = book;
+					changeWord(path, oldV, newV, newP, encoding);
 					props.setVisible(false);
 					setTimeout(() => {
 						location.reload();

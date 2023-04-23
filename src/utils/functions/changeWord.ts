@@ -67,13 +67,13 @@ export const changeWord = (
 	path: string,
 	oldWord: string,
 	newWord: string,
-	personalPronouns?: string
+	personalPronouns: string,
+	encode: 'gbk' | 'utf8'
 ) => {
-	let encode = 'utf-8';
 	let txt =
 		encode === 'gbk'
 			? iconv.decode(fs.readFileSync(path, 'binary'), 'gbk')
-			: fs.readFileSync(path, 'utf-8');
+			: fs.readFileSync(path, 'utf8');
 	const oldV = oldWord.trim();
 	const newV = newWord.trim();
 	if (personalPronouns?.length) {

@@ -58,7 +58,6 @@ export const TopMenu = (props: { children: ReactChild[] }) => {
 		</ul>
 	);
 };
-
 export const Menu = (props: { type: 'reader' | 'gallery' }) => {
 	const [mode, setMode] = useState(Mode.Normal);
 	useEffect(() => {

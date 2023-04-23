@@ -44,7 +44,7 @@ const babelRuntimeEntryHelpers = require.resolve(
 const babelRuntimeRegenerator = require.resolve('@babel/runtime/regenerator', {
 	paths: [babelRuntimeEntry]
 });
-
+const WasmPackPlugin = require.resolve('@wasm-tool/wasm-pack-plugin');
 // Some apps do not need the benefits of saving a web request, so not inlining the chunk
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false';

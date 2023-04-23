@@ -277,6 +277,9 @@ export const TextContent = () => {
 				setAlert(true);
 			}
 		});
+		return () => {
+			setBook(null as any as TextDetail);
+		};
 	}, []);
 	useEffect(() => {
 		if (scroll && book) {

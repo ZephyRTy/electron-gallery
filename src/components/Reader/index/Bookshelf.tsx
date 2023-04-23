@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useController } from 'syill';
-import { readerConfig } from '../../../types/constant';
+import { magicCode, readerConfig } from '../../../types/constant';
 import { MetaBook } from '../../../types/global';
 import { readerOperator as readerOp } from '../../../utils/data/galleryOperator';
 import {
@@ -68,7 +68,11 @@ export const Bookshelf = () => {
 		return (
 			<Sidebar menuPosition="top">
 				<Back inSelect={inSelect} setInSelect={setInSelect} />
-				<GotoGalleryBtn />
+				{window.localStorage.getItem('magicCode') === magicCode ? (
+					<GotoGalleryBtn />
+				) : (
+					<></>
+				)}
 				<SelectPacks
 					handleClick={() => {
 						if (dialogActive.active) {
