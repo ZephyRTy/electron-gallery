@@ -2,6 +2,11 @@
 import { useContext } from 'react';
 import { ReactComponent as Larger } from '../../../../icon/LargerFont.svg';
 import { ReactComponent as Smaller } from '../../../../icon/SmallerFont.svg';
+import {
+	changeConfig,
+	configPath,
+	readerConfig
+} from '../../../../types/config';
 import styles from '../../style/reader.module.scss';
 import { TextContext } from '../TextContent';
 export const FontSizeSetting = (props: {
@@ -18,8 +23,15 @@ export const FontSizeSetting = (props: {
 				className={styles['font-size-setting']}
 				onClick={() => {
 					if (fontSize > min) {
-						book.typeset(fontSize - 1);
-						typeset(fontSize - 1);
+						const newFontSize = fontSize - 1;
+						book.typeset(newFontSize);
+						typeset(newFontSize);
+						changeConfig(
+							'reader',
+							{ ...readerConfig, fontSize: newFontSize },
+							configPath
+						);
+						readerConfig['fontSize'] = newFontSize;
 					}
 				}}
 			>
@@ -41,8 +53,15 @@ export const FontSizeSetting = (props: {
 				className={styles['font-size-setting']}
 				onClick={() => {
 					if (fontSize < max) {
-						book.typeset(fontSize + 1);
-						typeset(fontSize + 1);
+						const newFontSize = fontSize + 1;
+						book.typeset(newFontSize);
+						typeset(newFontSize);
+						changeConfig(
+							'reader',
+							{ ...readerConfig, fontSize: newFontSize },
+							configPath
+						);
+						readerConfig['fontSize'] = newFontSize;
 					}
 				}}
 			>

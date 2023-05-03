@@ -30,8 +30,8 @@ function createWindow() {
 	//创建浏览器窗口,宽高自定义具体大小你开心就好
 	const src =
 		process.env.NODE_ENV === 'development'
-			? 'public/photo_circle.ico'
-			: 'dist/photo_circle.ico';
+			? 'public/reader.ico'
+			: 'dist/reader.ico';
 	tray = new Tray(path.join(__dirname, src)); // 用ico图标格式
 	mainWindow = new BrowserWindow({
 		width: 1020,

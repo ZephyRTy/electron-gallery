@@ -1,9 +1,7 @@
-import { readerR18 } from '../../types/constant';
-
 class CatalogCache {
 	private db: IDBOpenDBRequest;
 	constructor() {
-		this.db = indexedDB.open(readerR18 ? 'catalogCache' : 'testCache', 1);
+		this.db = indexedDB.open('catalogCache', 1);
 		this.db.onupgradeneeded = () => {
 			const res = this.db.result;
 			const objectStore = res.createObjectStore('catalog', {

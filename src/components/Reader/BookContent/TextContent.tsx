@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
+import { debounce } from 'lodash';
 import React, {
 	useCallback,
-	useContext,
 	useEffect,
 	useMemo,
 	useRef,
@@ -13,19 +13,20 @@ import { useController } from 'syill';
 import {
 	contentRange,
 	deltaLine,
-	DELTA_HEIGHT,
 	distanceToUpdate,
-	fontSize,
-	lineHeight,
-	overflowNum
-} from '../../../types/constant';
+	overflowNum,
+	readerConfig
+} from '../../../types/config';
+import { DELTA_HEIGHT, lineHeight, typeSetting } from '../../../types/constant';
 import { TextLine } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
+import { SelectionManager } from '../../../utils/data/SelectionManager';
 import { TextDetail } from '../../../utils/data/TextDetail';
 import {
 	formatDate,
 	parseUrlQuery,
-	stylesJoin
+	stylesJoin,
+	verified
 } from '../../../utils/functions/functions';
 import { changedAlertStore, chapterStore } from '../../../utils/store';
 import {
@@ -45,6 +46,7 @@ import {
 	ShowMarksBtn
 } from '../Buttons';
 import styles from '../style/reader.module.scss';
+import { ContentLine } from './ContentLine';
 import { FindDialog, FindMaskContainer } from './FindDialog';
 import { MarkedContext } from './MarkedLine';
 import { Placeholder } from './Placeholder';
@@ -53,53 +55,6 @@ import { SideMarkDiv } from './SideEnter/SideMarkDiv';
 import { TypeSetting } from './Typesetting/TypeSetting';
 
 export const TextContext = React.createContext(null as any as TextDetail);
-const ContentLine = (props: { line: TextLine }) => {
-	const para = useRef<HTMLParagraphElement>(null);
-	const book = useContext(TextContext);
-	const selectionManager = book?.selectionManager;
-	return (
-		<p
-			className={props.line.className.join(' ')}
-			onMouseDown={(e) => {
-				e.stopPropagation();
-				selectionManager.removeAllRange();
-				selectionManager.clearSelection();
-				selectionManager
-					.setSelection('anchorIndex', props.line.index)
-					.setMousePosition(
-						e.clientX,
-						props.line.index * lineHeight ?? e.clientY
-					);
-				selectionManager.showFloatMenu(false);
-			}}
-			onMouseUp={(e) => {
-				e.stopPropagation();
-				const selection = window.getSelection();
-				if (selection) {
-					if (selection.isCollapsed) {
-						selectionManager.clearSelection();
-						selectionManager.clearMousePosition();
-						return;
-					}
-					selectionManager
-						.setSelection('focusIndex', props.line.index)
-						.setSelection('focusOffset', selection.focusOffset)
-						.setSelection('anchorOffset', selection.anchorOffset);
-					if (selectionManager.confirmAndFixSelection()) {
-						selectionManager.showFloatMenu(true);
-					}
-				} else {
-					selectionManager.clearSelection();
-					selectionManager.clearMousePosition();
-					return;
-				}
-			}}
-			ref={para}
-		>
-			{props.line.content}
-		</p>
-	);
-};
 export const TextContent = () => {
 	const article = useRef(null as HTMLDivElement | null);
 	let [searchParams] = useSearchParams();
@@ -111,9 +66,11 @@ export const TextContent = () => {
 	const [start, setStart] = useState(0);
 	const [book, setBook] = useState(null as any as TextDetail);
 	const [content, setContent] = useState([] as TextLine[]);
-	const [chapter, setChapter] = useController(chapterStore);
-	const [textFontSize, setFontSize] = useState(fontSize);
-	const scrollEle = useRef(null);
+	const [, setChapter] = useController(chapterStore);
+	const [textFontSize, setFontSize] = useState(
+		readerConfig.fontSize as number
+	);
+	const scrollEle = useRef(null as any as HTMLDivElement);
 	const jump = useRef(false);
 	const initBottom = useMemo(
 		() => (book ? (book.length - contentRange) * lineHeight : 0),
@@ -164,16 +121,15 @@ export const TextContent = () => {
 		},
 		[updateWhenDrag]
 	);
-	// useEffect(() => {
-	// 	console.log(start);
-	// }, [start]);
+
 	// eslint-disable-next-line no-unused-vars
 	const scrollToLineNum = useCallback(
-		(lineNum: number) => {
+		(lineNum: number, force = false) => {
 			const eleScrollTop = lineNum * lineHeight;
 			if (
 				Math.abs(eleScrollTop - (scrollEle.current as any).scrollTop) <
-				800
+					800 &&
+				!force
 			)
 				return;
 			jumpTo(eleScrollTop);
@@ -182,7 +138,6 @@ export const TextContent = () => {
 		[updateWhenDrag]
 	);
 	const beforeScrollTop = useRef(0);
-
 	const handleScroll = useMemo(() => {
 		if (!book) return;
 		let timer: number;
@@ -261,13 +216,41 @@ export const TextContent = () => {
 	}, [start, top, bottom]);
 	const typeset = useCallback(
 		(font: number) => {
+			const loc = SelectionManager.lineNumberToLocation(
+				Math.ceil(scrollEle.current.scrollTop / lineHeight),
+				0,
+				book
+			);
 			setFontSize(font);
-			setContent(book.getContent(start, start + contentRange));
+			scrollToLineNum(
+				SelectionManager.locationToLineNumber(loc, book).lineNum,
+				true
+			);
 		},
-		[start, book]
+		[start, book, scrollToLineNum]
+	);
+	const handleResize = debounce(
+		useCallback(() => {
+			if (!book || !scrollEle.current) return;
+			const width = document.querySelector('article')!.clientWidth - 40;
+			const loc = SelectionManager.lineNumberToLocation(
+				Math.ceil(scrollEle.current.scrollTop / lineHeight),
+				0,
+				book
+			);
+			typeSetting.width = width;
+			book.typeset();
+			const { lineNum } = SelectionManager.locationToLineNumber(
+				loc,
+				book
+			);
+
+			scrollToLineNum(lineNum, true);
+		}, [book, scrollToLineNum, start]),
+		200
 	);
 	useEffect(() => {
-		readerOperator.loadText().then((res) => {
+		readerOperator.loadText(textFontSize).then((res) => {
 			const { book, changed } = res;
 			setBook(book);
 			setContent(book.getContent(start, start + contentRange));
@@ -292,6 +275,13 @@ export const TextContent = () => {
 			jumpTo(scroll);
 		}
 	}, [book]);
+	useEffect(() => {
+		if (!book) return;
+		window.addEventListener('resize', handleResize);
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	}, [handleResize, book]);
 	const MainContent = useCallback(() => {
 		return (
 			<>
@@ -348,7 +338,7 @@ export const TextContent = () => {
 					<ShowMarksBtn />
 					<Find />
 					<OpenInExplorerBtn filePath={book?.path} />
-					<ChangeWordBtn />
+					{verified() ? <ChangeWordBtn /> : <></>}
 				</Sidebar>
 			</SidebarContainer>
 			<div

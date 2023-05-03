@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo } from 'react';
 import { useData } from 'syill';
 import { ReactComponent as AnchorIcon } from '../../../../icon/location.svg';
-import { enable3d, lineHeight } from '../../../../types/constant';
+import { lineHeight } from '../../../../types/constant';
 import { MarkAnchor } from '../../../../types/global';
 import { stylesJoin } from '../../../../utils/functions/functions';
 import { marksShowStore } from '../../../../utils/store';
@@ -10,21 +10,23 @@ import { TextContext } from '../TextContent';
 export const SideMarkDiv = () => {
 	const book = useContext(TextContext);
 	const selectionManager = book?.selectionManager;
-	const [, setShow] = useData(marksShowStore);
+	const [show, setShow] = useData(marksShowStore);
 	const anchors = useMemo(() => {
 		return selectionManager?.generateMarkAnchor() || [];
-	}, [book, selectionManager?.getMarks().length]);
+	}, [book, book?.getFontSize(), selectionManager?.getMarks().length, show]);
+
 	useEffect(() => {
 		return () => {
 			setShow(false);
 		};
 	}, []);
+
 	return (
 		<div
 			className={stylesJoin(
 				styles['side-enter-box'],
 				styles['side-enter'],
-				enable3d ? styles['on-bottom'] : ''
+				styles['on-bottom']
 			)}
 		>
 			<ul className={styles['side-list']}>

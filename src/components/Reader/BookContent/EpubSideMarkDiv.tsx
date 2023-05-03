@@ -1,7 +1,6 @@
 import { Rendition } from 'epubjs';
 import { useContext, useEffect } from 'react';
 import { useData } from 'syill';
-import { enable3d } from '../../../types/constant';
 import { EpubMark } from '../../../types/global';
 import { stylesJoin } from '../../../utils/functions/functions';
 import { marksShowStore, tocStore } from '../../../utils/store';
@@ -54,7 +53,7 @@ export const EpubSideMarkDiv = (props: { rendition: Rendition | null }) => {
 			className={stylesJoin(
 				styles['side-enter-box'],
 				styles['side-enter'],
-				enable3d ? styles['on-bottom'] : ''
+				styles['on-bottom']
 			)}
 		>
 			<ul className={styles['side-list']}>

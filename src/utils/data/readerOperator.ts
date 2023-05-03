@@ -57,7 +57,7 @@ export class ReaderOperator extends DataOperator<
 		return result;
 	}
 
-	async loadText() {
+	async loadText(fontSize: number) {
 		if (!this.currentBook) {
 			this.currentBook = JSON.parse(
 				window.sessionStorage.getItem('currentBook')!
@@ -97,7 +97,8 @@ export class ReaderOperator extends DataOperator<
 				const book = this.parseBook(
 					text,
 					isNotUtf8 ? 'gbk' : 'utf8',
-					catalog
+					catalog,
+					fontSize
 				);
 				const changed = false;
 				return { book, changed };
@@ -120,13 +121,15 @@ export class ReaderOperator extends DataOperator<
 	private parseBook(
 		text: string,
 		encoding: 'gbk' | 'utf8',
-		catalogLoc: string[]
+		catalogLoc: string[],
+		fontSize: number
 	) {
 		const book = new TextDetail(
 			this.currentBook!,
 			this.sql,
 			encoding,
-			!!catalogLoc.length
+			!!catalogLoc.length,
+			fontSize
 		);
 		const lines = text.split('\n');
 		let lineNum = 0;

@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 /* eslint-disable quotes */
 /* eslint-disable camelcase */
-import { readerR18 } from '../../types/constant';
 import {
 	BasicData,
 	BookmarkOfBook,
@@ -58,12 +57,9 @@ export class SqliteOperatorForBook implements RequestOperator {
 		if (!fs.existsSync(dbPath)) {
 			fs.mkdirSync(dbPath);
 		}
-		this.db = new sq3.Database(
-			path.resolve(dbPath, readerR18 ? 'books.db' : 'test.db'),
-			() => {
-				this.readerInitialize();
-			}
-		);
+		this.db = new sq3.Database(path.resolve(dbPath, 'books.db'), () => {
+			this.readerInitialize();
+		});
 		this.checkExternalDriver();
 	}
 	private readerInitialize() {

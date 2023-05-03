@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { typeSetting } from '../../types/constant';
 import { Chapter, MetaBook, TextLine } from '../../types/global';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
 import { catalogCache } from './indexDB';
@@ -21,10 +22,11 @@ export class TextDetail {
 	private currentChapter = 0;
 	private sqlOperator: SqliteOperatorForBook;
 	// eslint-disable-next-line no-unused-vars
-	private floatMenuControl = (...args: any[]) => {};
 	private catalogIsCached = false;
-	readonly selectionManager = new SelectionManager(this);
+	readonly selectionManager: SelectionManager;
 	private paraDict: number[] = [];
+	private catalogLoc: string[] = [];
+	private typesetController = typeSetting;
 	public readonly encoding: 'gbk' | 'utf8';
 	regExp: RegExp;
 
@@ -32,13 +34,16 @@ export class TextDetail {
 		book: MetaBook,
 		sqlOperator: SqliteOperatorForBook,
 		encoding: 'gbk' | 'utf8',
-		hasCatalogCached: boolean
+		hasCatalogCached: boolean,
+		fontSize: number
 	) {
+		this.typesetController.fontSize = fontSize;
 		this.metaBook = book;
 		this.regExp = new RegExp(String.raw`${book.reg}`, 'g');
 		this.sqlOperator = sqlOperator;
 		this.encoding = encoding;
 		this.catalogIsCached = hasCatalogCached;
+		this.selectionManager = new SelectionManager(this);
 	}
 
 	public cacheCatalog() {
@@ -97,8 +102,11 @@ export class TextDetail {
 		}
 	}
 
-	parseCachedCatalog(catalogLoc: string[]) {
-		const catalog = catalogLoc.map((loc) => {
+	parseCachedCatalog(catalogLoc?: string[]) {
+		if (catalogLoc) {
+			this.catalogLoc = catalogLoc;
+		}
+		const catalog = this.catalogLoc.map((loc) => {
 			return SelectionManager.locationToLineNumber(loc, this);
 		});
 		for (let i of catalog) {
@@ -108,6 +116,7 @@ export class TextDetail {
 			}
 		}
 	}
+
 	private parseCatalog(line: TextLine) {
 		let title = this.decodeLine(line).content.match(this.regExp)?.[0];
 		if (title) {
@@ -225,10 +234,14 @@ export class TextDetail {
 		this.metaBook.reg = reg;
 		this.regExp = new RegExp(String.raw`${reg}`, 'g');
 		this.catalog = [];
-		for (let i = 0; i < this.content.length; i++) {
-			this.parseCatalog(this.content[i]);
+		if (this.encoding === 'gbk') {
+			this.parseCachedCatalog();
+		} else {
+			for (let i = 0; i < this.content.length; i++) {
+				this.parseCatalog(this.content[i]);
+			}
 		}
-		this.cacheCatalog();
+
 		this.sqlOperator.updateReg(this.metaBook.id, reg);
 	}
 
@@ -351,9 +364,12 @@ export class TextDetail {
 		return this.paraDict[paraIndex];
 	}
 
-	typeset(fontSize: number) {
-		const letterNum = Math.floor(900 / fontSize);
+	typeset(fontSize?: number) {
+		this.typesetController.fontSize =
+			fontSize || this.typesetController.fontSize;
+		const letterNum = this.typesetController.lettersOfEachLine;
 		this.lettersOfEachLine = letterNum;
+
 		let i = 0,
 			count = 0;
 		const content = [] as TextLine[];
@@ -396,9 +412,14 @@ export class TextDetail {
 		}
 		this.paraDict[this.paraDict.length - 1] = count;
 		this.content = [...content];
+		this.reParseCatalog(this.reg);
 	}
 
 	setCurrentChapter(index: number) {
 		this.currentChapter = index;
+	}
+
+	getFontSize() {
+		return this.typesetController.fontSize;
 	}
 }

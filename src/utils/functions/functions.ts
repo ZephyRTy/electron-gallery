@@ -4,6 +4,7 @@ import styles from '../../components/Reader/style/reader.module.scss';
 import {
 	lettersOfEachLine,
 	lineHeight,
+	magicCode,
 	SPACE_CODE
 } from '../../types/constant';
 import {
@@ -176,6 +177,9 @@ export const stylesJoin = (...args: string[]) => {
 };
 const between = (value: number, num1: number, num2: number) => {
 	return value >= Math.min(num1, num2) && value <= Math.max(num1, num2);
+};
+export const verified = () => {
+	return window.localStorage.getItem('magicCode') === magicCode;
 };
 export const selectionContains = (
 	selection: GroupSelection[],

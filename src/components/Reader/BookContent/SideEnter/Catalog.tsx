@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useController, useData } from 'syill';
-import { lineHeight } from '../../../../types/constant';
+import { lineHeight, typeSetting } from '../../../../types/constant';
 import { Chapter } from '../../../../types/global';
 import { stylesJoin } from '../../../../utils/functions/functions';
 import {
@@ -50,8 +50,9 @@ export const SideCatalog = () => {
 	const [chapter, setChapter] = useData(chapterStore);
 	const ele = useRef(null);
 	useEffect(() => {
-		setCatalog(book?.getCatalog() || []);
-	}, [book, book?.reg]);
+		const v = book?.getCatalog() || [];
+		setCatalog(v);
+	}, [book, book?.reg, typeSetting.lettersOfEachLine]);
 	useEffect(() => {
 		if (show) {
 			document

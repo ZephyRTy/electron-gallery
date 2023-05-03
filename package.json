@@ -70,11 +70,11 @@
 		"build": "node scripts/build.js",
 		"esbuild": "node scripts/es_build.js",
 		"test": "node scripts/test.js",
-		"pack": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photo.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
+		"pack": "electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/reader.ico --out=~/ --asar --app-version=0.0.1 --overwrite",
 		"package": "npm run build && npm run pack",
 		"package:esbuild": "npm run esbuild && npm run pack",
-		"package:bishe": "npm run esbuild && electron-packager ./ Gallery --platform=win32 --arch=x64 --icon=public/photo.ico --out=app/ --asar --app-version=0.0.1 --overwrite",
-		"package:electron-builder": "npm run esbuild && electron-builder --dir"
+		"build:msi": "npm run esbuild && electron-builder --win --x64",
+		"build:dir": "npm run esbuild && electron-builder --dir"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -259,9 +259,9 @@
 			"oneClick": false,
 			"allowElevation": true,
 			"allowToChangeInstallationDirectory": true,
-			"installerIcon": "public/photo.ico",
+			"installerIcon": "public/reader.ico",
 			"uninstallerIcon": "public/photo_uninstall.ico",
-			"installerHeaderIcon": "public/photo.ico",
+			"installerHeaderIcon": "public/reader.ico",
 			"createDesktopShortcut": true,
 			"createStartMenuShortcut": true,
 			"shortcutName": "name"
@@ -285,7 +285,7 @@
 			"icon": "src/resources/icons/icon.icns"
 		},
 		"win": {
-			"icon": "public/photo.ico",
+			"icon": "public/reader.ico",
 			"target": [
 				{
 					"target": "nsis",

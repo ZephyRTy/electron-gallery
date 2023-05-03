@@ -27,6 +27,7 @@ const MarkedLine = (props: {
 						}
 						key={i}
 						onClick={(event) => {
+							if (!selectionManager) return;
 							event.stopPropagation();
 							selectionManager.setMousePosition(
 								event.clientX - 50,
@@ -41,7 +42,7 @@ const MarkedLine = (props: {
 						onMouseEnter={() => {
 							setHover(true);
 							if (!window.getSelection()!.isCollapsed) {
-								selectionManager.removeAllRange();
+								selectionManager?.removeAllRange();
 							}
 							//
 						}}
@@ -86,7 +87,7 @@ export const MarkedContext = () => {
 		null as null | LineSelectionPosition[]
 	);
 	useEffect(() => {
-		if (book) {
+		if (book && selectionManager) {
 			selectionManager
 				.initMarks()
 				.then(() => {
@@ -105,7 +106,7 @@ export const MarkedContext = () => {
 					setSelections(() => [...res]);
 				});
 		}
-	}, [book]);
+	}, [book?.getFontSize()]);
 	// useEffect(() => {
 	// 	console.log(selections);
 	// }, [selections]);

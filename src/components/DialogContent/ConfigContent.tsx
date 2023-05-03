@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import galleryConfig, {
-	configPath,
-	readerConfig,
-	translation
-} from '../../types/constant';
+import { changeConfig, configPath } from '../../types/config';
+import { translation } from '../../types/constant';
 import { dialogActive } from '../../utils/store';
 import { ButtonContainer } from '../ButtonContainer';
-import { fs } from '../Dialog';
 import styles from '../style/dialog.module.scss';
 
 const { ipcRenderer } = window.require('electron');
@@ -40,12 +36,7 @@ export const configContent = (props: {
 					setConfirmed((v) => !v);
 				}}
 				handleConfirm={() => {
-					let obj = {
-						gallery: galleryConfig,
-						reader: readerConfig
-					};
-					obj[props.type] = newConfig.current;
-					fs.writeFileSync(configPath, JSON.stringify(obj));
+					changeConfig(props.type, newConfig.current, configPath);
 					ipcRenderer.send('relaunch');
 				}}
 			/>

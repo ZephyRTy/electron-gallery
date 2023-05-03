@@ -25,16 +25,28 @@ export class SelectionManager {
 		x: -1,
 		y: -1
 	};
+	private width = 900;
 	private book: TextDetail;
 	constructor(book: TextDetail) {
 		this.book = book;
 	}
+
 	static lineNumberToLocation(
 		lineNumber: number,
 		offset: number,
 		book: TextDetail
 	) {
 		const line = book.getLine(lineNumber);
+		if (line.paraIndex === -1) {
+			let count = line.index;
+			while (
+				book.getLine(count).paraIndex === -1 &&
+				count < book.length
+			) {
+				++count;
+			}
+			return `${book.getLine(count).paraIndex};0`;
+		}
 		let res = `${line.paraIndex};`;
 		let paraOffset =
 			(line.index - book.findParaStart(line.paraIndex)) *
@@ -42,14 +54,15 @@ export class SelectionManager {
 			offset;
 		return res + paraOffset;
 	}
+
 	static locationToLineNumber(lineLocation: string, book: TextDetail) {
-		const [para, offset] = lineLocation.split(';');
-		const paraStart = book.findParaStart(parseInt(para, 10));
-		const lineNum =
-			paraStart + Math.floor(parseInt(offset, 10) / lettersOfEachLine());
-		const offsetInLine = parseInt(offset, 10) % lettersOfEachLine();
+		const [para, offset] = lineLocation.split(';').map((e) => Number(e));
+		const paraStart = book.findParaStart(para);
+		const lineNum = paraStart + Math.floor(offset / lettersOfEachLine());
+		const offsetInLine = offset % lettersOfEachLine();
 		return { lineNum, offsetInLine };
 	}
+
 	registerFloatMenu(setState: {
 		(
 			value: SetStateAction<{ x: number | string; y: number | string }>
@@ -58,6 +71,7 @@ export class SelectionManager {
 	}) {
 		this.floatMenuControl = setState;
 	}
+
 	removeAllRange() {
 		window.getSelection()?.removeAllRanges();
 		this.showFloatMenu(false);
@@ -270,6 +284,7 @@ export class SelectionManager {
 		this.clearSelection();
 		return this.dividedSelection(this.selections.length - 1);
 	}
+
 	async addComment(
 		id: number,
 		comment: string,
@@ -292,6 +307,7 @@ export class SelectionManager {
 			)
 		);
 	}
+
 	async removeMark(logicLine: LineSelection) {
 		const arr = [] as GroupSelection[];
 		for (const selection of this.selections) {
@@ -331,6 +347,7 @@ export class SelectionManager {
 				e.endLocation,
 				this.book
 			);
+
 			return {
 				anchorIndex: start.lineNum,
 				anchorOffset: start.offsetInLine,
@@ -352,38 +369,45 @@ export class SelectionManager {
 		const arr = [] as MarkAnchor[];
 		for (let i = 0; i < this.selections.length; ++i) {
 			const selection = this.selections[i];
+			const { anchorIndex, anchorOffset, focusIndex, focusOffset } =
+				selection;
 			let content = '';
-			if (selection.anchorIndex === selection.focusIndex) {
+			if (anchorIndex === focusIndex) {
 				content =
 					this.book
-						.getLine(selection.anchorIndex)
+						.getLine(anchorIndex)
 						.content.slice(
-							selection.anchorOffset,
-							Math.min(
-								selection.focusOffset,
-								selection.anchorOffset + maxLength
-							)
+							anchorOffset,
+							Math.min(focusOffset, anchorOffset + maxLength)
 						) +
-					(selection.focusOffset - selection.anchorOffset > maxLength
-						? '...'
-						: '');
+					(focusOffset - anchorOffset > maxLength ? '...' : '');
 			} else {
+				let str = '';
+
+				if (focusIndex === anchorIndex + 1) {
+					str = this.book
+						.getLine(focusIndex)
+						.content.slice(0, Math.min(focusOffset, maxLength));
+				} else {
+					str = this.book
+						.getLine(focusIndex)
+						.content.slice(0, maxLength - anchorOffset);
+				}
 				content =
 					this.book
 						.getLine(selection.anchorIndex)
 						.content.slice(
 							selection.anchorOffset,
 							selection.anchorOffset + maxLength
-						) + '...';
+						) +
+					str +
+					'...';
 			}
 			const anchor = {
 				anchorIndex: selection.anchorIndex,
 				content,
 				timestamp: selection.timestamp
 			};
-			if (content === '...') {
-				console.log(selection);
-			}
 			arr.push(anchor);
 		}
 		return arr;
