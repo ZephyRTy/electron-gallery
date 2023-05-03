@@ -1,4 +1,5 @@
 import { NavItem, Rendition } from 'epubjs';
+import Navigation from 'epubjs/types/navigation';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { useData } from 'syill';
 import { ReactComponent as MenuArrowIcon } from '../../../icon/menuArrow.svg';
@@ -29,6 +30,7 @@ const Submenu = (props: {
 						onClick={() => {
 							props.rendition?.display(e.href);
 						}}
+						title={e.label.replaceAll('\n', '')}
 					>
 						<span>{e.label.replaceAll('\n', '')}</span>
 					</li>
@@ -74,6 +76,7 @@ export const EpubCatalogItem = (props: {
 						onClick={() => {
 							props.rendition?.display(props.item.href);
 						}}
+						title={props.item.label.replaceAll('\n', '')}
 					>
 						{props.item.label.replaceAll('\n', '')}
 					</span>
@@ -90,16 +93,26 @@ export const EpubCatalogItem = (props: {
 	}, [props.current, show]);
 	return <>{item}</>;
 };
-export const EpubSideCatalog = (props: { rendition: Rendition | null }) => {
+export const EpubSideCatalog = (props: {
+	rendition: Rendition | null;
+	navigation: Navigation | undefined;
+}) => {
 	const book = useContext(EpubContext);
-	const [catalog] = useState(book?.navigation?.toc || []);
+	const [catalog, setCatalog] = useState(book?.navigation?.toc || []);
 	const [show, setShow] = useData(catalogShowStore);
 	const [marksShow] = useData(marksShowStore);
+
 	useEffect(() => {
 		return () => {
 			setShow(false);
 		};
 	}, []);
+	useEffect(() => {
+		const { navigation } = props;
+		if (navigation) {
+			setCatalog(navigation.toc);
+		}
+	}, [book, props.navigation]);
 	return (
 		<>
 			<div

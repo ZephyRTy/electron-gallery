@@ -26,7 +26,7 @@ export const SideEnter3D = (props: {
 					marksShow ? styles['bottom-side'] : styles['top-side']
 				)}
 			>
-				<SideCatalog />
+				{props.renderCatalog ? props.renderCatalog() : <SideCatalog />}
 				<props.renderMarkDiv />
 			</div>
 		</div>

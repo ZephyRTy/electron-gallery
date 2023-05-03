@@ -59,7 +59,12 @@ export const EpubContent = () => {
 		<EpubContext.Provider value={book}>
 			<SideEnter3D
 				renderCatalog={() => {
-					return <EpubSideCatalog rendition={rendition} />;
+					return (
+						<EpubSideCatalog
+							navigation={book?.navigation}
+							rendition={rendition}
+						/>
+					);
 				}}
 				renderMarkDiv={() => {
 					return <EpubSideMarkDiv rendition={rendition} />;
