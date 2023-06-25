@@ -11,7 +11,10 @@ import {
 import { compress } from '../functions/compressThumb';
 import { endsWith, rmDir } from '../functions/functions';
 import { ImgWaterfallCache } from '../ImgWaterFallCache';
-import { MysqlOperator, mysqlOperator } from '../request/mysqlOperator';
+import {
+	sqliteOperatorForGallery,
+	SqliteOperatorForGallery
+} from '../request/sqliteOperatorForGallery';
 import { DataOperator } from './DataOperator';
 import { ReaderOperator } from './readerOperator';
 const fs = window.require('fs');
@@ -28,7 +31,7 @@ export class GalleryOperator extends DataOperator<
 	ImageDirectory
 > {
 	protected static instance: GalleryOperator;
-	protected override sql: MysqlOperator;
+	protected override sql: SqliteOperatorForGallery;
 	currentDirectory: number = -1;
 	static getInstance(): GalleryOperator {
 		if (!GalleryOperator.instance) {
@@ -38,8 +41,11 @@ export class GalleryOperator extends DataOperator<
 	}
 
 	protected constructor() {
-		super({ database: 'GALLERY', tableName: 'pack_list' }, mysqlOperator);
-		this.sql = mysqlOperator;
+		super(
+			{ database: 'GALLERY', tableName: 'pack_list' },
+			sqliteOperatorForGallery
+		);
+		this.sql = sqliteOperatorForGallery;
 	}
 
 	async changePackCover(packId: string, cover: string, fullPath: string) {

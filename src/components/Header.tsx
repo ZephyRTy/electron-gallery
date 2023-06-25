@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as Console } from '../icon/console.svg';
 import { GalleryOperator } from '../utils/data/galleryOperator';
 import { ReaderOperator } from '../utils/data/readerOperator';
-import { mysqlOperator } from '../utils/request/mysqlOperator';
+import { sqliteOperatorForGallery } from '../utils/request/sqliteOperatorForGallery';
 import { TaskQueueBeforeQuit } from '../utils/TaskQueue';
 import { GallerySearch } from './Search';
 import styles from './style/header.module.scss';
@@ -36,7 +36,7 @@ const WindowButtons = () => {
 					onClick={() => {
 						TaskQueueBeforeQuit.run().then(() => {
 							ipcRenderer.send('close');
-							mysqlOperator.end();
+							sqliteOperatorForGallery.end();
 						});
 					}}
 				></button>
