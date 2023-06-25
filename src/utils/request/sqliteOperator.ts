@@ -689,8 +689,6 @@ export class SqliteOperatorForBook implements RequestOperator {
 		});
 	}
 
-	//TODO 插入注释
-
 	insertMark(id: number, loc: TextComment) {
 		let sql = transformToSQL('mark', {
 			m_id: id,

@@ -349,9 +349,7 @@ export abstract class DataOperator<
 			const e = this.currentPacks[i];
 			if (this.selection.selected.has(e.id)) {
 				if (hasCover(e)) {
-					if (count === 0) {
-						cover = e.path + e.cover;
-					}
+					cover = e.path + e.cover;
 				}
 				++n;
 				if (n > 0 && n % 10 === 0) {
@@ -359,7 +357,7 @@ export abstract class DataOperator<
 				}
 				e.parent = dirIndex;
 				this.sql
-					.updateDir(dirIndex, e.id, 1, count === 1 ? cover : '')
+					.updateDir(dirIndex, e.id, 1, hasCover(e) ? cover : '')
 					.then(() => {
 						++count;
 						if (count === this.selection.selected.size) {

@@ -76,6 +76,7 @@ export class EpubDetail {
 	getMeta() {
 		return this.metaBook;
 	}
+
 	addMark(cfi: string) {
 		const timestamp = formatDate(new Date());
 		this.sqlOperator.insertEpubMark(this.metaBook.id, cfi, timestamp);
