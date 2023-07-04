@@ -126,7 +126,7 @@ export class GalleryOperator extends DataOperator<
 				newPack.cover = '/' + valid || '';
 			}
 			success.push(
-				this.sql.insertPack(newPack).then((res) => {
+				this.sql.insertPack(newPack, false).then((res) => {
 					if (!res) {
 						result.push(`${e.title}:::重复`);
 					} else {

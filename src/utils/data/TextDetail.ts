@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { typeSetting } from '../../types/constant';
+import { lettersOfEachLine, typeSetting } from '../../types/constant';
 import { Chapter, MetaBook, TextLine } from '../../types/global';
 import { SqliteOperatorForBook } from '../request/sqliteOperator';
 import { catalogCache } from './indexDB';
@@ -15,7 +15,6 @@ const ensurePositive = (num: number | string) => {
 
 export class TextDetail {
 	private metaBook: MetaBook;
-	private lettersOfEachLine = 55;
 	private contentSize = { start: 0, end: 0 };
 	private content: TextLine[] = [];
 	private catalog: Chapter[] = [];
@@ -27,6 +26,7 @@ export class TextDetail {
 	private paraDict: number[] = [];
 	private catalogLoc: string[] = [];
 	private typesetController = typeSetting;
+	private lettersOfEachLine = lettersOfEachLine();
 	public readonly encoding: 'gbk' | 'utf8';
 	regExp: RegExp;
 
@@ -60,9 +60,11 @@ export class TextDetail {
 			)
 		);
 	}
+
 	public addChapter(chapter: Chapter) {
 		this.catalog.push(chapter);
 	}
+
 	public getContent(start: number, end: number): TextLine[] {
 		this.contentSize = { start, end };
 		const res = this.content.slice(start, end);

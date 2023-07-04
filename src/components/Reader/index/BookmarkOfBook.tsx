@@ -2,6 +2,7 @@ import { Book } from 'epubjs';
 import { useEffect, useState } from 'react';
 import bookmarkCover from '../../../assets/cover/bookmark-cover.jpg';
 import { ReactComponent as BookmarkIcon } from '../../../icon/mark.svg';
+import { ReactComponent as StarIcon } from '../../../icon/star.svg';
 import { BookmarkOfBook } from '../../../types/global';
 import { readerOperator } from '../../../utils/data/galleryOperator';
 import { gotoHash, stylesJoin } from '../../../utils/functions/functions';
@@ -10,6 +11,7 @@ import styles from '../style/bookshelf.module.scss';
 import { BookTitle } from './BookTitle';
 export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 	const [marked, setMarked] = useState(true);
+	const [stared, setStared] = useState(props.bookItem.stared);
 	const [src, setSrc] = useState(bookmarkCover);
 	useEffect(() => {
 		if (props.bookItem.path.endsWith('.epub')) {
@@ -55,6 +57,17 @@ export const ShelfBookmark = (props: { bookItem: BookmarkOfBook }) => {
 					onClick={() => {
 						setMarked(!marked);
 						readerOperator.UpdateBookmark(props.bookItem, !marked);
+					}}
+				/>
+				<StarIcon
+					className={stylesJoin(
+						styles['icon'],
+						styles['icon--star'],
+						stared ? styles['icon--star__stared'] : ''
+					)}
+					onClick={() => {
+						setStared(!stared);
+						readerOperator.updateStared(props.bookItem);
 					}}
 				/>
 			</span>

@@ -139,12 +139,11 @@ export class ReaderOperator extends DataOperator<
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
 			let len = line.length;
-			if (len && line !== DOUBLE_SPACE) {
+			if (len) {
 				if (line === '\r') {
 					continue;
 				}
 				paraDict.push(lineNum);
-				const para = { start: lineNum, end: lineNum };
 				continuousBlankLine = 0;
 				const words = [] as TextLine[];
 				const arr = splitWords(
@@ -161,7 +160,6 @@ export class ReaderOperator extends DataOperator<
 						paraIndex: paraDict.length - 1
 					});
 				}
-				para.end = lineNum - 1;
 				book.addContent(words);
 			}
 			++continuousBlankLine;

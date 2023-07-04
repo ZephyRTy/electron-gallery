@@ -389,12 +389,12 @@ export class SqliteOperatorForGallery implements RequestOperator {
 			[newDir.dir_title, formatDate(new Date())]
 		);
 		return new Promise((resolve, reject) => {
-			stmt.run((err: any, res: any) => {
+			stmt.run((err: any) => {
 				if (err) {
 					console.error(err);
 					reject(null);
 				}
-				resolve(res.insertId as number);
+				resolve(stmt.lastID as number);
 			});
 		});
 	}
@@ -409,20 +409,18 @@ export class SqliteOperatorForGallery implements RequestOperator {
 		duplicate: boolean = false
 	) {
 		const { title, stared, path, cover } = newPack;
-		let stmt = this.db.prepare(
-			`insert into ${this.mainTableName} (title, path, started, cover) values (?,?,?,?,)`,
-			[title, path, stared, cover]
-		);
+		let sql =
+			'insert into pack_list (title, path, stared, cover) values (?,?,?,?)';
 		return new Promise((resolve) => {
 			if (!newPack.cover) {
 				delete newPack.cover;
 			}
-			stmt.run((err: any) => {
-				if (err && !duplicate) {
+			this.db.run(sql, [title, path, stared, cover], (res: any) => {
+				if (res && !duplicate) {
 					resolve(null);
 					return;
 				}
-				resolve(stmt.lastID);
+				resolve('ok');
 			});
 		});
 	}

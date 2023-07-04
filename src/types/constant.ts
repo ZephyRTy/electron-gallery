@@ -61,7 +61,7 @@ export const typeSetting = new (class TypeSetting {
 	width = 900;
 	fontSize = fontSize as number;
 	get lettersOfEachLine() {
-		return Math.floor(this.width / this.fontSize) - 1;
+		return Math.floor(this.width / this.fontSize) - 4;
 	}
 })();
 
