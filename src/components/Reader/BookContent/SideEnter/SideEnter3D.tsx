@@ -11,24 +11,39 @@ export const SideEnter3D = (props: {
 	renderMarkDiv: (...args: any[]) => JSX.Element;
 	renderCatalog?: (...args: any[]) => JSX.Element;
 }) => {
-	const [catalogShow] = useData(catalogShowStore);
-	const [marksShow] = useData(marksShowStore);
+	const [catalogShow, setCatalogShow] = useData(catalogShowStore);
+	const [marksShow, setMarksShow] = useData(marksShowStore);
 	return (
-		<div
-			className={stylesJoin(
-				styles['side-wrap-3d-out'],
-				marksShow || catalogShow ? '' : styles['hidden']
-			)}
-		>
+		<>
 			<div
 				className={stylesJoin(
-					styles['side-wrap-3d'],
-					marksShow ? styles['bottom-side'] : styles['top-side']
+					styles['side-wrap-3d-out'],
+					marksShow || catalogShow ? '' : styles['hidden']
 				)}
 			>
-				{props.renderCatalog ? props.renderCatalog() : <SideCatalog />}
-				<props.renderMarkDiv />
+				<div
+					className={stylesJoin(
+						styles['side-wrap-3d'],
+						marksShow ? styles['bottom-side'] : styles['top-side']
+					)}
+				>
+					{props.renderCatalog ? (
+						props.renderCatalog()
+					) : (
+						<SideCatalog />
+					)}
+					<props.renderMarkDiv />
+				</div>
 			</div>
-		</div>
+			{(catalogShow || marksShow) && (
+				<div
+					className={styles['mask']}
+					onClick={() => {
+						setCatalogShow(false);
+						setMarksShow(false);
+					}}
+				/>
+			)}
+		</>
 	);
 };
